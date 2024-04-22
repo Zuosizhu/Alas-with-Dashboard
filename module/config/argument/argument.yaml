@@ -776,3 +776,29 @@ AzurLaneUncensored:
     display: disabled
 GameManager:
   AutoRestart: true
+
+GGHandler:
+  Enabled: false
+  ServerLocation:
+    value: cn
+    option: [ cn, jp, en, tw ]
+  GGMethod:
+    value: u2
+    option: [ screenshot, u2 ]
+  GGPackageName: com.
+  AutoRestartGG: false
+  RestartEverytime: true
+  GGMultiplyingFactor: 200
+  DisabledTask:
+    value: disable_all_dangerous_task
+    option: [
+      disable_all_dangerous_task,
+      disable_meta_and_exercise,
+      disable_exercise,
+      enable_all,
+    ]
+  ALLowLowLevelInGemsFarming: false
+PowerLimit:
+  Exercise: 16500
+  Raid: 16500
+  Ash: 16500

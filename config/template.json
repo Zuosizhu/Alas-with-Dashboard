@@ -1935,6 +1935,22 @@
     "GameManager": {
       "AutoRestart": true
     },
+    "GGHandler": {
+      "Enabled": false,
+      "ServerLocation": "cn",
+      "GGMethod": "u2",
+      "GGPackageName": "com.",
+      "AutoRestartGG": false,
+      "RestartEverytime": true,
+      "GGMultiplyingFactor": 200,
+      "DisabledTask": "disable_all_dangerous_task",
+      "ALLowLowLevelInGemsFarming": false
+    },
+    "PowerLimit": {
+      "Exercise": 16500,
+      "Raid": 16500,
+      "Ash": 16500
+    },
     "Storage": {
       "Storage": {}
     }

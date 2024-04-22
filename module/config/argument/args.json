@@ -9343,6 +9343,75 @@
         "value": true
       }
     },
+    "GGHandler": {
+      "Enabled": {
+        "type": "checkbox",
+        "value": false
+      },
+      "ServerLocation": {
+        "type": "select",
+        "value": "cn",
+        "option": [
+          "cn",
+          "jp",
+          "en",
+          "tw"
+        ]
+      },
+      "GGMethod": {
+        "type": "select",
+        "value": "u2",
+        "option": [
+          "screenshot",
+          "u2"
+        ]
+      },
+      "GGPackageName": {
+        "type": "input",
+        "value": "com."
+      },
+      "AutoRestartGG": {
+        "type": "checkbox",
+        "value": false
+      },
+      "RestartEverytime": {
+        "type": "checkbox",
+        "value": true
+      },
+      "GGMultiplyingFactor": {
+        "type": "input",
+        "value": 200
+      },
+      "DisabledTask": {
+        "type": "select",
+        "value": "disable_all_dangerous_task",
+        "option": [
+          "disable_all_dangerous_task",
+          "disable_meta_and_exercise",
+          "disable_exercise",
+          "enable_all"
+        ]
+      },
+      "ALLowLowLevelInGemsFarming": {
+        "type": "checkbox",
+        "value": false
+      }
+    },
+    "PowerLimit": {
+      "Exercise": {
+        "type": "input",
+        "value": 16500
+      },
+      "Raid": {
+        "type": "input",
+        "value": 16500
+      },
+      "Ash": {
+        "type": "input",
+        "value": 16500
+      }
+    },
+
     "Storage": {
       "Storage": {
         "type": "storage",

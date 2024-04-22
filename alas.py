@@ -13,6 +13,7 @@ from module.config.utils import deep_get, deep_set
 from module.exception import *
 from module.logger import logger
 from module.notify import handle_notify
+from module.gg_handler.gg_handler import GGHandler
 
 
 class AzurLaneAutoScript:
@@ -478,6 +479,9 @@ class AzurLaneAutoScript:
         logger.set_file_logger(self.config_name)
         logger.info(f'Start scheduler loop: {self.config_name}')
 
+        # Try forced task_call restart to reset GG status
+        GGHandler(config=self.config, device=self.device).handle_restart_before_tasks()
+
         while 1:
             # Check update event from GUI
             if self.stop_event is not None:
@@ -505,6 +509,10 @@ class AzurLaneAutoScript:
                 self.config.task_delay(server_update=True)
                 del_cached_property(self, 'config')
                 continue
+
+            # Check GG config before a task begins (to reset temporary config), and decide to enable it.
+            GGHandler(config=self.config, device=self.device).check_config()
+            GGHandler(config=self.config, device=self.device).check_then_set_gg_status(inflection.underscore(task))
 
             # Run
             logger.info(f'Scheduler: Start task `{task}`')
