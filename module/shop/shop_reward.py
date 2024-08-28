@@ -1,5 +1,4 @@
 from module.shop.shop_core import CoreShop
-from module.shop.shop_event import EventShop
 from module.shop.shop_general import GeneralShop
 from module.shop.shop_guild import GuildShop
 from module.shop.shop_medal import MedalShop2
@@ -20,12 +19,7 @@ class RewardShop(ShopUI):
 
     def run_once(self):
         # Munitions shops
-        self.ui_goto_event_shop()
-
-        # shop_tab will go to event shop first if exists
-        if self.shop_tab.get_active(main=self) == 2:
-            self.shop_nav.set(main=self, upper=1)  # temporarily not dealing two shops
-            EventShop(self.config, self.device).run()
+        self.ui_goto_shop()
 
         self.shop_tab.set(main=self, left=2)
         self.shop_nav.set(main=self, upper=2)
