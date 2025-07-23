@@ -40,9 +40,16 @@ if OCR_BACKEND is None:
     except:
         pass
 
+# Import backends at module level to avoid circular imports
+try:
+    from module.ocr.tesseract_backend import TesseractBackend as _TesseractBackend
+except:
+    _TesseractBackend = None
+
+from module.ocr.simple_ocr import SimpleOCR as _SimpleOCR
+
 # Fall back to simple OCR
 if OCR_BACKEND is None:
-    from module.ocr.simple_ocr import SimpleOCR
     OCR_BACKEND = "simple"
     OCR_NAME = "SimpleOCR (placeholder)"
     logger.warning("No OCR backend available, using placeholder")
@@ -71,9 +78,8 @@ class AlOcr:
         self.backend = OCR_BACKEND
         
         # Initialize appropriate backend
-        if self.backend == "tesseract":
-            from module.ocr.tesseract_backend import TesseractBackend
-            self._impl = TesseractBackend(
+        if self.backend == "tesseract" and _TesseractBackend:
+            self._impl = _TesseractBackend(
                 model_name=model_name,
                 model_epoch=model_epoch,
                 cand_alphabet=cand_alphabet,
@@ -82,8 +88,7 @@ class AlOcr:
                 name=name
             )
         elif self.backend == "simple":
-            from module.ocr.simple_ocr import SimpleOCR
-            self._impl = SimpleOCR(name=name)
+            self._impl = _SimpleOCR(name=name)
         
         logger.info(f"AlOcr initialized with {OCR_NAME} for {self.name}")
     
@@ -97,6 +102,15 @@ class AlOcr:
         Returns:
             Recognized text string
         """
+        # Input validation
+        if image is None:
+            return ""
+        if not isinstance(image, np.ndarray):
+            logger.warning(f"OCR received non-numpy array input: {type(image)}")
+            return ""
+        if image.size == 0:
+            return ""
+            
         if self.backend == "easyocr":
             try:
                 reader = get_easyocr_reader()

@@ -31,6 +31,10 @@ class SimpleOCR:
         Simplified OCR that returns empty string.
         This allows ALAS to run without OCR while we implement better solution.
         """
+        # Input validation
+        if image is None or not isinstance(image, np.ndarray):
+            return ""
+            
         # For now, return empty string to avoid breaking ALAS
         # This will be replaced with actual OCR implementation
         return ""

@@ -106,6 +106,10 @@ class TesseractBackend:
         Returns:
             Preprocessed grayscale image
         """
+        # Validate input
+        if image is None or image.size == 0:
+            return image
+            
         # Convert to grayscale if needed
         if len(image.shape) == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -155,6 +159,15 @@ class TesseractBackend:
         if not self.TESSERACT_AVAILABLE:
             return ""
         
+        # Input validation
+        if img_fp is None:
+            return ""
+        if not isinstance(img_fp, np.ndarray):
+            logger.warning(f"Tesseract OCR received non-numpy array: {type(img_fp)}")
+            return ""
+        if img_fp.size == 0:
+            return ""
+        
         try:
             # Preprocess image
             processed = self._preprocess_image(img_fp)
@@ -176,7 +189,7 @@ class TesseractBackend:
             return text
             
         except Exception as e:
-            logger.warning(f"Tesseract OCR failed: {e}")
+            logger.warning(f"Tesseract OCR failed: {str(e)}")
             return ""
     
     def ocr_for_single_line(self, img_fp: np.ndarray) -> str:
