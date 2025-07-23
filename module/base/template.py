@@ -142,7 +142,25 @@ class Template(Resource):
             res = cv2.matchTemplate(image, self.image, cv2.TM_CCOEFF_NORMED)
             _, sim, _, _ = cv2.minMaxLoc(res)
             # print(self.file, sim)
-            return sim > similarity
+            result = sim > similarity
+
+            # --- START: New Vision LLM Logging ---
+            try:
+                from module.vision_llm import log_vision_comparison
+                if result:  # Log only positive matches to start
+                    template_image = self.image[0] if self.is_gif else self.image
+                    log_vision_comparison(
+                        screen_image=image,
+                        template_image=template_image,
+                        template_name=self.name,
+                        traditional_result={'matched': True, 'similarity': round(sim, 4), 'method': 'match'}
+                    )
+            except Exception as e:
+                from module.logger import logger
+                logger.warning(f"Vision LLM logging failed: {e}")
+            # --- END: New Vision LLM Logging ---
+
+            return result
 
     def match_binary(self, image, similarity=0.85):
         """
@@ -179,7 +197,25 @@ class Template(Resource):
             res = cv2.matchTemplate(self.image_binary, image_binary, cv2.TM_CCOEFF_NORMED)
             _, sim, _, _ = cv2.minMaxLoc(res)
             # print(self.file, sim)
-            return sim > similarity
+            result = sim > similarity
+
+            # --- START: New Vision LLM Logging ---
+            try:
+                from module.vision_llm import log_vision_comparison
+                if result:
+                    template_image = self.image[0] if self.is_gif else self.image
+                    log_vision_comparison(
+                        screen_image=image,  # Original color image
+                        template_image=template_image,
+                        template_name=self.name,
+                        traditional_result={'matched': True, 'similarity': round(sim, 4), 'method': 'match_binary'}
+                    )
+            except Exception as e:
+                from module.logger import logger
+                logger.warning(f"Vision LLM logging failed: {e}")
+            # --- END: New Vision LLM Logging ---
+
+            return result
 
     def match_luma(self, image, similarity=0.85):
         if self.is_gif:
@@ -197,7 +233,25 @@ class Template(Resource):
             res = cv2.matchTemplate(image, self.image, cv2.TM_CCOEFF_NORMED)
             _, sim, _, _ = cv2.minMaxLoc(res)
             # print(self.file, sim)
-            return sim > similarity
+            result = sim > similarity
+
+            # --- START: New Vision LLM Logging ---
+            try:
+                from module.vision_llm import log_vision_comparison
+                if result:
+                    template_image = self.image[0] if self.is_gif else self.image
+                    log_vision_comparison(
+                        screen_image=image,
+                        template_image=template_image,
+                        template_name=self.name,
+                        traditional_result={'matched': True, 'similarity': round(sim, 4), 'method': 'match_luma'}
+                    )
+            except Exception as e:
+                from module.logger import logger
+                logger.warning(f"Vision LLM logging failed: {e}")
+            # --- END: New Vision LLM Logging ---
+
+            return result
 
     def _point_to_button(self, point, image=None, name=None):
         """
