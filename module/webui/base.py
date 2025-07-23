@@ -115,12 +115,7 @@ class Frame(Base):
         if isinstance(keys, str):
             keys = [keys]
         keys = ["_".join(key.split(".")) for key in keys]
-        js = "".join(
-            [
-                f"""$(".form-control[name='{key}']").addClass('is-invalid');"""
-                for key in keys
-            ]
-        )
+        js = "".join([f"""$(".form-control[name='{key}']").addClass('is-invalid');""" for key in keys])
         if js:
             run_js(js)
         # for key in keys:
@@ -131,12 +126,7 @@ class Frame(Base):
         if isinstance(keys, str):
             keys = [keys]
         keys = ["_".join(key.split(".")) for key in keys]
-        js = "".join(
-            [
-                f"""$(".form-control[name='{key}']").removeClass('is-invalid');"""
-                for key in keys
-            ]
-        )
+        js = "".join([f"""$(".form-control[name='{key}']").removeClass('is-invalid');""" for key in keys])
         if js:
             run_js(js)
         # for key in keys:

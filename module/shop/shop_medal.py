@@ -20,14 +20,14 @@ class ShopPriceOcr(DigitYuv):
     def after_process(self, result):
         result = Ocr.after_process(self, result)
         # '100' detected as '00' on retrofit blueprint
-        if result == '00':
-            result = '100'
+        if result == "00":
+            result = "100"
         return Digit.after_process(self, result)
 
 
-PRICE_OCR = ShopPriceOcr([], letter=(255, 223, 57), threshold=32, name='Price_ocr')
-TEMPLATE_MEDAL_ICON = Template('./assets/shop/cost/Medal.png')
-TEMPLATE_MEDAL_ICON_2 = Template('./assets/shop/cost/Medal_2.png')
+PRICE_OCR = ShopPriceOcr([], letter=(255, 223, 57), threshold=32, name="Price_ocr")
+TEMPLATE_MEDAL_ICON = Template("./assets/shop/cost/Medal.png")
+TEMPLATE_MEDAL_ICON_2 = Template("./assets/shop/cost/Medal_2.png")
 
 
 class MedalShop2(ShopClerk, ShopStatus):
@@ -55,8 +55,8 @@ class MedalShop2(ShopClerk, ShopStatus):
         image[y1:y2, x1:x2] = (0, 0, 0)
 
         medals = TEMPLATE_MEDAL_ICON_2.match_multi(image, similarity=0.5, threshold=5)
-        medals = Points([(0., m.area[1]) for m in medals]).group(threshold=5)
-        logger.attr('Medals_icon', len(medals))
+        medals = Points([(0.0, m.area[1]) for m in medals]).group(threshold=5)
+        logger.attr("Medals_icon", len(medals))
         return medals
 
     def wait_until_medal_appear(self, skip_first_screenshot=True):
@@ -92,7 +92,7 @@ class MedalShop2(ShopClerk, ShopStatus):
         medals = self._get_medals()
         count = len(medals)
         if count == 0:
-            logger.warning('Unable to find medal icon, assume item list is at top')
+            logger.warning("Unable to find medal icon, assume item list is at top")
             origin_y = 246
             delta_y = 213
             row = 2
@@ -110,7 +110,7 @@ class MedalShop2(ShopClerk, ShopStatus):
             delta_y = abs(y1 - y2)
             row = 2
         else:
-            logger.warning(f'Unexpected medal icon match result: {[m for m in medals]}')
+            logger.warning(f"Unexpected medal icon match result: {[m for m in medals]}")
             origin_y = 246
             delta_y = 213
             row = 2
@@ -120,10 +120,11 @@ class MedalShop2(ShopClerk, ShopStatus):
         # shop_grid = ButtonGrid(
         #     origin=(476, 246), delta=(156, 213), button_shape=(98, 98), grid_shape=(5, 2), name='SHOP_GRID')
         shop_grid = ButtonGrid(
-            origin=(476, origin_y), delta=(156, delta_y), button_shape=(98, 98), grid_shape=(5, row), name='SHOP_GRID')
+            origin=(476, origin_y), delta=(156, delta_y), button_shape=(98, 98), grid_shape=(5, row), name="SHOP_GRID"
+        )
         return shop_grid
 
-    shop_template_folder = './assets/shop/medal'
+    shop_template_folder = "./assets/shop/medal"
 
     @cached_property
     def shop_medal_items(self):
@@ -133,11 +134,10 @@ class MedalShop2(ShopClerk, ShopStatus):
         """
         shop_grid = self.shop_grid
         shop_medal_items = ShopItemGrid(
-            shop_grid,
-            templates={}, amount_area=(60, 74, 96, 95),
-            price_area=(52, 132, 132, 162))
+            shop_grid, templates={}, amount_area=(60, 74, 96, 95), price_area=(52, 132, 132, 162)
+        )
         shop_medal_items.load_template_folder(self.shop_template_folder)
-        shop_medal_items.load_cost_template_folder('./assets/shop/cost')
+        shop_medal_items.load_cost_template_folder("./assets/shop/cost")
         shop_medal_items.similarity = 0.85  # Lower the threshold for consistent matches of PR/DRBP
         shop_medal_items.cost_similarity = 0.5
         shop_medal_items.price_ocr = PRICE_OCR
@@ -163,7 +163,7 @@ class MedalShop2(ShopClerk, ShopStatus):
             int: medal amount
         """
         self._currency = self.status_get_medal()
-        logger.info(f'Medal: {self._currency}')
+        logger.info(f"Medal: {self._currency}")
         return self._currency
 
     def shop_has_loaded(self, items):
@@ -220,7 +220,7 @@ class MedalShop2(ShopClerk, ShopStatus):
 
         # When called, expected to be in
         # correct Medal Shop interface
-        logger.hr('Medal Shop', level=1)
+        logger.hr("Medal Shop", level=1)
         self.wait_until_medal_appear()
 
         # Execute buy operations
@@ -228,10 +228,10 @@ class MedalShop2(ShopClerk, ShopStatus):
         while 1:
             self.shop_buy()
             if MEDAL_SHOP_SCROLL.at_bottom(main=self):
-                logger.info('Medal shop reach bottom, stop')
+                logger.info("Medal shop reach bottom, stop")
                 break
             else:
                 MEDAL_SHOP_SCROLL.next_page(main=self, page=0.66)
-                del_cached_property(self, 'shop_grid')
-                del_cached_property(self, 'shop_medal_items')
+                del_cached_property(self, "shop_grid")
+                del_cached_property(self, "shop_medal_items")
                 continue

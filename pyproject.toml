@@ -1,0 +1,105 @@
+[tool.poetry]
+name = "alas-with-dashboard"
+version = "0.1.0"
+description = "Azur Lane Automation Script with Dashboard"
+authors = ["ALAS Contributors"]
+readme = "README.md"
+python = "^3.10"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+# Image processing
+numpy = "^1.24.0"
+scipy = "^1.11.0"
+pillow = "^10.0.0"
+opencv-python = "^4.8.0"
+imageio = "^2.31.0"
+
+# Device connection
+adbutils = "^0.17.0"
+uiautomator2 = "^2.16.0"
+wrapt = "^1.15.0"
+retrying = "^1.3.4"
+lz4 = "^4.3.0"
+av = "^10.0.0"
+psutil = "^5.9.0"
+
+# Utils
+rich = "^13.5.0"
+tqdm = "^4.66.0"
+jellyfish = "^1.0.0"
+pyyaml = "^6.0.0"
+inflection = "^0.5.1"
+pydantic = "^2.4.0"
+aiofiles = "^23.2.0"
+prettytable = "^3.9.0"
+anyio = "^3.7.0"
+
+# Pushing
+pypresence = "^4.3.0"
+
+# Webui
+pywebio = "^1.8.0"
+starlette = "^0.31.0"
+uvicorn = {extras = ["standard"], version = "^0.23.0"}
+alas-webapp = "0.3.7"
+zerorpc = "^0.6.3"
+pyzmq = "^25.1.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.0"
+isort = "^5.12.0"
+pytest = "^7.4.0"
+mypy = "^1.5.0"
+ruff = "^0.0.290"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "N", "UP", "YTT", "ASYNC", "S", "BLE", "A", "C4", "ISC", "ICN", "G", "PIE", "PT", "Q", "RSE", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "ERA", "PD", "PGH", "PL", "TRY", "NPY", "RUF"]
+ignore = ["E501", "S101", "PLR0913", "S110", "S112"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]

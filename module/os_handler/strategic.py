@@ -5,12 +5,12 @@ from module.os_handler.assets import *
 from module.os_handler.map_event import MapEventHandler
 from module.ui.scroll import Scroll
 
-STRATEGIC_SEARCH_SCROLL = Scroll(STRATEGIC_SEARCH_SCROLL_AREA, color=(247, 211, 66), name='STRATEGIC_SEARCH_SCROLL')
+STRATEGIC_SEARCH_SCROLL = Scroll(STRATEGIC_SEARCH_SCROLL_AREA, color=(247, 211, 66), name="STRATEGIC_SEARCH_SCROLL")
 
 
 class StrategicSearchHandler(MapEventHandler):
     def strategy_search_enter(self, skip_first_screenshot=False):
-        logger.info('Strategic search enter')
+        logger.info("Strategic search enter")
         self.interval_clear(STRATEGIC_SEARCH_MAP_OPTION_OFF)
         while 1:
             if skip_first_screenshot:
@@ -30,7 +30,7 @@ class StrategicSearchHandler(MapEventHandler):
                 continue
 
     def strategic_search_set_tab(self, skip_first_screenshot=False):
-        logger.info('Strategic search set tab')
+        logger.info("Strategic search set tab")
         while 1:
             if skip_first_screenshot:
                 skip_first_screenshot = False
@@ -58,9 +58,9 @@ class StrategicSearchHandler(MapEventHandler):
             if STRATEGIC_SEARCH_SCROLL.appear(main=self):
                 return True
             else:
-                logger.warning('STRATEGIC_SEARCH_SCROLL disappeared')
+                logger.warning("STRATEGIC_SEARCH_SCROLL disappeared")
             if timeout.reached():
-                logger.warning('STRATEGIC_SEARCH_SCROLL disappeared confirm')
+                logger.warning("STRATEGIC_SEARCH_SCROLL disappeared confirm")
                 return False
 
     def _strategy_option_selected(self, button):
@@ -77,7 +77,7 @@ class StrategicSearchHandler(MapEventHandler):
         Returns:
             If success. False if strategic settings closed for unknown reason.
         """
-        logger.info('Strategic search set option')
+        logger.info("Strategic search set option")
         while 1:
             if skip_first_screenshot:
                 skip_first_screenshot = False
@@ -85,17 +85,18 @@ class StrategicSearchHandler(MapEventHandler):
                 self.device.screenshot()
 
             if self._strategy_option_selected(STRATEGIC_SEARCH_ZONEMODE_RANDOM):
-                logger.attr('zone_mode', 'random')
+                logger.attr("zone_mode", "random")
                 self.device.click(STRATEGIC_SEARCH_ZONEMODE_REPEAT)
                 continue
             if self._strategy_option_selected(STRATEGIC_SEARCH_MERCHANT_CONTINUE):
-                logger.attr('encounter_merchant', 'continue')
+                logger.attr("encounter_merchant", "continue")
                 self.device.click(STRATEGIC_SEARCH_MERCHANT_STOP)
                 continue
-            if self._strategy_option_selected(STRATEGIC_SEARCH_ZONEMODE_REPEAT) \
-                    and self._strategy_option_selected(STRATEGIC_SEARCH_MERCHANT_STOP):
-                logger.attr('zone_mode', 'repeat')
-                logger.attr('encounter_merchant', 'stop')
+            if self._strategy_option_selected(STRATEGIC_SEARCH_ZONEMODE_REPEAT) and self._strategy_option_selected(
+                STRATEGIC_SEARCH_MERCHANT_STOP
+            ):
+                logger.attr("zone_mode", "repeat")
+                logger.attr("encounter_merchant", "stop")
                 skip_first_screenshot = True
                 break
 
@@ -115,11 +116,11 @@ class StrategicSearchHandler(MapEventHandler):
             STRATEGIC_SEARCH_DEVICE_CONTINUE.load_offset(STRATEGIC_SEARCH_DEVICE_CHECK)
 
             if self._strategy_option_selected(STRATEGIC_SEARCH_DEVICE_CONTINUE):
-                logger.attr('encounter_device', 'continue')
+                logger.attr("encounter_device", "continue")
                 self.device.click(STRATEGIC_SEARCH_DEVICE_STOP)
                 continue
             if self._strategy_option_selected(STRATEGIC_SEARCH_DEVICE_STOP):
-                logger.attr('encounter_device', 'stop')
+                logger.attr("encounter_device", "stop")
                 skip_first_screenshot = True
                 break
 
@@ -140,25 +141,26 @@ class StrategicSearchHandler(MapEventHandler):
             STRATEGIC_SEARCH_SUBMIT_ON.load_offset(STRATEGIC_SEARCH_SUBMIT_CHECK)
 
             if self._strategy_option_selected(STRATEGIC_SEARCH_SUBMIT_OFF):
-                logger.attr('auto_submit', 'off')
+                logger.attr("auto_submit", "off")
                 self.device.click(STRATEGIC_SEARCH_SUBMIT_ON)
                 continue
             if self._strategy_option_selected(STRATEGIC_SEARCH_SUBMIT_ON):
-                logger.attr('auto_submit', 'on')
+                logger.attr("auto_submit", "on")
                 break
 
         return True
 
     def strategic_search_confirm(self, skip_first_screenshot=False):
-        logger.info('Strategic search confirm')
+        logger.info("Strategic search confirm")
         while 1:
             if skip_first_screenshot:
                 skip_first_screenshot = False
             else:
                 self.device.screenshot()
 
-            if self.appear(STRATEGIC_SEARCH_POPUP_CHECK, offset=(20, 20)) \
-                    and self.handle_popup_confirm(offset=(30, 30), name='STRATEGIC_SEARCH'):
+            if self.appear(STRATEGIC_SEARCH_POPUP_CHECK, offset=(20, 20)) and self.handle_popup_confirm(
+                offset=(30, 30), name="STRATEGIC_SEARCH"
+            ):
                 continue
 
             if self.is_in_map():
@@ -173,7 +175,7 @@ class StrategicSearchHandler(MapEventHandler):
             in: IN_MAP
             out: IN_MAP, with strategic search running
         """
-        logger.hr('Strategic search start')
+        logger.hr("Strategic search start")
         for _ in range(3):
             self.strategy_search_enter(skip_first_screenshot=skip_first_screenshot)
             self.strategic_search_set_tab(skip_first_screenshot=True)
@@ -183,5 +185,5 @@ class StrategicSearchHandler(MapEventHandler):
             self.strategic_search_confirm(skip_first_screenshot=True)
             return True
 
-        logger.warning('Failed to start strategic search')
+        logger.warning("Failed to start strategic search")
         return False

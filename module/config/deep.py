@@ -8,9 +8,9 @@ from collections import deque
 # - When not key exists
 #   if key in dict: dict[key] < dict.get(key) <<< try: dict[key] except KeyError
 
-OP_ADD = 'add'
-OP_SET = 'set'
-OP_DEL = 'del'
+OP_ADD = "add"
+OP_SET = "set"
+OP_DEL = "del"
 
 
 def deep_get(d, keys, default=None):
@@ -28,7 +28,7 @@ def deep_get(d, keys, default=None):
     """
     # 240 + 30 * depth (ns)
     if type(keys) is str:
-        keys = keys.split('.')
+        keys = keys.split(".")
 
     try:
         for k in keys:
@@ -62,7 +62,7 @@ def deep_get_with_error(d, keys):
     """
     # 240 + 30 * depth (ns)
     if type(keys) is str:
-        keys = keys.split('.')
+        keys = keys.split(".")
 
     try:
         for k in keys:
@@ -93,7 +93,7 @@ def deep_exist(d, keys):
     """
     # 240 + 30 * depth (ns)
     if type(keys) is str:
-        keys = keys.split('.')
+        keys = keys.split(".")
 
     try:
         for k in keys:
@@ -118,7 +118,7 @@ def deep_set(d, keys, value):
     """
     # 150 * depth (ns)
     if type(keys) is str:
-        keys = keys.split('.')
+        keys = keys.split(".")
 
     first = True
     exist = True
@@ -172,7 +172,7 @@ def deep_default(d, keys, value):
     """
     # 150 * depth (ns)
     if type(keys) is str:
-        keys = keys.split('.')
+        keys = keys.split(".")
 
     first = True
     exist = True
@@ -224,7 +224,7 @@ def deep_pop(d, keys, default=None):
     Pop value from nested dict and list
     """
     if type(keys) is str:
-        keys = keys.split('.')
+        keys = keys.split(".")
 
     try:
         for k in keys[:-1]:
@@ -258,8 +258,7 @@ def deep_iter_depth1(data):
         Any: Value
     """
     try:
-        for k, v in data.items():
-            yield k, v
+        yield from data.items()
         return
     except AttributeError:
         # `data` is not dict

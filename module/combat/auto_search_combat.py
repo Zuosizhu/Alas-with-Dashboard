@@ -25,7 +25,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
         """
         if self.is_in_stage():
             if self._auto_search_in_stage_timer.reached():
-                logger.info('Catch auto search menu missing')
+                logger.info("Catch auto search menu missing")
                 return True
         else:
             self._auto_search_in_stage_timer.reset()
@@ -52,8 +52,9 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             # Auto search icon shows it's running but it's doing nothing
             # when Alas exited from retirement and turned it on immediately.
             # Monkey clicker, disable auto search every 3s, beginning not included
-            if self.appear(AUTO_SEARCH_MAP_OPTION_ON, offset=self._auto_search_offset, interval=3) \
-                    and self.appear_then_click(AUTO_SEARCH_MAP_OPTION_ON):
+            if self.appear(
+                AUTO_SEARCH_MAP_OPTION_ON, offset=self._auto_search_offset, interval=3
+            ) and self.appear_then_click(AUTO_SEARCH_MAP_OPTION_ON):
                 continue
             if self.handle_combat_low_emotion():
                 continue
@@ -81,12 +82,12 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
         if self.fleet_current_index == prev:
             # Same as current, only print once
             if not checked:
-                logger.info(f'Fleet: {self.fleet_show_index}, fleet_current_index: {self.fleet_current_index}')
+                logger.info(f"Fleet: {self.fleet_show_index}, fleet_current_index: {self.fleet_current_index}")
                 checked = True
                 self.lv_get(after_battle=True)
         else:
             # Fleet changed
-            logger.info(f'Fleet: {self.fleet_show_index}, fleet_current_index: {self.fleet_current_index}')
+            logger.info(f"Fleet: {self.fleet_show_index}, fleet_current_index: {self.fleet_current_index}")
             checked = True
             self.lv_get(after_battle=False)
 
@@ -100,15 +101,17 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
         if not checked:
             oil = self.get_oil()
             if oil == 0:
-                logger.warning('Oil not found')
+                logger.warning("Oil not found")
             else:
                 if oil < max(500, self.config.StopCondition_OilLimit):
-                    logger.info('Reach oil limit')
+                    logger.info("Reach oil limit")
                     self.auto_search_oil_limit_triggered = True
                 else:
                     if self.auto_search_oil_limit_triggered:
-                        logger.warning('auto_search_oil_limit_triggered but oil recovered, '
-                                       'probably because of wrong OCR result before')
+                        logger.warning(
+                            "auto_search_oil_limit_triggered but oil recovered, "
+                            "probably because of wrong OCR result before"
+                        )
                     self.auto_search_oil_limit_triggered = False
                 checked = True
 
@@ -123,19 +126,21 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             limit = self.config.TaskBalancer_CoinLimit
             coin = self.get_coin()
             if coin == 0:
-                logger.warning('Coin not found')
+                logger.warning("Coin not found")
             else:
                 if self.is_balancer_task():
                     if coin < limit:
-                        logger.info('Reach coin limit')
+                        logger.info("Reach coin limit")
                         self.auto_search_coin_limit_triggered = True
                     else:
                         # Enough coin
                         self.auto_search_coin_limit_triggered = False
                 else:
                     if self.auto_search_coin_limit_triggered:
-                        logger.warning('auto_search_coin_limit_triggered but coin recovered, '
-                                       'probably because of wrong OCR result before')
+                        logger.warning(
+                            "auto_search_coin_limit_triggered but coin recovered, "
+                            "probably because of wrong OCR result before"
+                        )
                     self.auto_search_coin_limit_triggered = False
                 checked = True
 
@@ -161,7 +166,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             if self.is_in_map():
                 break
             if timeout.reached():
-                logger.warning('Wait in_map after retirement timeout, assume it is in_map')
+                logger.warning("Wait in_map after retirement timeout, assume it is in_map")
                 break
 
     def auto_search_moving(self, skip_first_screenshot=True):
@@ -170,7 +175,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             in: map
             out: is_combat_loading()
         """
-        logger.info('Auto search moving')
+        logger.info("Auto search moving")
         self.device.stuck_record_clear()
         checked_fleet = False
         checked_oil = False
@@ -206,7 +211,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             if self.is_combat_loading():
                 break
             if self.is_combat_executing():
-                logger.info('is_combat_executing')
+                logger.info("is_combat_executing")
                 break
             if self.is_in_auto_search_menu() or self._handle_auto_search_menu_missing():
                 raise CampaignEnd
@@ -221,10 +226,10 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             in: is_combat_loading()
             out: combat status
         """
-        logger.info('Auto search combat loading')
+        logger.info("Auto search combat loading")
         self.device.stuck_record_clear()
         self.device.click_record_clear()
-        self.device.screenshot_interval_set('combat')
+        self.device.screenshot_interval_set("combat")
         while 1:
             self.device.screenshot()
 
@@ -240,12 +245,12 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
                 raise CampaignEnd
             pause = self.is_combat_executing()
             if pause:
-                logger.attr('BattleUI', pause)
+                logger.attr("BattleUI", pause)
                 break
 
-        logger.info('Auto Search combat execute')
+        logger.info("Auto Search combat execute")
         self.submarine_call_reset()
-        submarine_mode = 'do_not_use'
+        submarine_mode = "do_not_use"
         if self.config.Submarine_Fleet:
             submarine_mode = self.config.Submarine_Mode
         self.combat_auto_reset()
@@ -265,11 +270,11 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
                 continue
             if self.handle_combat_manual(auto):
                 continue
-            if auto != 'combat_auto' and self.auto_mode_checked and self.is_combat_executing():
+            if auto != "combat_auto" and self.auto_mode_checked and self.is_combat_executing():
                 if self.handle_combat_weapon_release():
                     continue
             # bunch of popup handlers
-            if self.handle_popup_confirm('AUTO_SEARCH_COMBAT_EXECUTE'):
+            if self.handle_popup_confirm("AUTO_SEARCH_COMBAT_EXECUTE"):
                 continue
             if self.handle_urgent_commission():
                 continue
@@ -290,9 +295,15 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
                 continue
             if self.handle_get_ship():
                 continue
-            if self.appear(BATTLE_STATUS_S) or self.appear(BATTLE_STATUS_A) or self.appear(BATTLE_STATUS_B) \
-                    or self.appear(EXP_INFO_S) or self.appear(EXP_INFO_A) or self.appear(EXP_INFO_B) \
-                    or self.is_auto_search_running():
+            if (
+                self.appear(BATTLE_STATUS_S)
+                or self.appear(BATTLE_STATUS_A)
+                or self.appear(BATTLE_STATUS_B)
+                or self.appear(EXP_INFO_S)
+                or self.appear(EXP_INFO_A)
+                or self.appear(EXP_INFO_B)
+                or self.is_auto_search_running()
+            ):
                 self.device.screenshot_interval_set()
                 break
 
@@ -302,7 +313,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
             in: any
             out: is_auto_search_running()
         """
-        logger.info('Auto Search combat status')
+        logger.info("Auto Search combat status")
         self.device.stuck_record_clear()
         self.device.click_record_clear()
         exp_info = False  # This is for the white screen bug in game
@@ -327,7 +338,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
                 self._auto_search_status_confirm = False
                 continue
             # bunch of popup handlers
-            if self.handle_popup_confirm('AUTO_SEARCH_COMBAT_STATUS'):
+            if self.handle_popup_confirm("AUTO_SEARCH_COMBAT_STATUS"):
                 continue
             if self.handle_urgent_commission():
                 continue
@@ -349,7 +360,7 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
                     continue
                 if self.handle_battle_status():
                     continue
-                if self.handle_popup_confirm('combat_status'):
+                if self.handle_popup_confirm("combat_status"):
                     continue
                 if self.handle_exp_info():
                     exp_info = True
@@ -367,4 +378,4 @@ class AutoSearchCombat(MapOperation, Combat, CampaignStatus):
         self.auto_search_combat_execute(emotion_reduce=emotion_reduce, fleet_index=fleet_index)
         self.auto_search_combat_status()
 
-        logger.info('Combat end.')
+        logger.info("Combat end.")

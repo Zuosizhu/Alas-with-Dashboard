@@ -8,17 +8,12 @@ from module.ui.page import page_game_room
 from module.ui.scroll import Scroll
 from module.ui.ui import UI
 
-if server.server != 'jp':
-    OCR_COIN = Digit(COIN_HOLDER,
-                    name='OCR_COIN',
-                    letter=(255, 235, 115),
-                    threshold=128)
+if server.server != "jp":
+    OCR_COIN = Digit(COIN_HOLDER, name="OCR_COIN", letter=(255, 235, 115), threshold=128)
 else:
-    OCR_COIN = Digit(COIN_HOLDER,
-                    name='OCR_COIN',
-                    letter=(211, 196, 95),
-                    threshold=128)
-MINIGAME_SCROLL = Scroll(MINIGAME_SCROLL_AREA, color=(247, 247, 247), name='MINIGAME_SCROLL')
+    OCR_COIN = Digit(COIN_HOLDER, name="OCR_COIN", letter=(211, 196, 95), threshold=128)
+MINIGAME_SCROLL = Scroll(MINIGAME_SCROLL_AREA, color=(247, 247, 247), name="MINIGAME_SCROLL")
+
 
 class MinigameRun(UI):
 
@@ -30,7 +25,7 @@ class MinigameRun(UI):
         Return:
             False if unable or unnecessary to play
         """
-        logger.hr('Minigame run', level=1)
+        logger.hr("Minigame run", level=1)
 
         # page_game_room main_page -> MINIGAME_SCROLL
         logger.info("Enter minigame")
@@ -65,13 +60,13 @@ class MinigameRun(UI):
 
     def deal_popup(self):
         """
-            deal possible popups
-            need re-screenshot if return true
+        deal possible popups
+        need re-screenshot if return true
         """
         # specific
         if self.deal_specific_popup():
             return True
-        if self.handle_popup_confirm('TICKETS_FULL'):
+        if self.handle_popup_confirm("TICKETS_FULL"):
             self.interval_reset(COIN_POPUP, interval=3)
             return True
         # coins more than 31, deal popup
@@ -140,8 +135,7 @@ class Minigame(UI):
                 continue
             if self.appear_then_click(COIN_POPUP, offset=(5, 5), interval=2):
                 continue
-            if self.appear(GAME_ROOM_CHECK, offset=(5, 5)) \
-                    and not self.appear(GOTO_CHOOSE_GAME, offset=(5, 5)):
+            if self.appear(GAME_ROOM_CHECK, offset=(5, 5)) and not self.appear(GOTO_CHOOSE_GAME, offset=(5, 5)):
                 self.appear_then_click(BACK, offset=(5, 5), interval=2)
                 continue
             if self.appear(GOTO_CHOOSE_GAME, offset=(5, 5)):
@@ -164,8 +158,7 @@ class Minigame(UI):
             if self.appear_then_click(COIN_POPUP, offset=(5, 5), interval=3):
                 continue
             # game room and choose game have same header, go to game room first
-            if self.appear(GAME_ROOM_CHECK, offset=(5, 5)) \
-                    and not self.appear(GOTO_CHOOSE_GAME, offset=(5, 5)):
+            if self.appear(GAME_ROOM_CHECK, offset=(5, 5)) and not self.appear(GOTO_CHOOSE_GAME, offset=(5, 5)):
                 self.appear_then_click(BACK, offset=(5, 5), interval=3)
                 continue
             # collect coins
@@ -195,6 +188,7 @@ class Minigame(UI):
         minigame_instance = None
         if specific_game_name == "new_year_challenge":
             from module.minigame.new_year_challenge import NewYearChallenge
+
             minigame_instance = NewYearChallenge(config=self.config, device=self.device)
 
         while 1:

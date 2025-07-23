@@ -7,7 +7,7 @@ class DailyEquipment(FleetEquipment):
     def fleet_enter(self, fleet=None):
         fleet = self.config.FLEET_DAILY
         if isinstance(fleet, list):
-            logger.info(f'Multiple daily fleets are set, change equipment only for the first one. fleet: {fleet}')
+            logger.info(f"Multiple daily fleets are set, change equipment only for the first one. fleet: {fleet}")
             fleet = fleet[0]
         super().fleet_enter(fleet)
 

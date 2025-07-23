@@ -9,8 +9,9 @@ class CachedThreadPoolExecutor:
     @cached_class_property
     def executor(cls):
         from concurrent.futures.thread import ThreadPoolExecutor
+
         pool = ThreadPoolExecutor(max_workers=5)
-        logger.info('Patched ThreadPoolExecutor created')
+        logger.info("Patched ThreadPoolExecutor created")
         return pool
 
 
@@ -50,6 +51,7 @@ def patch_mimetype():
     all deployment, we use the builtin mimetype table only.
     """
     import mimetypes
+
     if mimetypes.inited:
         # ohno mimetypes already inited
         db = mimetypes.MimeTypes()

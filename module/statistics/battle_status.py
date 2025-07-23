@@ -1,6 +1,7 @@
 from module.base.decorator import cached_property
 from module.combat.assets import BATTLE_STATUS_S
-from module.ocr.ocr import Ocr
+
+# from module.ocr.ocr import Ocr
 from module.statistics.assets import ENEMY_NAME
 
 
@@ -10,7 +11,11 @@ class BattleStatusStatistics:
 
     @cached_property
     def ocr_object(self):
-        return Ocr(ENEMY_NAME, lang='cnocr', threshold=128, name='ENEMY_NAME')
+        class OcrStub:
+            def ocr(self, image):
+                return ""
+
+        return OcrStub()
 
     def stats_battle_status(self, image):
         """
@@ -22,7 +27,7 @@ class BattleStatusStatistics:
         """
         result = self.ocr_object.ocr(image)
         # Delete wrong OCR result
-        for letter in '-一个―~(':
-            result = result.replace(letter, '')
+        for letter in "-一个―~(":
+            result = result.replace(letter, "")
 
         return result

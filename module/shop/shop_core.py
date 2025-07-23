@@ -7,7 +7,7 @@ from module.shop.shop_status import ShopStatus
 
 
 class CoreShop(ShopClerk, ShopStatus):
-    shop_template_folder = './assets/shop/core'
+    shop_template_folder = "./assets/shop/core"
 
     @cached_property
     def shop_filter(self):
@@ -26,7 +26,7 @@ class CoreShop(ShopClerk, ShopStatus):
         shop_grid = self.shop_grid
         shop_core_items = ShopItemGrid(shop_grid, templates={}, amount_area=(60, 74, 96, 95))
         shop_core_items.load_template_folder(self.shop_template_folder)
-        shop_core_items.load_cost_template_folder('./assets/shop/cost')
+        shop_core_items.load_cost_template_folder("./assets/shop/cost")
         return shop_core_items
 
     def shop_items(self):
@@ -51,7 +51,7 @@ class CoreShop(ShopClerk, ShopStatus):
             int: core amount
         """
         self._currency = self.status_get_core()
-        logger.info(f'Core: {self._currency}')
+        logger.info(f"Core: {self._currency}")
         return self._currency
 
     def shop_interval_clear(self):
@@ -89,7 +89,7 @@ class CoreShop(ShopClerk, ShopStatus):
 
         # When called, expected to be in
         # correct Core Shop interface
-        logger.hr('Core Shop', level=1)
+        logger.hr("Core Shop", level=1)
 
         # Execute buy operations
         self.shop_buy()

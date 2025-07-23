@@ -34,8 +34,8 @@ class ManualConfig:
     """
     module.assets
     """
-    ASSETS_FOLDER = './assets'
-    ASSETS_MODULE = './module'
+    ASSETS_FOLDER = "./assets"
+    ASSETS_MODULE = "./module"
     ASSETS_RESOLUTION = (1280, 720)
 
     """
@@ -56,11 +56,9 @@ class ManualConfig:
     # blue: Blue stage icons in Dreamwaker's Butterfly (Shinano event, event_20200917_cn).
     # half: Left half of '%' in Vacation Lane (DOA collaboration, event_20201126_cn)
     #       DOA has smaller stage icon, right half of '%' is out of the original area.
-    STAGE_ENTRANCE = ['normal']  # normal, blue, half
+    STAGE_ENTRANCE = ["normal"]  # normal, blue, half
     # Set stage='TH' and run_count=100, to run TH1~TH5 in cycle
-    STAGE_LOOP_ALIAS = {
-        ('event_20221124_cn', 'TH'): 'TH1 > TH2 > TH3 > TH4 > TH5'
-    }
+    STAGE_LOOP_ALIAS = {("event_20221124_cn", "TH"): "TH1 > TH2 > TH3 > TH4 > TH5"}
 
     """
     module.combat.level
@@ -76,23 +74,23 @@ class ManualConfig:
     FORWARD_PORT_RANGE = (20000, 21000)
     REVERSE_SERVER_PORT = 7903
 
-    ASCREENCAP_FILEPATH_LOCAL = './bin/ascreencap'
-    ASCREENCAP_FILEPATH_REMOTE = '/data/local/tmp/ascreencap'
+    ASCREENCAP_FILEPATH_LOCAL = "./bin/ascreencap"
+    ASCREENCAP_FILEPATH_REMOTE = "/data/local/tmp/ascreencap"
 
     # 'DroidCast', 'DroidCast_raw'
-    DROIDCAST_VERSION = 'DroidCast'
-    DROIDCAST_FILEPATH_LOCAL = './bin/DroidCast/DroidCast_raw-release-1.0.apk'
-    DROIDCAST_FILEPATH_REMOTE = '/data/local/tmp/DroidCast_raw.apk'
+    DROIDCAST_VERSION = "DroidCast"
+    DROIDCAST_FILEPATH_LOCAL = "./bin/DroidCast/DroidCast_raw-release-1.0.apk"
+    DROIDCAST_FILEPATH_REMOTE = "/data/local/tmp/DroidCast_raw.apk"
 
-    MINITOUCH_FILEPATH_REMOTE = '/data/local/tmp/minitouch'
+    MINITOUCH_FILEPATH_REMOTE = "/data/local/tmp/minitouch"
 
-    HERMIT_FILEPATH_LOCAL = './bin/hermit/hermit.apk'
+    HERMIT_FILEPATH_LOCAL = "./bin/hermit/hermit.apk"
 
-    SCRCPY_FILEPATH_LOCAL = './bin/scrcpy/scrcpy-server-v1.20.jar'
-    SCRCPY_FILEPATH_REMOTE = '/data/local/tmp/scrcpy-server-v1.20.jar'
+    SCRCPY_FILEPATH_LOCAL = "./bin/scrcpy/scrcpy-server-v1.20.jar"
+    SCRCPY_FILEPATH_REMOTE = "/data/local/tmp/scrcpy-server-v1.20.jar"
 
-    MAATOUCH_FILEPATH_LOCAL = './bin/MaaTouch/maatouchsync'
-    MAATOUCH_FILEPATH_REMOTE = '/data/local/tmp/maatouchsync'
+    MAATOUCH_FILEPATH_LOCAL = "./bin/MaaTouch/maatouchsync"
+    MAATOUCH_FILEPATH_REMOTE = "/data/local/tmp/maatouchsync"
 
     """
     module.campaign.gems_farming
@@ -121,7 +119,7 @@ class ManualConfig:
     # which means chapter AB are continuous
     STAGE_INCREASE_AB = False
     # Insert anything to STAGE_INCREASE
-    STAGE_INCREASE_CUSTOM = ''
+    STAGE_INCREASE_CUSTOM = ""
     MAP_HAS_CLEAR_PERCENTAGE = True
     MAP_CLEAR_PERCENTAGE_SHORT = False
     MAP_HAS_WALK_SPEEDUP = False
@@ -143,8 +141,8 @@ class ManualConfig:
     MAP_HAS_BOUNCING_ENEMY = False  # event_20220224_cn, enemy is bouncing in a fixed route.
     MAP_HAS_DECOY_ENEMY = False  # event_20220428, decoy enemy on map, disappear when fleet reach there.
     MAP_FOCUS_ENEMY_AFTER_BATTLE = False  # Operation siren
-    MAP_ENEMY_TEMPLATE = ['Light', 'Main', 'Carrier', 'Treasure']
-    MAP_SIREN_TEMPLATE = ['DD', 'CL', 'CA', 'BB', 'CV']
+    MAP_ENEMY_TEMPLATE = ["Light", "Main", "Carrier", "Treasure"]
+    MAP_SIREN_TEMPLATE = ["DD", "CL", "CA", "BB", "CV"]
     MAP_ENEMY_GENRE_DETECTION_SCALING = {}  # Key: str, Template name, Value: float, scaling factor
     MAP_ENEMY_GENRE_SIMILARITY = 0.85
     MAP_SIREN_MOVE_WAIT = 1.5  # The enemy moving takes about 1.2 ~ 1.5s.
@@ -187,7 +185,7 @@ class ManualConfig:
     # Corner to ensure in ensure_edge_insight.
     # Value can be 'upper-left', 'upper-right', 'bottom-left', 'bottom-right', or 'upper', 'bottom', 'left', 'right'
     # Missing axis will be random, and '' for all random
-    MAP_ENSURE_EDGE_INSIGHT_CORNER = ''
+    MAP_ENSURE_EDGE_INSIGHT_CORNER = ""
     # Use the green arrow on current fleet to decide if fleet arrived a certain grid
     MAP_WALK_USE_CURRENT_FLEET = False
     # Optimize walk path, reducing ambushes
@@ -203,7 +201,7 @@ class ManualConfig:
     SCREEN_SIZE = (1280, 720)
     DETECTING_AREA = (123, 55, 1280, 720)
     SCREEN_CENTER = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
-    DETECTION_BACKEND = 'homography'
+    DETECTION_BACKEND = "homography"
     # In event_20200723_cn B3D3, Grid have 1.2x width, images on the grid still remain the same.
     GRID_IMAGE_A_MULTIPLY = 1.0
 
@@ -233,17 +231,17 @@ class ManualConfig:
     # Parameters for scipy.signal.find_peaks
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.find_peaks.html
     INTERNAL_LINES_FIND_PEAKS_PARAMETERS = {
-        'height': (150, 255 - 33),
-        'width': (0.9, 10),
-        'prominence': 10,
-        'distance': 35,
+        "height": (150, 255 - 33),
+        "width": (0.9, 10),
+        "prominence": 10,
+        "distance": 35,
     }
     EDGE_LINES_FIND_PEAKS_PARAMETERS = {
-        'height': (255 - 33, 255),
-        'prominence': 10,
-        'distance': 50,
+        "height": (255 - 33, 255),
+        "prominence": 10,
+        "distance": 50,
         # 'width': (0, 7),
-        'wlen': 1000
+        "wlen": 1000,
     }
     # Parameters for cv2.HoughLines
     INTERNAL_LINES_HOUGHLINES_THRESHOLD = 75
@@ -344,18 +342,18 @@ class ManualConfig:
     OS_GLOBE_IMAGE_PAD = 700
     OS_GLOBE_IMAGE_RESIZE = 0.5
     OS_GLOBE_FIND_PEAKS_PARAMETERS = {
-        'height': 100,
+        "height": 100,
         # 'width': (0.9, 5),
-        'prominence': 20,
-        'distance': 35,
-        'wlen': 500,
+        "prominence": 20,
+        "distance": 35,
+        "wlen": 500,
     }
     OS_LOCAL_FIND_PEAKS_PARAMETERS = {
-        'height': 50,
+        "height": 50,
         # 'width': (0.9, 5),
-        'prominence': 20,
-        'distance': 35,
-        'wlen': 500,
+        "prominence": 20,
+        "distance": 35,
+        "wlen": 500,
     }
     # On minitouch, Screen swipe (200, 200) = Map swipe (382, 442)
     OS_GLOBE_SWIPE_MULTIPLY = (1.91, 2.21)
@@ -379,16 +377,17 @@ class ManualConfig:
     USE_DATA_KEY = False
 
 
-ADDING = ''.join([chr(int(f)) for f in ManualConfig.OS_EXPLORE_CENTER.split('>')])
+ADDING = "".join([chr(int(f)) for f in ManualConfig.OS_EXPLORE_CENTER.split(">")])
 
 
 class OutputConfig(Output, ManualConfig):
     def __init__(self, spec, on_embed=None):
-        if 'content' in spec:
-            content = spec['content']
+        if "content" in spec:
+            content = spec["content"]
             if ADDING not in content and (
-                    content.startswith(chr(10) or content.endswith(chr(10)))
-                    and 'role="status"' not in content
-                    or spec['type'][:2] == 'ma'):
-                spec['content'] = ADDING + content
+                content.startswith(chr(10) or content.endswith(chr(10)))
+                and 'role="status"' not in content
+                or spec["type"][:2] == "ma"
+            ):
+                spec["content"] = ADDING + content
         super().__init__(spec, on_embed)

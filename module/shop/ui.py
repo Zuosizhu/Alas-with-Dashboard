@@ -24,13 +24,10 @@ class ShopUI(UI):
             merit.
         """
         shop_bottom_navbar = ButtonGrid(
-            origin=(399, 619), delta=(182, 0),
-            button_shape=(56, 42), grid_shape=(5, 1),
-            name='SHOP_BOTTOM_NAVBAR')
+            origin=(399, 619), delta=(182, 0), button_shape=(56, 42), grid_shape=(5, 1), name="SHOP_BOTTOM_NAVBAR"
+        )
 
-        return Navbar(grids=shop_bottom_navbar,
-                      active_color=(33, 195, 239),
-                      inactive_color=(181, 178, 181))
+        return Navbar(grids=shop_bottom_navbar, active_color=(33, 195, 239), inactive_color=(181, 178, 181))
 
     def shop_bottom_navbar_ensure(self, left=None, right=None):
         """
@@ -58,16 +55,17 @@ class ShopUI(UI):
             1: Monthly shops
             2: General supply shops
         """
-        grids = ButtonGrid(
-            origin=(340, 93), delta=(189, 0),
-            button_shape=(188, 54), grid_shape=(2, 1),
-            name='SHOP_TAB')
+        grids = ButtonGrid(origin=(340, 93), delta=(189, 0), button_shape=(188, 54), grid_shape=(2, 1), name="SHOP_TAB")
         return Navbar(
             grids=grids,
             # Yellow bottom dash
-            active_color=(255, 219, 83), active_threshold=221, active_count=100,
+            active_color=(255, 219, 83),
+            active_threshold=221,
+            active_count=100,
             # Black bottom dash
-            inactive_color=(181, 178, 181), inactive_threshold=221, inactive_count=100,
+            inactive_color=(181, 178, 181),
+            inactive_threshold=221,
+            inactive_count=100,
         )
 
     @cached_property
@@ -86,16 +84,17 @@ class ShopUI(UI):
             4: Meta shop
             5: Gift shop
         """
-        grids = ButtonGrid(
-            origin=(339, 217), delta=(0, 65),
-            button_shape=(15, 64), grid_shape=(1, 5),
-            name='SHOP_NAV')
+        grids = ButtonGrid(origin=(339, 217), delta=(0, 65), button_shape=(15, 64), grid_shape=(1, 5), name="SHOP_NAV")
         return Navbar(
             grids=grids,
             # White vertical line to the left of shop names
-            active_color=(255, 255, 255), active_threshold=221, active_count=100,
+            active_color=(255, 255, 255),
+            active_threshold=221,
+            active_count=100,
             # Just whatever to make it match
-            inactive_color=(49, 56, 82), inactive_threshold=0, inactive_count=100,
+            inactive_color=(49, 56, 82),
+            inactive_threshold=0,
+            inactive_count=100,
         )
 
     def shop_refresh(self, skip_first_screenshot=True):
@@ -117,14 +116,20 @@ class ShopUI(UI):
             if self.appear_then_click(SHOP_REFRESH, interval=3):
                 exit_timer.reset()
                 continue
-            if self.appear(SHOP_BUY_CONFIRM_MISTAKE, interval=3, offset=(200, 200)) \
-                    and self.appear(POPUP_CONFIRM, offset=(3, 30)):
-                self.ui_click(SHOP_CLICK_SAFE_AREA, appear_button=POPUP_CONFIRM, check_button=BACK_ARROW,
-                              offset=(20, 30), skip_first_screenshot=True)
+            if self.appear(SHOP_BUY_CONFIRM_MISTAKE, interval=3, offset=(200, 200)) and self.appear(
+                POPUP_CONFIRM, offset=(3, 30)
+            ):
+                self.ui_click(
+                    SHOP_CLICK_SAFE_AREA,
+                    appear_button=POPUP_CONFIRM,
+                    check_button=BACK_ARROW,
+                    offset=(20, 30),
+                    skip_first_screenshot=True,
+                )
                 exit_timer.reset()
                 refreshed = False
                 break
-            if self.handle_popup_confirm('SHOP_REFRESH_CONFIRM'):
+            if self.handle_popup_confirm("SHOP_REFRESH_CONFIRM"):
                 exit_timer.reset()
                 refreshed = True
                 continue
@@ -139,7 +144,7 @@ class ShopUI(UI):
         self.handle_info_bar()
         return refreshed
 
-    @Config.when(SERVER='tw')
+    @Config.when(SERVER="tw")
     def shop_swipe(self, skip_first_screenshot=True):
         """
         Swipes bottom navbar one way, right only
@@ -161,8 +166,7 @@ class ShopUI(UI):
                 self.device.screenshot()
 
             # Swipe to the left, medal shop on the leftmost and merit shop on the right most
-            if self.appear(SHOP_MEDAL_SWIPE_END, offset=(15, 5)) or \
-                    self.appear(SHOP_MERIT_SWIPE_END, offset=(15, 5)):
+            if self.appear(SHOP_MEDAL_SWIPE_END, offset=(15, 5)) or self.appear(SHOP_MERIT_SWIPE_END, offset=(15, 5)):
                 return True
 
             if swipe_interval.reached():
@@ -195,12 +199,13 @@ class ShopUI(UI):
 
             # End
             if trial > 5:
-                logger.warning('shop_swipe trail exhausted, assume end reached')
+                logger.warning("shop_swipe trail exhausted, assume end reached")
                 return False
 
             # Swipe to the left, medal shop on the leftmost and merit shop on the right most
-            if self.appear(SHOP_GIFT_SWIPE_END, offset=(15, 5)) or \
-                    self.appear(SHOP_PROTOTYPE_SWIPE_END, offset=(15, 5)):
+            if self.appear(SHOP_GIFT_SWIPE_END, offset=(15, 5)) or self.appear(
+                SHOP_PROTOTYPE_SWIPE_END, offset=(15, 5)
+            ):
                 return True
 
             if swipe_interval.reached():
@@ -219,7 +224,7 @@ class ShopUI(UI):
             out: page_munitions
         """
         if self.ui_get_current_page() == page_munitions:
-            logger.info(f'Already at {page_munitions}')
+            logger.info(f"Already at {page_munitions}")
             return
 
         self.ui_ensure(page_academy)

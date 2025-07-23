@@ -7,30 +7,30 @@ def upload_redirect(value):
     """
     if isinstance(value, list):
         if not value[0] and not value[1]:
-            return 'do_not'
+            return "do_not"
         elif value[0] and not value[1]:
-            return 'save'
+            return "save"
         elif not value[0] and value[1]:
-            return 'upload'
+            return "upload"
         else:
-            return 'save_and_upload'
+            return "save_and_upload"
     else:
         if not value:
-            return 'do_not'
+            return "do_not"
         else:
-            return 'save'
+            return "save"
 
 
 def api_redirect(value):
     """
     redirect attr about api.
     """
-    if value == 'auto':
-        return 'default'
-    elif to_server(value) == 'cn':
-        return 'cn_gz_reverse_proxy'
+    if value == "auto":
+        return "default"
+    elif to_server(value) == "cn":
+        return "cn_gz_reverse_proxy"
     else:
-        return 'default'
+        return "default"
 
 
 def dossier_redirect(value):
@@ -38,9 +38,9 @@ def dossier_redirect(value):
     OpsiDossierBeacon -> AttackMode
     """
     if value:
-        return 'current_dossier'
+        return "current_dossier"
     else:
-        return 'current'
+        return "current"
 
 
 def enhance_favourite_redirect(value):
@@ -48,9 +48,9 @@ def enhance_favourite_redirect(value):
     EnhanceFavourite -> ShipToEnhance
     """
     if value:
-        return 'all'
+        return "all"
     else:
-        return 'favourite'
+        return "favourite"
 
 
 def enhance_check_redirect(value):
@@ -70,15 +70,15 @@ def emotion_mode_redirect(value):
     calculate, ignore = value
     if calculate:
         if ignore:
-            return 'calculate_ignore'
+            return "calculate_ignore"
         else:
-            return 'calculate'
+            return "calculate"
     else:
         if ignore:
-            return 'ignore'
+            return "ignore"
         else:
             # Invalid, fallback to calculate
-            return 'calculate'
+            return "calculate"
 
 
 def change_ship_redirect(value):
@@ -87,19 +87,19 @@ def change_ship_redirect(value):
     """
     ship, equip = value
     if not ship:
-        return 'disabled'
+        return "disabled"
     elif equip:
-        return 'ship_equip'
+        return "ship_equip"
     else:
-        return 'ship'
+        return "ship"
 
 
 def api_redirect2(value):
     """
     remove shanghai proxy, use guangzhou
     """
-    if value == 'cn_sh_reverse_proxy':
-        return 'cn_gz_reverse_proxy'
+    if value == "cn_sh_reverse_proxy":
+        return "cn_gz_reverse_proxy"
     else:
         return value
 
@@ -108,12 +108,12 @@ def coalition_to_frostfall(value):
     """
     Redirect Little Academy stage names to Frostfall
     """
-    if value == 'easy':
-        return 'tc1'
-    elif value == 'normal':
-        return 'tc2'
-    elif value == 'hard':
-        return 'tc3'
+    if value == "easy":
+        return "tc1"
+    elif value == "normal":
+        return "tc2"
+    elif value == "hard":
+        return "tc3"
     else:
         return value
 
@@ -122,11 +122,11 @@ def coalition_to_little_academy(value):
     """
     Redirect Little Academy stage names to Frostfall
     """
-    if value == 'tc1':
-        return 'easy'
-    elif value == 'tc2':
-        return 'normal'
-    elif value == 'tc3':
-        return 'hard'
+    if value == "tc1":
+        return "easy"
+    elif value == "tc2":
+        return "normal"
+    elif value == "tc3":
+        return "hard"
     else:
         return value

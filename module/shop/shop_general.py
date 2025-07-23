@@ -7,13 +7,13 @@ from module.shop.clerk import ShopClerk
 from module.shop.shop_status import ShopStatus
 from module.shop.ui import ShopUI
 
-OCR_SHOP_GOLD_COINS = Digit(SHOP_GOLD_COINS, letter=(239, 239, 239), name='OCR_SHOP_GOLD_COINS')
-OCR_SHOP_GEMS = Digit(SHOP_GEMS, letter=(255, 243, 82), name='OCR_SHOP_GEMS')
+OCR_SHOP_GOLD_COINS = Digit(SHOP_GOLD_COINS, letter=(239, 239, 239), name="OCR_SHOP_GOLD_COINS")
+OCR_SHOP_GEMS = Digit(SHOP_GEMS, letter=(255, 243, 82), name="OCR_SHOP_GEMS")
 
 
 class GeneralShop(ShopClerk, ShopUI, ShopStatus):
     gems = 0
-    shop_template_folder = './assets/shop/general'
+    shop_template_folder = "./assets/shop/general"
 
     @cached_property
     def shop_filter(self):
@@ -32,7 +32,7 @@ class GeneralShop(ShopClerk, ShopUI, ShopStatus):
         shop_grid = self.shop_grid
         shop_general_items = ShopItemGrid(shop_grid, templates={}, amount_area=(60, 74, 96, 95))
         shop_general_items.load_template_folder(self.shop_template_folder)
-        shop_general_items.load_cost_template_folder('./assets/shop/cost')
+        shop_general_items.load_cost_template_folder("./assets/shop/cost")
         return shop_general_items
 
     def shop_items(self):
@@ -62,10 +62,10 @@ class GeneralShop(ShopClerk, ShopUI, ShopStatus):
         while 1:
             self._currency = self.status_get_gold_coins()
             self.gems = self.status_get_gems()
-            logger.info(f'Gold coins: {self._currency}, Gems: {self.gems}')
+            logger.info(f"Gold coins: {self._currency}, Gems: {self.gems}")
 
             if self.currency_rechecked >= 3:
-                logger.warning('Failed to handle fix currency bug in general shop, skip')
+                logger.warning("Failed to handle fix currency bug in general shop, skip")
                 break
 
             # if self._currency == 0 and self.gems == 0:
@@ -94,13 +94,13 @@ class GeneralShop(ShopClerk, ShopUI, ShopStatus):
         Returns:
             bool: whether item can be bought
         """
-        if item.cost == 'Coins':
+        if item.cost == "Coins":
             if item.price > self._currency:
                 return False
             return True
 
         if self.config.GeneralShop_UseGems:
-            if item.cost == 'Gems':
+            if item.cost == "Gems":
                 if item.price > self.gems:
                     return False
                 return True
@@ -118,14 +118,14 @@ class GeneralShop(ShopClerk, ShopUI, ShopStatus):
             bool: whether item is custom
         """
         if self.config.GeneralShop_ConsumeCoins and self._currency >= 550000:
-            if item.cost == 'Coins':
+            if item.cost == "Coins":
                 return True
 
         if self.config.GeneralShop_BuySkinBox:
-            if (not item.is_known_item()) and item.amount == 1 and item.cost == 'Coins' and item.price == 7000:
+            if (not item.is_known_item()) and item.amount == 1 and item.cost == "Coins" and item.price == 7000:
                 # check a custom item that cannot be template matched as color
                 # and design constantly changes i.e. equip skin box
-                logger.info(f'Item {item} is considered to be an equip skin box')
+                logger.info(f"Item {item} is considered to be an equip skin box")
                 if self._currency >= item.price:
                     return True
 
@@ -141,7 +141,7 @@ class GeneralShop(ShopClerk, ShopUI, ShopStatus):
 
         # When called, expected to be in
         # corrected General Shop interface
-        logger.hr('General Shop', level=1)
+        logger.hr("General Shop", level=1)
 
         # Execute buy operations
         # Refresh if enabled and available

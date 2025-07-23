@@ -1,6 +1,5 @@
 from module.base.timer import Timer
-from module.handler.enemy_searching import \
-    EnemySearchingHandler as EnemySearchingHandler_
+from module.handler.enemy_searching import EnemySearchingHandler as EnemySearchingHandler_
 from module.logger import logger
 from module.os.assets import MAP_GOTO_GLOBE_FOG
 from module.os_handler.assets import AUTO_SEARCH_REWARD, IN_MAP, ORDER_ENTER
@@ -29,7 +28,7 @@ class EnemySearchingHandler(EnemySearchingHandler_):
 
             # End
             if timeout.reached():
-                logger.warning('wait_os_map_buttons timeout, assume waited')
+                logger.warning("wait_os_map_buttons timeout, assume waited")
                 break
             if self.appear(ORDER_ENTER, offset=(20, 20)):
                 break

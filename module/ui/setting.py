@@ -10,7 +10,7 @@ from module.logger import logger
 
 
 class Setting:
-    def __init__(self, name='Setting', main: ModuleBase = None):
+    def __init__(self, name="Setting", main: ModuleBase = None):
         self.name = name
         # Alas module object
         self.main: ModuleBase = main
@@ -24,13 +24,13 @@ class Setting:
         #     ('sort', 'level'): Button(),
         #     ('sort', 'total'): Button(),
         # }
-        self.settings: t.Dict[(str, str), Button] = {}
+        self.settings: dict[(str, str), Button] = {}
         # setting: option_name
         # {
         #     'sort': 'rarity',
         #     'index': 'all',
         # }
-        self.settings_default: t.Dict[str, str] = {}
+        self.settings_default: dict[str, str] = {}
 
     def add_setting(self, setting, option_buttons, option_names, option_default):
         """
@@ -50,15 +50,17 @@ class Setting:
             self.settings[(setting, option_name)] = option
 
         if option_default not in option_names:
-            raise ScriptError(f'Define option_default="{option_default}", '
-                              f'but default is not in option_names={option_names}')
+            raise ScriptError(
+                f'Define option_default="{option_default}", ' f"but default is not in option_names={option_names}"
+            )
         self.settings_default[setting] = option_default
 
     def is_option_active(self, option: Button) -> bool:
-        return self.main.image_color_count(option, color=(181, 142, 90), threshold=235, count=250) \
-               or self.main.image_color_count(option, color=(74, 117, 189), threshold=235, count=250)
+        return self.main.image_color_count(
+            option, color=(181, 142, 90), threshold=235, count=250
+        ) or self.main.image_color_count(option, color=(74, 117, 189), threshold=235, count=250)
 
-    def _product_setting_status(self, **kwargs) -> t.Dict[Button, bool]:
+    def _product_setting_status(self, **kwargs) -> dict[Button, bool]:
         """
         Args:
             **kwargs: Key: setting, value: required option or a list of them
@@ -74,7 +76,7 @@ class Setting:
 
         # option_button: Whether should be active
         # {BUTTON_1: True, BUTTON_2: False, ...}
-        status: t.Dict[Button, bool] = {}
+        status: dict[Button, bool] = {}
         for key, option_button in self.settings.items():
             setting, option_name = key
             required = required_options[setting]
@@ -93,11 +95,11 @@ class Setting:
         for key, option_button in self.settings.items():
             setting, option_name = key
             if self.is_option_active(option_button):
-                active.append(f'{setting}/{option_name}')
+                active.append(f"{setting}/{option_name}")
 
-        logger.attr(self.name, ', '.join(active))
+        logger.attr(self.name, ", ".join(active))
 
-    def get_buttons_to_click(self, status: t.Dict[Button, bool]) -> t.List[Button]:
+    def get_buttons_to_click(self, status: dict[Button, bool]) -> list[Button]:
         """
         Args:
             status: Key: option_button, value: whether should be active
@@ -127,7 +129,7 @@ class Setting:
         """
         status = self._product_setting_status(**kwargs)
 
-        logger.info(f'Setting options {self.name}, {dict_to_kv(kwargs)}')
+        logger.info(f"Setting options {self.name}, {dict_to_kv(kwargs)}")
         skip_first_screenshot = True
         retry = Timer(1, count=2)
         timeout = Timer(10, count=20).start()
@@ -138,7 +140,7 @@ class Setting:
                 self.main.device.screenshot()
 
             if timeout.reached():
-                logger.warning(f'Set {self.name} options timeout, assuming current options are correct.')
+                logger.warning(f"Set {self.name} options timeout, assuming current options are correct.")
                 return False
 
             self.show_active_buttons()

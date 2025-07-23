@@ -33,8 +33,12 @@ class ExerciseEquipment(EquipmentChange):
 
     def equipment_take_on(self):
         self._active_edit()
-        self.fleet_equipment_take_on_preset(preset_record=self.config.EXERCISE_FLEET_EQUIPMENT, enter=EQUIP_ENTER,
-                                            long_click=True, out=BATTLE_PREPARATION)
+        self.fleet_equipment_take_on_preset(
+            preset_record=self.config.EXERCISE_FLEET_EQUIPMENT,
+            enter=EQUIP_ENTER,
+            long_click=True,
+            out=BATTLE_PREPARATION,
+        )
         self._inactive_edit()
 
     def equipment_take_off(self):

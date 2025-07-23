@@ -3,6 +3,7 @@ import re
 import threading
 import time
 from datetime import datetime, timedelta
+from typing import Optional, Dict, Any
 
 import inflection
 from cached_property import cached_property
@@ -16,19 +17,19 @@ from module.notify import handle_notify
 
 
 class AzurLaneAutoScript:
-    stop_event: threading.Event = None
+    stop_event: Optional[threading.Event] = None
 
-    def __init__(self, config_name='alas'):
+    def __init__(self, config_name: str = 'alas') -> None:
         logger.hr('Start', level=0)
-        self.config_name = config_name
+        self.config_name: str = config_name
         # Skip first restart
-        self.is_first_task = True
+        self.is_first_task: bool = True
         # Failure count of tasks
         # Key: str, task name, value: int, failure count
-        self.failure_record = {}
+        self.failure_record: Dict[str, int] = {}
 
     @cached_property
-    def config(self):
+    def config(self) -> AzurLaneConfig:
         try:
             config = AzurLaneConfig(config_name=self.config_name)
             return config
@@ -40,7 +41,7 @@ class AzurLaneAutoScript:
             exit(1)
 
     @cached_property
-    def device(self):
+    def device(self) -> 'Device':
         try:
             from module.device.device import Device
             device = Device(config=self.config)
@@ -53,7 +54,7 @@ class AzurLaneAutoScript:
             exit(1)
 
     @cached_property
-    def checker(self):
+    def checker(self) -> 'ServerChecker':
         try:
             from module.server_checker import ServerChecker
             checker = ServerChecker(server=self.config.Emulator_ServerName)
@@ -62,7 +63,7 @@ class AzurLaneAutoScript:
             logger.exception(e)
             exit(1)
 
-    def run(self, command, skip_first_screenshot=False):
+    def run(self, command: str, skip_first_screenshot: bool = False) -> bool:
         try:
             if not skip_first_screenshot:
                 self.device.screenshot()
@@ -181,19 +182,19 @@ class AzurLaneAutoScript:
             LoginHandler(self.config, device=self.device).app_start()
             UI(self.config, device=self.device).ui_goto_main()
 
-    def research(self):
+    def research(self) -> None:
         from module.research.research import RewardResearch
         RewardResearch(config=self.config, device=self.device).run()
 
-    def commission(self):
+    def commission(self) -> None:
         from module.commission.commission import RewardCommission
         RewardCommission(config=self.config, device=self.device).run()
 
-    def tactical(self):
+    def tactical(self) -> None:
         from module.tactical.tactical_class import RewardTacticalClass
         RewardTacticalClass(config=self.config, device=self.device).run()
 
-    def dorm(self):
+    def dorm(self) -> None:
         from module.dorm.dorm import RewardDorm
         RewardDorm(config=self.config, device=self.device).run()
 

@@ -57,7 +57,7 @@ class Page:
         self.check_button = check_button
         self.links = {}
         (filename, line_number, function_name, text) = traceback.extract_stack()[-2]
-        self.name = text[:text.find('=')].strip()
+        self.name = text[: text.find("=")].strip()
         self.parent = None
         Page.all_pages[self.name] = self
 

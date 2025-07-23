@@ -25,18 +25,18 @@ class Filter:
         Load a filter string, filters are connected with ">"
 
         There are also tons of unicode characters similar to ">"
-        > \u003E correct
-        ＞ \uFF1E
-        ﹥ \uFE65
+        > \u003e correct
+        ＞ \uff1e
+        ﹥ \ufe65
         › \u203a
         ˃ \u02c3
         ᐳ \u1433
-        ❯ \u276F
+        ❯ \u276f
         """
         string = str(string)
-        string = re.sub(r'[ \t\r\n]', '', string)
-        string = re.sub(r'[＞﹥›˃ᐳ❯]', '>', string)
-        self.filter_raw = string.split('>')
+        string = re.sub(r"[ \t\r\n]", "", string)
+        string = re.sub(r"[＞﹥›˃ᐳ❯]", ">", string)
+        self.filter_raw = string.split(">")
         self.filter = [self.parse_filter(f) for f in self.filter_raw]
 
     def is_preset(self, filter):
@@ -88,7 +88,7 @@ class Filter:
         Returns:
             list: A list of objects and preset strings, such as [object, object, object, 'reset']
         """
-        return self.apply(objs, func=lambda x: all(func(x)for func in funcs))
+        return self.apply(objs, func=lambda x: all(func(x) for func in funcs))
 
     def apply_filter_to_obj(self, obj, filter):
         """
@@ -116,7 +116,7 @@ class Filter:
         Returns:
             list[strNone]:
         """
-        string = string.replace(' ', '').lower()
+        string = string.replace(" ", "").lower()
         result = re.search(self.regex, string)
 
         if self.is_preset(string):
@@ -128,4 +128,4 @@ class Filter:
             logger.warning(f'Invalid filter: "{string}". This selector does not match the regex, nor a preset.')
             # Invalid filter will be ignored.
             # Return strange things and make it impossible to match
-            return ['1nVa1d'] + [None] * (len(self.attr) - 1)
+            return ["1nVa1d"] + [None] * (len(self.attr) - 1)

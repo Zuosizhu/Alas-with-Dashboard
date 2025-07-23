@@ -23,7 +23,7 @@ class Template(Resource):
 
         self.resource_add(self.file)
 
-    cached = ['file', 'name', 'is_gif']
+    cached = ["file", "name", "is_gif"]
 
     @cached_property
     def file(self):
@@ -35,7 +35,7 @@ class Template(Resource):
 
     @cached_property
     def is_gif(self):
-        return os.path.splitext(self.file)[1] == '.gif'
+        return os.path.splitext(self.file)[1] == ".gif"
 
     @property
     def image(self):

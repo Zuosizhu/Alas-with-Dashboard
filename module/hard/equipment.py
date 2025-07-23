@@ -12,8 +12,9 @@ class HardEquipment(EquipmentChange):
             return False
 
         enter = EQUIP_ENTER_1 if self.config.Hard_HardFleet == 1 else EQUIP_ENTER_2
-        self.fleet_equipment_take_on_preset(preset_record=self.config.FLEET_HARD_EQUIPMENT, enter=enter,
-                                            long_click=True, out=FLEET_PREPARATION)
+        self.fleet_equipment_take_on_preset(
+            preset_record=self.config.FLEET_HARD_EQUIPMENT, enter=enter, long_click=True, out=FLEET_PREPARATION
+        )
         return True
 
     def equipment_take_off(self):

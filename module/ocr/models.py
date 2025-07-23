@@ -1,12 +1,12 @@
 """
 OCR models for different languages and use cases.
-Provides cached OCR instances using EasyOCR backend.
+Provides cached OCR instances using flexible backend system.
 """
 from module.base.decorator import cached_property
 
 
 class OcrModel:
-    """Factory for OCR models using EasyOCR backend."""
+    """Factory for OCR models using flexible backend system."""
     
     @cached_property
     def azur_lane(self):
@@ -46,4 +46,5 @@ class OcrModel:
         return AlOcr(name='tw')
 
 
+# Create a singleton instance
 OCR_MODEL = OcrModel()

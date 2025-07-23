@@ -6,7 +6,7 @@ from module.logger import logger
 
 
 class ConfigWatcher:
-    config_name = 'alas'
+    config_name = "alas"
     start_mtime = DEFAULT_TIME
 
     def start_watching(self) -> None:

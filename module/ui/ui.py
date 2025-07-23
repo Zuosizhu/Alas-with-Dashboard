@@ -4,19 +4,26 @@ from module.base.timer import Timer
 from module.coalition.assets import NEONCITY_FLEET_PREPARATION, NEONCITY_PREPARATION_EXIT
 from module.combat.assets import GET_ITEMS_1, GET_ITEMS_2, GET_SHIP
 from module.event_hospital.assets import HOSIPITAL_CLUE_CHECK, HOSPITAL_BATTLE_EXIT
-from module.exception import (GameNotRunningError, GamePageUnknownError,
-                              RequestHumanTakeover)
+from module.exception import GameNotRunningError, GamePageUnknownError, RequestHumanTakeover
 from module.exercise.assets import EXERCISE_PREPARATION
-from module.handler.assets import (AUTO_SEARCH_MENU_EXIT, BATTLE_PASS_NEW_SEASON, BATTLE_PASS_NOTICE, GAME_TIPS,
-                                   LOGIN_ANNOUNCE, LOGIN_ANNOUNCE_2, LOGIN_CHECK, LOGIN_RETURN_SIGN,
-                                   MAINTENANCE_ANNOUNCE, MONTHLY_PASS_NOTICE)
+from module.handler.assets import (
+    AUTO_SEARCH_MENU_EXIT,
+    BATTLE_PASS_NEW_SEASON,
+    BATTLE_PASS_NOTICE,
+    GAME_TIPS,
+    LOGIN_ANNOUNCE,
+    LOGIN_ANNOUNCE_2,
+    LOGIN_CHECK,
+    LOGIN_RETURN_SIGN,
+    MAINTENANCE_ANNOUNCE,
+    MONTHLY_PASS_NOTICE,
+)
 from module.handler.info_handler import InfoHandler
 from module.logger import logger
-from module.map.assets import (FLEET_PREPARATION, MAP_PREPARATION,
-                               MAP_PREPARATION_CANCEL, WITHDRAW)
+from module.map.assets import FLEET_PREPARATION, MAP_PREPARATION, MAP_PREPARATION_CANCEL, WITHDRAW
 from module.meowfficer.assets import MEOWFFICER_BUY
 from module.ocr.ocr import Ocr
-from module.os_handler.assets import (AUTO_SEARCH_REWARD, EXCHANGE_CHECK, RESET_FLEET_PREPARATION, RESET_TICKET_POPUP)
+from module.os_handler.assets import AUTO_SEARCH_REWARD, EXCHANGE_CHECK, RESET_FLEET_PREPARATION, RESET_TICKET_POPUP
 from module.raid.assets import *
 from module.ui.assets import *
 from module.ui.page import Page, page_campaign, page_event, page_main, page_main_white, page_sp
@@ -73,15 +80,15 @@ class UI(InfoHandler):
             return False
 
     def ui_click(
-            self,
-            click_button,
-            check_button,
-            appear_button=None,
-            additional=None,
-            confirm_wait=1,
-            offset=(30, 30),
-            retry_wait=10,
-            skip_first_screenshot=False,
+        self,
+        click_button,
+        check_button,
+        appear_button=None,
+        additional=None,
+        confirm_wait=1,
+        offset=(30, 30),
+        retry_wait=10,
+        skip_first_screenshot=False,
     ):
         """
         Args:
@@ -115,7 +122,7 @@ class UI(InfoHandler):
 
             if click_timer.reached():
                 if (isinstance(appear_button, Button) and self.appear(appear_button, offset=offset)) or (
-                        callable(appear_button) and appear_button()
+                    callable(appear_button) and appear_button()
                 ):
                     self.device.click(click_button)
                     click_timer.reset()
@@ -138,7 +145,7 @@ class UI(InfoHandler):
             return self.appear(check_button, offset=offset)
         elif callable(check_button):
             return check_button()
-        elif isinstance(check_button, (list, tuple)):
+        elif isinstance(check_button, list | tuple):
             for button in check_button:
                 if self.appear(button, offset=offset):
                     return True
@@ -245,7 +252,7 @@ class UI(InfoHandler):
 
             # Destination page
             if self.ui_page_appear(page=destination, offset=offset):
-                logger.info(f'Page arrive: {destination}')
+                logger.info(f"Page arrive: {destination}")
                 break
 
             # Other pages
@@ -254,7 +261,7 @@ class UI(InfoHandler):
                 if page.parent is None or page.check_button is None:
                     continue
                 if self.appear(page.check_button, offset=offset, interval=5):
-                    logger.info(f'Page switch: {page} -> {page.parent}')
+                    logger.info(f"Page switch: {page} -> {page.parent}")
                     button = page.links[page.parent]
                     self.device.click(button)
                     self.ui_button_interval_reset(button)
@@ -282,10 +289,10 @@ class UI(InfoHandler):
         logger.hr("UI ensure")
         self.ui_get_current_page(skip_first_screenshot=skip_first_screenshot)
         if self.ui_current == destination:
-            logger.info("Already at %s" % destination)
+            logger.info(f"Already at {destination}")
             return False
         else:
-            logger.info("Goto %s" % destination)
+            logger.info(f"Goto {destination}")
             self.ui_goto(destination, skip_first_screenshot=True)
             return True
 
@@ -302,14 +309,14 @@ class UI(InfoHandler):
         return self.ui_ensure(destination=page_sp)
 
     def ui_ensure_index(
-            self,
-            index,
-            letter,
-            next_button,
-            prev_button,
-            skip_first_screenshot=False,
-            fast=True,
-            interval=(0.2, 0.3),
+        self,
+        index,
+        letter,
+        next_button,
+        prev_button,
+        skip_first_screenshot=False,
+        fast=True,
+        interval=(0.2, 0.3),
     ):
         """
         Args:
@@ -382,7 +389,7 @@ class UI(InfoHandler):
         if self.appear_then_click(LOGIN_RETURN_SIGN, offset=(30, 30), interval=3):
             return True
         if self.appear(EVENT_LIST_CHECK, offset=(30, 30), interval=5):
-            logger.info(f'UI additional: {EVENT_LIST_CHECK} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {EVENT_LIST_CHECK} -> {GOTO_MAIN}")
             if self.appear_then_click(GOTO_MAIN, offset=(30, 30)):
                 return True
         # Monthly pass is about to expire
@@ -397,27 +404,27 @@ class UI(InfoHandler):
         #     return True
         # Popup that tells you new battle pass season is aired
         if self.appear(BATTLE_PASS_NEW_SEASON, offset=(30, 30), interval=3):
-            logger.info(f'UI additional: {BATTLE_PASS_NEW_SEASON} -> {BACK_ARROW}')
+            logger.info(f"UI additional: {BATTLE_PASS_NEW_SEASON} -> {BACK_ARROW}")
             self.device.click(BACK_ARROW)
             return True
         # Item expired offset=(37, 72), skin expired, offset=(24, 68)
-        if self.handle_popup_single(offset=(-6, 48, 54, 88), name='ITEM_EXPIRED'):
+        if self.handle_popup_single(offset=(-6, 48, 54, 88), name="ITEM_EXPIRED"):
             return True
         # Mail full popup
         if self.handle_popup_single_white():
             return True
         # Routed from confirm click
         if self.appear(SHIPYARD_CHECK, offset=(30, 30), interval=5):
-            logger.info(f'UI additional: {SHIPYARD_CHECK} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {SHIPYARD_CHECK} -> {GOTO_MAIN}")
             if self.appear_then_click(GOTO_MAIN, offset=(30, 30)):
                 return True
         if self.appear(META_CHECK, offset=(30, 30), interval=5):
-            logger.info(f'UI additional: {META_CHECK} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {META_CHECK} -> {GOTO_MAIN}")
             if self.appear_then_click(GOTO_MAIN, offset=(30, 30)):
                 return True
         # Mistaken click
         if self.appear(PLAYER_CHECK, offset=(30, 30), interval=3):
-            logger.info(f'UI additional: {PLAYER_CHECK} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {PLAYER_CHECK} -> {GOTO_MAIN}")
             if self.appear_then_click(GOTO_MAIN, offset=(30, 30)):
                 return True
             if self.appear_then_click(BACK_ARROW, offset=(30, 30)):
@@ -438,7 +445,8 @@ class UI(InfoHandler):
             logger.critical("Failed to confirm OpSi fleets, too many click on RESET_FLEET_PREPARATION")
             logger.critical("Possible reason #1: You haven't set any fleets in operation siren")
             logger.critical(
-                "Possible reason #2: Your fleets haven't satisfied the level restrictions in operation siren")
+                "Possible reason #2: Your fleets haven't satisfied the level restrictions in operation siren"
+            )
             raise RequestHumanTakeover
         if self.appear_then_click(RESET_TICKET_POPUP, offset=(30, 30), interval=3):
             return True
@@ -448,7 +456,7 @@ class UI(InfoHandler):
             self.interval_reset(RESET_TICKET_POPUP)
             return True
         if self.appear(EXCHANGE_CHECK, offset=(30, 30), interval=3):
-            logger.info(f'UI additional: {EXCHANGE_CHECK} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {EXCHANGE_CHECK} -> {GOTO_MAIN}")
             GOTO_MAIN.clear_offset()
             self.device.click(GOTO_MAIN)
             return True
@@ -486,7 +494,7 @@ class UI(InfoHandler):
         # Event commission in Vacation Lane.
         # 2025.05.29 game tips that infos skin feature when you enter dock
         if self.appear(GAME_TIPS, offset=(30, 30), interval=2):
-            logger.info(f'UI additional: {GAME_TIPS} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {GAME_TIPS} -> {GOTO_MAIN}")
             self.device.click(GOTO_MAIN)
             return True
 
@@ -504,15 +512,17 @@ class UI(InfoHandler):
             self.interval_reset(GET_SHIP)
             return True
         if self.appear(MEOWFFICER_BUY, offset=(30, 30), interval=3):
-            logger.info(f'UI additional: {MEOWFFICER_BUY} -> {BACK_ARROW}')
+            logger.info(f"UI additional: {MEOWFFICER_BUY} -> {BACK_ARROW}")
             self.device.click(BACK_ARROW)
             self.interval_reset(GET_SHIP)
             return True
 
         # Campaign preparation
-        if self.appear(MAP_PREPARATION, offset=(30, 30), interval=3) \
-                or self.appear(FLEET_PREPARATION, offset=(20, 50), interval=3) \
-                or self.appear(RAID_FLEET_PREPARATION, offset=(30, 30), interval=3):
+        if (
+            self.appear(MAP_PREPARATION, offset=(30, 30), interval=3)
+            or self.appear(FLEET_PREPARATION, offset=(20, 50), interval=3)
+            or self.appear(RAID_FLEET_PREPARATION, offset=(30, 30), interval=3)
+        ):
             self.device.click(MAP_PREPARATION_CANCEL)
             return True
         if self.appear_then_click(AUTO_SEARCH_MENU_EXIT, offset=(200, 30), interval=3):
@@ -546,7 +556,7 @@ class UI(InfoHandler):
 
         # Mistaken click
         if self.appear(EXERCISE_PREPARATION, interval=3):
-            logger.info(f'UI additional: {EXERCISE_PREPARATION} -> {GOTO_MAIN}')
+            logger.info(f"UI additional: {EXERCISE_PREPARATION} -> {GOTO_MAIN}")
             self.device.click(GOTO_MAIN)
             return True
 
@@ -560,7 +570,7 @@ class UI(InfoHandler):
         #     return True
         # Neon city (coalition_20250626)
         if self.appear(NEONCITY_FLEET_PREPARATION, offset=(20, 20), interval=3):
-            logger.info(f'{NEONCITY_FLEET_PREPARATION} -> {NEONCITY_PREPARATION_EXIT}')
+            logger.info(f"{NEONCITY_FLEET_PREPARATION} -> {NEONCITY_PREPARATION_EXIT}")
             self.device.click(NEONCITY_PREPARATION_EXIT)
             return True
 
@@ -569,7 +579,7 @@ class UI(InfoHandler):
             return True
         # Switch on ui_white, no offset just color match
         if self.appear(MAIN_GOTO_MEMORIES_WHITE, interval=3):
-            logger.info(f'UI additional: {MAIN_GOTO_MEMORIES_WHITE} -> {MAIN_TAB_SWITCH_WHITE}')
+            logger.info(f"UI additional: {MAIN_GOTO_MEMORIES_WHITE} -> {MAIN_TAB_SWITCH_WHITE}")
             self.device.click(MAIN_TAB_SWITCH_WHITE)
             return True
 
@@ -584,17 +594,17 @@ class UI(InfoHandler):
         if not timer.reached():
             return False
         if IDLE.match_luma(self.device.image, offset=(5, 5)):
-            logger.info(f'UI additional: {IDLE} -> {REWARD_GOTO_MAIN}')
+            logger.info(f"UI additional: {IDLE} -> {REWARD_GOTO_MAIN}")
             self.device.click(REWARD_GOTO_MAIN)
             timer.reset()
             return True
         if IDLE_2.match_luma(self.device.image, offset=(5, 5)):
-            logger.info(f'UI additional: {IDLE_2} -> {REWARD_GOTO_MAIN}')
+            logger.info(f"UI additional: {IDLE_2} -> {REWARD_GOTO_MAIN}")
             self.device.click(REWARD_GOTO_MAIN)
             timer.reset()
             return True
         if IDLE_3.match_luma(self.device.image, offset=(5, 5)):
-            logger.info(f'UI additional: {IDLE_3} -> {REWARD_GOTO_MAIN}')
+            logger.info(f"UI additional: {IDLE_3} -> {REWARD_GOTO_MAIN}")
             self.device.click(REWARD_GOTO_MAIN)
             timer.reset()
             return True

@@ -34,9 +34,9 @@ class EnemySearchingHandler(InfoHandler):
     def handle_in_stage(self):
         if self.is_in_stage():
             if self.in_stage_timer.reached():
-                logger.info('In stage.')
+                logger.info("In stage.")
                 self.ensure_no_info_bar(timeout=1.2)
-                raise CampaignEnd('In stage.')
+                raise CampaignEnd("In stage.")
             else:
                 return False
         else:
@@ -57,9 +57,9 @@ class EnemySearchingHandler(InfoHandler):
         """
         # campaign_extract_name_image in CampaignOcr.
         try:
-            if hasattr(self, 'campaign_extract_name_image'):
-                del_cached_property(self, '_stage_image')
-                del_cached_property(self, '_stage_image_gray')
+            if hasattr(self, "campaign_extract_name_image"):
+                del_cached_property(self, "_stage_image")
+                del_cached_property(self, "_stage_image_gray")
                 if not len(self.campaign_extract_name_image(self.device.image)):
                     return False
         except IndexError:
@@ -148,11 +148,11 @@ class EnemySearchingHandler(InfoHandler):
                 if appeared:
                     self.handle_enemy_flashing()
                     self.device.sleep(0.3)
-                    logger.info('Enemy searching appeared.')
+                    logger.info("Enemy searching appeared.")
                     break
                 self.enemy_searching_color_initial()
             if timeout.reached():
-                logger.info('Enemy searching timeout.')
+                logger.info("Enemy searching timeout.")
                 break
 
         self.device.screenshot()

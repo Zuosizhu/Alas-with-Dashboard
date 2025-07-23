@@ -8,15 +8,16 @@ from module.ocr.ocr import Digit
 from module.ui.assets import DORM_CHECK
 from module.ui.ui import UI
 
-OCR_FURNITURE_COIN = Digit(OCR_DORM_FURNITURE_COIN, letter=(107, 89, 82), threshold=128, alphabet='0123456789', name='OCR_FURNITURE_COIN')
-OCR_FURNITURE_PRICE = Digit(OCR_DORM_FURNITURE_PRICE, letter=(255, 247, 247), threshold=64, alphabet='0123456789', name='OCR_FURNITURE_PRICE')
+OCR_FURNITURE_COIN = Digit(
+    OCR_DORM_FURNITURE_COIN, letter=(107, 89, 82), threshold=128, alphabet="0123456789", name="OCR_FURNITURE_COIN"
+)
+OCR_FURNITURE_PRICE = Digit(
+    OCR_DORM_FURNITURE_PRICE, letter=(255, 247, 247), threshold=64, alphabet="0123456789", name="OCR_FURNITURE_PRICE"
+)
 
 CHECK_INTERVAL = 6  # Check every 6 days
 # Only for click
-FURNITURE_BUY_BUTTON = {
-    "all": DORM_FURNITURE_BUY_ALL,
-    "set": DORM_FURNITURE_BUY_SET
-}
+FURNITURE_BUY_BUTTON = {"all": DORM_FURNITURE_BUY_ALL, "set": DORM_FURNITURE_BUY_SET}
 
 
 class BuyFurniture(UI):
@@ -24,10 +25,15 @@ class BuyFurniture(UI):
         """
         Pages:
             in: page_dorm or DORM_FURNITURE_SHOP_ENTER(furniture shop page)
-            out: 
+            out:
         """
-        self.interval_clear((DORM_CHECK, DORM_FURNITURE_DETAILS_ENTER,
-                             DORM_FURNITURE_SHOP_FIRST,))
+        self.interval_clear(
+            (
+                DORM_CHECK,
+                DORM_FURNITURE_DETAILS_ENTER,
+                DORM_FURNITURE_SHOP_FIRST,
+            )
+        )
         while 1:
             if skip_first_screenshot:
                 skip_first_screenshot = False

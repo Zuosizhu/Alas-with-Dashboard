@@ -13,13 +13,10 @@ from module.ui.ui import UI
 from module.ui_white.assets import MAIL_ENTER_WHITE
 
 MAIL_BUTTON_GRID = ButtonGrid(
-    origin=(137, 207), delta=(0, 97),
-    button_shape=(64, 64), grid_shape=(1, 3),
-    name='MAIL_BUTTON_GRID')
-FILTER_REGEX = re.compile(
-    '^(cube|coin|coolant|decorcoin|oil|merit|gem)$',
-    flags=re.IGNORECASE)
-FILTER_ATTR = ['name']
+    origin=(137, 207), delta=(0, 97), button_shape=(64, 64), grid_shape=(1, 3), name="MAIL_BUTTON_GRID"
+)
+FILTER_REGEX = re.compile("^(cube|coin|coolant|decorcoin|oil|merit|gem)$", flags=re.IGNORECASE)
+FILTER_ATTR = ["name"]
 FILTER = Filter(FILTER_REGEX, FILTER_ATTR)
 
 
@@ -39,7 +36,7 @@ class Mail(UI):
         Returns:
             bool: False if mail list empty
         """
-        logger.hr('Mail enter')
+        logger.hr("Mail enter")
         btn_expanded = MAIL_BUTTON_GRID.buttons[0]
         btn_collapsed = btn_expanded.move((350, 0))
         self.interval_clear([page_main.check_button, page_main_white.check_button, MAIL_DELETE])
@@ -51,10 +48,10 @@ class Mail(UI):
 
             # End
             if self.appear(MAIL_EMPTY, offset=(20, 20)):
-                logger.info('Mail list empty')
+                logger.info("Mail list empty")
                 return False
             if self.appear(MAIL_GUILD_MESSAGE, offset=(20, 20)):
-                logger.info('Guild mail found, exit')
+                logger.info("Guild mail found, exit")
                 return False
             if not delete and self._mail_selected(btn_expanded):
                 if self.appear(MAIL_COLLECT, offset=(20, 20)):
@@ -71,7 +68,7 @@ class Mail(UI):
             if delete:
                 if self.appear_then_click(MAIL_DELETE, offset=(350, 20), interval=3):
                     continue
-                if self.handle_popup_confirm('MAIL_DELETE'):
+                if self.handle_popup_confirm("MAIL_DELETE"):
                     delete = False
                     continue
             else:
@@ -88,7 +85,7 @@ class Mail(UI):
         Args:
             skip_first_screenshot (bool):
         """
-        logger.hr('Mail exit')
+        logger.hr("Mail exit")
         self.interval_clear([MAIL_DELETE, GET_ITEMS_1, GET_ITEMS_2])
         while 1:
             if skip_first_screenshot:
@@ -120,9 +117,8 @@ class Mail(UI):
         Returns:
             ItemGrid
         """
-        mail_item_grid = ItemGrid(MAIL_BUTTON_GRID, templates={},
-                                  amount_area=(60, 74, 96, 95))
-        mail_item_grid.load_template_folder('./assets/stats_basic')
+        mail_item_grid = ItemGrid(MAIL_BUTTON_GRID, templates={}, amount_area=(60, 74, 96, 95))
+        mail_item_grid.load_template_folder("./assets/stats_basic")
         mail_item_grid.similarity = 0.85
         return mail_item_grid
 
@@ -135,16 +131,9 @@ class Mail(UI):
             list[Item]
         """
         FILTER.load(self.config.Mail_Filter.strip())
-        items = self._mail_grid.predict(
-            self.device.image,
-            name=True,
-            amount=False,
-            cost=False,
-            price=False,
-            tag=False
-        )
+        items = self._mail_grid.predict(self.device.image, name=True, amount=False, cost=False, price=False, tag=False)
         filtered = FILTER.apply(items, None)
-        logger.attr('Item_sort', ' > '.join([str(item) for item in filtered]))
+        logger.attr("Item_sort", " > ".join([str(item) for item in filtered]))
         return filtered
 
     def _mail_selected(self, button):
@@ -171,7 +160,7 @@ class Mail(UI):
             item (Item):
             skip_first_screenshot (bool):
         """
-        logger.hr('Mail collect one')
+        logger.hr("Mail collect one")
         btn = item._button
         click_timer = Timer(1.5, count=3)
         self.interval_clear([MAIL_COLLECT, GET_ITEMS_1, GET_ITEMS_2])
@@ -213,7 +202,7 @@ class Mail(UI):
         Args:
             skip_first_screenshot (bool):
         """
-        logger.hr('Mail collect', level=2)
+        logger.hr("Mail collect", level=2)
         for _ in range(5):
             if skip_first_screenshot:
                 skip_first_screenshot = False
@@ -226,7 +215,7 @@ class Mail(UI):
 
             self._mail_collect_one(collectable[0])
 
-        logger.info('Finished collecting all applicable mail')
+        logger.info("Finished collecting all applicable mail")
 
     def mail_run(self, delete=False):
         """
@@ -235,7 +224,7 @@ class Mail(UI):
         Args:
             delete (bool):
         """
-        logger.info('Mail run')
+        logger.info("Mail run")
 
         if self._mail_enter(delete):
             self._mail_collect()

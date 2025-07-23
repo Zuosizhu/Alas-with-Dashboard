@@ -23,38 +23,36 @@ class GeneratedConfig:
     """
     Auto generated configuration
     """
-'''.strip().split('\n')
-ARCHIVES_PREFIX = {
-    'cn': '档案 ',
-    'en': 'archives ',
-    'jp': '檔案 ',
-    'tw': '檔案 '
-}
-MAINS = ['Main', 'Main2', 'Main3']
-EVENTS = ['Event', 'Event2', 'EventA', 'EventB', 'EventC', 'EventD', 'EventSp']
-GEMS_FARMINGS = ['GemsFarming']
-RAIDS = ['Raid', 'RaidDaily']
-WAR_ARCHIVES = ['WarArchives']
-COALITIONS = ['Coalition', 'CoalitionSp']
-MARITIME_ESCORTS = ['MaritimeEscort']
-HOSPITAL = ['Hospital']
+'''.strip().split(
+    "\n"
+)
+ARCHIVES_PREFIX = {"cn": "档案 ", "en": "archives ", "jp": "檔案 ", "tw": "檔案 "}
+MAINS = ["Main", "Main2", "Main3"]
+EVENTS = ["Event", "Event2", "EventA", "EventB", "EventC", "EventD", "EventSp"]
+GEMS_FARMINGS = ["GemsFarming"]
+RAIDS = ["Raid", "RaidDaily"]
+WAR_ARCHIVES = ["WarArchives"]
+COALITIONS = ["Coalition", "CoalitionSp"]
+MARITIME_ESCORTS = ["MaritimeEscort"]
+HOSPITAL = ["Hospital"]
 
 
 class Event:
     def __init__(self, text):
-        self.date, self.directory, self.name, self.cn, self.en, self.jp, self.tw \
-            = [x.strip() for x in text.strip('| \n').split('|')]
+        self.date, self.directory, self.name, self.cn, self.en, self.jp, self.tw = [
+            x.strip() for x in text.strip("| \n").split("|")
+        ]
 
-        self.directory = self.directory.replace(' ', '_')
-        self.cn = self.cn.replace('、', '')
-        self.en = self.en.replace(',', '').replace('\'', '').replace('\\', '')
-        self.jp = self.jp.replace('、', '')
-        self.tw = self.tw.replace('、', '')
-        self.is_war_archives = self.directory.startswith('war_archives')
-        self.is_raid = self.directory.startswith('raid_')
-        self.is_coalition = self.directory.startswith('coalition_')
+        self.directory = self.directory.replace(" ", "_")
+        self.cn = self.cn.replace("、", "")
+        self.en = self.en.replace(",", "").replace("'", "").replace("\\", "")
+        self.jp = self.jp.replace("、", "")
+        self.tw = self.tw.replace("、", "")
+        self.is_war_archives = self.directory.startswith("war_archives")
+        self.is_raid = self.directory.startswith("raid_")
+        self.is_coalition = self.directory.startswith("coalition_")
         for server in ARCHIVES_PREFIX.keys():
-            if self.__getattribute__(server) == '-':
+            if self.__getattribute__(server) == "-":
                 self.__setattr__(server, None)
             else:
                 if self.is_war_archives:
@@ -87,31 +85,31 @@ class ConfigGenerator:
                 validate (Optional): datetime
         """
         data = {}
-        raw = read_file(filepath_argument('argument'))
+        raw = read_file(filepath_argument("argument"))
         for path, value in deep_iter(raw, depth=2):
             arg = {
-                'type': 'input',
-                'value': '',
+                "type": "input",
+                "value": "",
                 # option
             }
             if not isinstance(value, dict):
-                value = {'value': value}
-            arg['type'] = data_to_type(value, arg=path[1])
-            if isinstance(value['value'], datetime):
-                arg['type'] = 'datetime'
-                arg['validate'] = 'datetime'
+                value = {"value": value}
+            arg["type"] = data_to_type(value, arg=path[1])
+            if isinstance(value["value"], datetime):
+                arg["type"] = "datetime"
+                arg["validate"] = "datetime"
             # Manual definition has the highest priority
             arg.update(value)
             deep_set(data, keys=path, value=arg)
 
         # Define storage group
         arg = {
-            'type': 'storage',
-            'value': {},
-            'valuetype': 'ignore',
-            'display': 'disabled',
+            "type": "storage",
+            "value": {},
+            "valuetype": "ignore",
+            "display": "disabled",
         }
-        deep_set(data, keys=['Storage', 'Storage'], value=arg)
+        deep_set(data, keys=["Storage", "Storage"], value=arg)
         return data
 
     @cached_property
@@ -121,7 +119,7 @@ class ConfigGenerator:
             <task>:
                 <group>:
         """
-        return read_file(filepath_argument('task'))
+        return read_file(filepath_argument("task"))
 
     @cached_property
     def default(self):
@@ -130,7 +128,7 @@ class ConfigGenerator:
             <group>:
                 <argument>: value
         """
-        return read_file(filepath_argument('default'))
+        return read_file(filepath_argument("default"))
 
     @cached_property
     def override(self):
@@ -139,7 +137,7 @@ class ConfigGenerator:
             <group>:
                 <argument>: value
         """
-        return read_file(filepath_argument('override'))
+        return read_file(filepath_argument("override"))
 
     @cached_property
     def gui(self):
@@ -147,7 +145,7 @@ class ConfigGenerator:
         <i18n_group>:
             <i18n_key>: value, value is None
         """
-        return read_file(filepath_argument('gui'))
+        return read_file(filepath_argument("gui"))
 
     @cached_property
     def dashboard(self):
@@ -155,8 +153,7 @@ class ConfigGenerator:
         <dashboard>
           - <group>
         """
-        return read_file(filepath_argument('dashboard'))
-
+        return read_file(filepath_argument("dashboard"))
 
     @cached_property
     @timer
@@ -173,16 +170,16 @@ class ConfigGenerator:
         # Construct args
         data = {}
         # Add dashboard to args
-        dashboard_and_task = {**self.dashboard,**self.task}
+        dashboard_and_task = {**self.dashboard, **self.task}
         for path, groups in deep_iter(dashboard_and_task, depth=3):
-            if 'tasks' not in path and 'Dashboard' not in path:
+            if "tasks" not in path and "Dashboard" not in path:
                 continue
-            task = path[2] if 'tasks' in path else path[0]
+            task = path[2] if "tasks" in path else path[0]
             # Add storage to all task
-            groups.append('Storage')
+            groups.append("Storage")
             for group in groups:
                 if group not in self.argument:
-                    print(f'`{task}.{group}` is not related to any argument group')
+                    print(f"`{task}.{group}` is not related to any argument group")
                     continue
                 deep_set(data, keys=[task, group], value=deepcopy(self.argument[group]))
 
@@ -194,17 +191,18 @@ class ConfigGenerator:
                 return False
             # Check type
             # But allow `Interval` to be different
-            old_value = old.get('value', None) if isinstance(old, dict) else old
-            value = old.get('value', None) if isinstance(value, dict) else value
-            if type(value) != type(old_value) \
-                    and old_value is not None \
-                    and path[2] not in ['SuccessInterval', 'FailureInterval']:
-                print(
-                    f'`{value}` ({type(value)}) and `{".".join(path)}` ({type(old_value)}) are in different types')
+            old_value = old.get("value", None) if isinstance(old, dict) else old
+            value = old.get("value", None) if isinstance(value, dict) else value
+            if (
+                type(value) != type(old_value)
+                and old_value is not None
+                and path[2] not in ["SuccessInterval", "FailureInterval"]
+            ):
+                print(f'`{value}` ({type(value)}) and `{".".join(path)}` ({type(old_value)}) are in different types')
                 return False
             # Check option
-            if isinstance(old, dict) and 'option' in old:
-                if value not in old['option']:
+            if isinstance(old, dict) and "option" in old:
+                if value not in old["option"]:
                     print(f'`{value}` is not an option of argument `{".".join(path)}`')
                     return False
             return True
@@ -213,32 +211,32 @@ class ConfigGenerator:
         for p, v in deep_iter(self.default, depth=3):
             if not check_override(p, v):
                 continue
-            deep_set(data, keys=p + ['value'], value=v)
+            deep_set(data, keys=p + ["value"], value=v)
         # Override non-modifiable arguments
         for p, v in deep_iter(self.override, depth=3):
             if not check_override(p, v):
                 continue
             if isinstance(v, dict):
-                typ = v.get('type')
-                if typ == 'state':
+                typ = v.get("type")
+                if typ == "state":
                     pass
-                elif typ == 'lock':
+                elif typ == "lock":
                     pass
-                elif deep_get(v, keys='value') is not None:
-                    deep_default(v, keys='display', value='hide')
+                elif deep_get(v, keys="value") is not None:
+                    deep_default(v, keys="display", value="hide")
                 for arg_k, arg_v in v.items():
                     deep_set(data, keys=p + [arg_k], value=arg_v)
             else:
-                deep_set(data, keys=p + ['value'], value=v)
-                deep_set(data, keys=p + ['display'], value='hide')
+                deep_set(data, keys=p + ["value"], value=v)
+                deep_set(data, keys=p + ["display"], value="hide")
         # Set command
         for path, groups in deep_iter(self.task, depth=3):
-            if 'tasks' not in path:
+            if "tasks" not in path:
                 continue
             task = path[2]
-            if deep_get(data, keys=f'{task}.Scheduler.Command'):
-                deep_set(data, keys=f'{task}.Scheduler.Command.value', value=task)
-                deep_set(data, keys=f'{task}.Scheduler.Command.display', value='hide')
+            if deep_get(data, keys=f"{task}.Scheduler.Command"):
+                deep_set(data, keys=f"{task}.Scheduler.Command.value", value=task)
+                deep_set(data, keys=f"{task}.Scheduler.Command.display", value="hide")
 
         return data
 
@@ -256,20 +254,20 @@ class ConfigGenerator:
         for path, data in deep_iter(self.argument, depth=2):
             group, arg = path
             if group not in visited_group:
-                lines.append('')
-                lines.append(f'    # Group `{group}`')
+                lines.append("")
+                lines.append(f"    # Group `{group}`")
                 visited_group.add(group)
 
-            option = ''
-            if 'option' in data and data['option']:
-                option = '  # ' + ', '.join([str(opt) for opt in data['option']])
-            path = '.'.join(path)
+            option = ""
+            if "option" in data and data["option"]:
+                option = "  # " + ", ".join([str(opt) for opt in data["option"]])
+            path = ".".join(path)
             lines.append(f'    {path_to_arg(path)} = {repr(parse_value(data["value"], data=data))}{option}')
             visited_path.add(path)
 
-        with open(filepath_code(), 'w', encoding='utf-8', newline='') as f:
+        with open(filepath_code(), "w", encoding="utf-8", newline="") as f:
             for text in lines:
-                f.write(text + '\n')
+                f.write(text + "\n")
 
     @timer
     def generate_i18n(self, lang):
@@ -283,7 +281,7 @@ class ConfigGenerator:
         new = {}
         old = read_file(filepath_i18n(lang))
 
-        def deep_load(keys, default=True, words=('name', 'help')):
+        def deep_load(keys, default=True, words=("name", "help")):
             for word in words:
                 k = keys + [str(word)]
                 d = ".".join(k) if default else str(word)
@@ -292,20 +290,20 @@ class ConfigGenerator:
 
         # Menu
         for path, data in deep_iter(self.task, depth=3):
-            if 'tasks' not in path:
+            if "tasks" not in path:
                 continue
             task_group, _, task = path
-            deep_load(['Menu', task_group])
-            deep_load(['Task', task])
+            deep_load(["Menu", task_group])
+            deep_load(["Task", task])
         # Arguments
         visited_group = set()
         for path, data in deep_iter(self.argument, depth=2):
             if path[0] not in visited_group:
-                deep_load([path[0], '_info'])
+                deep_load([path[0], "_info"])
                 visited_group.add(path[0])
             deep_load(path)
-            if 'option' in data:
-                deep_load(path, words=data['option'], default=False)
+            if "option" in data:
+                deep_load(path, words=data["option"], default=False)
         # Event names
         # Names come from SameLanguageServer > en > cn > jp > tw
         events = {}
@@ -314,49 +312,49 @@ class ConfigGenerator:
                 name = event.__getattribute__(LANG_TO_SERVER[lang])
                 if name:
                     deep_default(events, keys=event.directory, value=name)
-        for server in ['en', 'cn', 'jp', 'tw']:
+        for server in ["en", "cn", "jp", "tw"]:
             for event in self.event:
                 name = event.__getattribute__(server)
                 if name:
                     deep_default(events, keys=event.directory, value=name)
         for event in sorted(self.event):
             name = events.get(event.directory, event.directory)
-            deep_set(new, keys=f'Campaign.Event.{event.directory}', value=name)
+            deep_set(new, keys=f"Campaign.Event.{event.directory}", value=name)
         # Package names
         for package, server in VALID_PACKAGE.items():
-            path = ['Emulator', 'PackageName', package]
+            path = ["Emulator", "PackageName", package]
             if deep_get(new, keys=path) == package:
                 deep_set(new, keys=path, value=server.upper())
 
         for package, server_and_channel in VALID_CHANNEL_PACKAGE.items():
             server, channel = server_and_channel
-            name = deep_get(new, keys=['Emulator', 'PackageName', to_package(server)])
+            name = deep_get(new, keys=["Emulator", "PackageName", to_package(server)])
             if lang == SERVER_TO_LANG[server]:
-                value = f'{name} {channel}渠道服 {package}'
+                value = f"{name} {channel}渠道服 {package}"
             else:
-                value = f'{name} {package}'
-            deep_set(new, keys=['Emulator', 'PackageName', package], value=value)
+                value = f"{name} {package}"
+            deep_set(new, keys=["Emulator", "PackageName", package], value=value)
         # Game server names
         for server, _list in VALID_SERVER_LIST.items():
             for index in range(len(_list)):
-                path = ['Emulator', 'ServerName', f'{server}-{index}']
-                prefix = server.split('_')[0].upper()
-                prefix = '国服' if prefix == 'CN' else prefix
-                deep_set(new, keys=path, value=f'[{prefix}] {_list[index]}')
+                path = ["Emulator", "ServerName", f"{server}-{index}"]
+                prefix = server.split("_")[0].upper()
+                prefix = "国服" if prefix == "CN" else prefix
+                deep_set(new, keys=path, value=f"[{prefix}] {_list[index]}")
         # GUI i18n
         for path, _ in deep_iter(self.gui, depth=2):
             group, key = path
-            deep_load(keys=['Gui', group], words=(key,))
+            deep_load(keys=["Gui", group], words=(key,))
         # zh-TW
         dic_repl = {
-            '設置': '設定',
-            '支持': '支援',
-            '啓': '啟',
-            '异': '異',
-            '服務器': '伺服器',
-            '文件': '檔案',
+            "設置": "設定",
+            "支持": "支援",
+            "啓": "啟",
+            "异": "異",
+            "服務器": "伺服器",
+            "文件": "檔案",
         }
-        if lang == 'zh-TW':
+        if lang == "zh-TW":
             for path, value in deep_iter(new, depth=3):
                 for before, after in dic_repl.items():
                     value = value.replace(before, after)
@@ -374,17 +372,17 @@ class ConfigGenerator:
         """
         data = {}
         for task_group in self.task.keys():
-            value = deep_get(self.task, keys=[task_group, 'menu'])
-            if value not in ['collapse', 'list']:
-                value = 'collapse'
-            deep_set(data, keys=[task_group, 'menu'], value=value)
-            value = deep_get(self.task, keys=[task_group, 'page'])
-            if value not in ['setting', 'tool']:
-                value = 'setting'
-            deep_set(data, keys=[task_group, 'page'], value=value)
-            tasks = deep_get(self.task, keys=[task_group, 'tasks'], default={})
+            value = deep_get(self.task, keys=[task_group, "menu"])
+            if value not in ["collapse", "list"]:
+                value = "collapse"
+            deep_set(data, keys=[task_group, "menu"], value=value)
+            value = deep_get(self.task, keys=[task_group, "page"])
+            if value not in ["setting", "tool"]:
+                value = "setting"
+            deep_set(data, keys=[task_group, "page"], value=value)
+            tasks = deep_get(self.task, keys=[task_group, "tasks"], default={})
             tasks = list(tasks.keys())
-            deep_set(data, keys=[task_group, 'tasks'], value=tasks)
+            deep_set(data, keys=[task_group, "tasks"], value=tasks)
 
         return data
 
@@ -395,37 +393,43 @@ class ConfigGenerator:
         Returns:
             list[Event]: From latest to oldest
         """
+
         def calc_width(text):
-            return len(text) + len(re.findall(
-                r'[\u3000-\u30ff\u3400-\u4dbf\u4e00-\u9fff、！（）]', text))
+            return len(text) + len(re.findall(r"[\u3000-\u30ff\u3400-\u4dbf\u4e00-\u9fff、！（）]", text))
 
         lines = []
         data_lines = []
         data_widths = []
-        column_width = [4]*7  # `:---`
+        column_width = [4] * 7  # `:---`
         events = []
-        with open('./campaign/Readme.md', encoding='utf-8') as f:
+        with open("./campaign/Readme.md", encoding="utf-8") as f:
             for text in f.readlines():
-                if not re.search(r'^\|.+\|$', text):
+                if not re.search(r"^\|.+\|$", text):
                     # not a table line
                     lines.append(text)
-                elif re.search(r'^.*\-{3,}.*$', text):
+                elif re.search(r"^.*\-{3,}.*$", text):
                     # is a delimiter line
                     continue
                 else:
-                    line_entries = [x.strip() for x in text.strip('| \n').split('|')]
+                    line_entries = [x.strip() for x in text.strip("| \n").split("|")]
                     data_lines.append(line_entries)
                     data_width = [calc_width(string) for string in line_entries]
                     data_widths.append(data_width)
                     column_width = [max(l1, l2) for l1, l2 in zip(column_width, data_width)]
-                    if re.search(r'\d{8}', text):
+                    if re.search(r"\d{8}", text):
                         event = Event(text)
                         events.append(event)
         for i, (line, old_width) in enumerate(zip(data_lines, data_widths)):
-            lines.append('| ' + ' | '.join([cell+' '*(width-length) for cell, width, length in zip(line, column_width, old_width)]) + ' |\n')
+            lines.append(
+                "| "
+                + " | ".join(
+                    [cell + " " * (width - length) for cell, width, length in zip(line, column_width, old_width)]
+                )
+                + " |\n"
+            )
             if i == 0:
-                lines.append('| ' + ' | '.join([':'+'-'*(width-1) for width in column_width]) + ' |\n')
-        with open('./campaign/Readme.md', 'w', encoding='utf-8') as f:
+                lines.append("| " + " | ".join([":" + "-" * (width - 1) for width in column_width]) + " |\n")
+        with open("./campaign/Readme.md", "w", encoding="utf-8") as f:
             f.writelines(lines)
         return events[::-1]
 
@@ -442,11 +446,11 @@ class ConfigGenerator:
                 name = event.__getattribute__(server)
 
                 def insert(key):
-                    opts = deep_get(self.args, keys=f'{key}.Campaign.Event.option')
+                    opts = deep_get(self.args, keys=f"{key}.Campaign.Event.option")
                     if event not in opts:
                         opts.append(event)
                     if name:
-                        deep_default(self.args, keys=f'{key}.Campaign.Event.{server}', value=event)
+                        deep_default(self.args, keys=f"{key}.Campaign.Event.{server}", value=event)
 
                 if name:
                     if event.is_raid:
@@ -463,84 +467,84 @@ class ConfigGenerator:
                             insert(task)
 
         for task in EVENTS + GEMS_FARMINGS + WAR_ARCHIVES + RAIDS + COALITIONS:
-            options = deep_get(self.args, keys=f'{task}.Campaign.Event.option')
+            options = deep_get(self.args, keys=f"{task}.Campaign.Event.option")
             # Remove campaign_main from event list
-            options = [option for option in options if option != 'campaign_main']
+            options = [option for option in options if option != "campaign_main"]
             # Sort options
             options = sorted(options)
-            deep_set(self.args, keys=f'{task}.Campaign.Event.option', value=options)
+            deep_set(self.args, keys=f"{task}.Campaign.Event.option", value=options)
             # Sort latest
             latest = {}
             for server in ARCHIVES_PREFIX.keys():
-                latest[server] = deep_pop(self.args, keys=f'{task}.Campaign.Event.{server}', default='')
+                latest[server] = deep_pop(self.args, keys=f"{task}.Campaign.Event.{server}", default="")
             bold = sorted(set(latest.values()))
-            deep_set(self.args, keys=f'{task}.Campaign.Event.option_bold', value=bold)
+            deep_set(self.args, keys=f"{task}.Campaign.Event.option_bold", value=bold)
             for server, event in latest.items():
-                deep_set(self.args, keys=f'{task}.Campaign.Event.{server}', value=event)
+                deep_set(self.args, keys=f"{task}.Campaign.Event.{server}", value=event)
 
     @staticmethod
     def generate_deploy_template():
         template = poor_yaml_read(DEPLOY_TEMPLATE)
         cn = {
-            'Repository': 'git://git.lyoko.io/AzurLaneAutoScript',
-            'PypiMirror': 'https://mirrors.aliyun.com/pypi/simple',
-            'Language': 'zh-CN',
+            "Repository": "git://git.lyoko.io/AzurLaneAutoScript",
+            "PypiMirror": "https://mirrors.aliyun.com/pypi/simple",
+            "Language": "zh-CN",
         }
         aidlux = {
-            'GitExecutable': '/usr/bin/git',
-            'PythonExecutable': '/usr/bin/python',
-            'RequirementsFile': './deploy/AidLux/0.92/requirements.txt',
-            'AdbExecutable': '/usr/bin/adb',
+            "GitExecutable": "/usr/bin/git",
+            "PythonExecutable": "/usr/bin/python",
+            "RequirementsFile": "./deploy/AidLux/0.92/requirements.txt",
+            "AdbExecutable": "/usr/bin/adb",
         }
 
         docker = {
-            'GitExecutable': '/usr/bin/git',
-            'PythonExecutable': '/usr/local/bin/python',
-            'RequirementsFile': './deploy/docker/requirements.txt',
-            'AdbExecutable': '/usr/bin/adb',
+            "GitExecutable": "/usr/bin/git",
+            "PythonExecutable": "/usr/local/bin/python",
+            "RequirementsFile": "./deploy/docker/requirements.txt",
+            "AdbExecutable": "/usr/bin/adb",
         }
 
         linux = {
-            'GitExecutable': '/usr/bin/git',
-            'PythonExecutable': 'python',
-            'RequirementsFile': './deploy/headless/requirements.txt',
-            'AdbExecutable': '/usr/bin/adb',
-            'SSHExecutable': '/usr/bin/ssh',
-            'ReplaceAdb': 'false'
+            "GitExecutable": "/usr/bin/git",
+            "PythonExecutable": "python",
+            "RequirementsFile": "./deploy/headless/requirements.txt",
+            "AdbExecutable": "/usr/bin/adb",
+            "SSHExecutable": "/usr/bin/ssh",
+            "ReplaceAdb": "false",
         }
 
         def update(suffix, *args):
-            file = f'./config/deploy.{suffix}.yaml'
+            file = f"./config/deploy.{suffix}.yaml"
             new = deepcopy(template)
             for dic in args:
                 new.update(dic)
             poor_yaml_write(data=new, file=file)
 
-        update('template')
-        update('template-cn', cn)
-        update('template-AidLux', aidlux)
-        update('template-AidLux-cn', aidlux, cn)
-        update('template-docker', docker)
-        update('template-docker-cn', docker, cn)
-        update('template-linux', linux)
-        update('template-linux-cn', linux, cn)
+        update("template")
+        update("template-cn", cn)
+        update("template-AidLux", aidlux)
+        update("template-AidLux-cn", aidlux, cn)
+        update("template-docker", docker)
+        update("template-docker-cn", docker, cn)
+        update("template-linux", linux)
+        update("template-linux-cn", linux, cn)
 
     def insert_package(self):
-        option = deep_get(self.argument, keys='Emulator.PackageName.option')
+        option = deep_get(self.argument, keys="Emulator.PackageName.option")
         option += list(VALID_PACKAGE.keys())
         option += list(VALID_CHANNEL_PACKAGE.keys())
-        deep_set(self.argument, keys='Emulator.PackageName.option', value=option)
-        deep_set(self.args, keys='Alas.Emulator.PackageName.option', value=option)
+        deep_set(self.argument, keys="Emulator.PackageName.option", value=option)
+        deep_set(self.args, keys="Alas.Emulator.PackageName.option", value=option)
 
     def insert_server(self):
-        option = deep_get(self.argument, keys='Emulator.ServerName.option')
+        option = deep_get(self.argument, keys="Emulator.ServerName.option")
         server_list = []
         for server, _list in VALID_SERVER_LIST.items():
             for index in range(len(_list)):
-                server_list.append(f'{server}-{index}')
+                server_list.append(f"{server}-{index}")
         option += server_list
-        deep_set(self.argument, keys='Emulator.ServerName.option', value=option)
-        deep_set(self.args, keys='Alas.Emulator.ServerName.option', value=option)
+        deep_set(self.argument, keys="Emulator.ServerName.option", value=option)
+        deep_set(self.args, keys="Alas.Emulator.ServerName.option", value=option)
 
     @timer
     def generate(self):
@@ -551,7 +555,7 @@ class ConfigGenerator:
         self.insert_package()
         self.insert_server()
         write_file(filepath_args(), self.args)
-        write_file(filepath_args('menu'), self.menu)
+        write_file(filepath_args("menu"), self.menu)
         self.generate_code()
         for lang in LANGUAGES:
             self.generate_i18n(lang)
@@ -603,7 +607,7 @@ class ConfigUpdater:
         # 2025.04.17
         # ('Coalition.Coalition.Mode', 'Coalition.Coalition.Mode', coalition_to_frostfall),
         # 2025.06.26
-        ('Coalition.Coalition.Mode', 'Coalition.Coalition.Mode', coalition_to_little_academy),
+        ("Coalition.Coalition.Mode", "Coalition.Coalition.Mode", coalition_to_little_academy),
     ]
     # redirection += [
     #     (
@@ -633,48 +637,53 @@ class ConfigUpdater:
         new = {}
 
         for keys, data in deep_iter(self.args, depth=3):
-            value = deep_get(old, keys=keys, default=data['value'])
-            typ = data['type']
-            display = data.get('display')
-            if is_template or value is None or value == '' \
-                    or typ in ['lock', 'state'] or (display == 'hide' and typ != 'stored'):
-                value = data['value']
+            value = deep_get(old, keys=keys, default=data["value"])
+            typ = data["type"]
+            display = data.get("display")
+            if (
+                is_template
+                or value is None
+                or value == ""
+                or typ in ["lock", "state"]
+                or (display == "hide" and typ != "stored")
+            ):
+                value = data["value"]
             value = parse_value(value, data=data)
             deep_set(new, keys=keys, value=value)
 
         # AzurStatsID
         if is_template:
-            deep_set(new, 'Alas.DropRecord.AzurStatsID', None)
+            deep_set(new, "Alas.DropRecord.AzurStatsID", None)
         else:
-            deep_default(new, 'Alas.DropRecord.AzurStatsID', random_id())
+            deep_default(new, "Alas.DropRecord.AzurStatsID", random_id())
         # Update to latest event
-        server = to_server(deep_get(new, 'Alas.Emulator.PackageName', 'cn'))
+        server = to_server(deep_get(new, "Alas.Emulator.PackageName", "cn"))
         if not is_template:
             for task in EVENTS + RAIDS + COALITIONS:
-                deep_set(new,
-                         keys=f'{task}.Campaign.Event',
-                         value=deep_get(self.args, f'{task}.Campaign.Event.{server}'))
-            for task in ['GemsFarming']:
-                if deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') != 'campaign_main':
-                    deep_set(new,
-                             keys=f'{task}.Campaign.Event',
-                             value=deep_get(self.args, f'{task}.Campaign.Event.{server}'))
+                deep_set(
+                    new, keys=f"{task}.Campaign.Event", value=deep_get(self.args, f"{task}.Campaign.Event.{server}")
+                )
+            for task in ["GemsFarming"]:
+                if deep_get(new, keys=f"{task}.Campaign.Event", default="campaign_main") != "campaign_main":
+                    deep_set(
+                        new, keys=f"{task}.Campaign.Event", value=deep_get(self.args, f"{task}.Campaign.Event.{server}")
+                    )
         # War archive does not allow campaign_main
         for task in WAR_ARCHIVES:
-            if deep_get(new, keys=f'{task}.Campaign.Event', default='campaign_main') == 'campaign_main':
-                deep_set(new,
-                         keys=f'{task}.Campaign.Event',
-                         value=deep_get(self.args, f'{task}.Campaign.Event.{server}'))
+            if deep_get(new, keys=f"{task}.Campaign.Event", default="campaign_main") == "campaign_main":
+                deep_set(
+                    new, keys=f"{task}.Campaign.Event", value=deep_get(self.args, f"{task}.Campaign.Event.{server}")
+                )
 
         # Events does not allow default stage 12-4
         def default_stage(t, stage):
-            if deep_get(new, keys=f'{t}.Campaign.Name', default='12-4') in ['7-2', '12-4']:
-                deep_set(new, keys=f'{t}.Campaign.Name', value=stage)
+            if deep_get(new, keys=f"{t}.Campaign.Name", default="12-4") in ["7-2", "12-4"]:
+                deep_set(new, keys=f"{t}.Campaign.Name", value=stage)
 
         for task in EVENTS + WAR_ARCHIVES:
-            default_stage(task, 'D3')
+            default_stage(task, "D3")
         for task in COALITIONS:
-            default_stage(task, 'hard')
+            default_stage(task, "hard")
 
         if not is_template:
             new = self.config_redirect(old, new)
@@ -733,24 +742,24 @@ class ConfigUpdater:
 
     def _override(self, data):
         def remove_drop_save(key):
-            value = deep_get(data, keys=key, default='do_not')
-            if value == 'save_and_upload':
-                value = 'upload'
+            value = deep_get(data, keys=key, default="do_not")
+            if value == "save_and_upload":
+                value = "upload"
                 deep_set(data, keys=key, value=value)
-            elif value == 'save':
-                value = 'do_not'
+            elif value == "save":
+                value = "do_not"
                 deep_set(data, keys=key, value=value)
 
         if IS_ON_PHONE_CLOUD:
-            deep_set(data, 'Alas.Emulator.Serial', '127.0.0.1:5555')
-            deep_set(data, 'Alas.Emulator.ScreenshotMethod', 'DroidCast_raw')
-            deep_set(data, 'Alas.Emulator.ControlMethod', 'MaaTouch')
-            for arg in deep_get(self.args, keys='Alas.DropRecord', default={}).keys():
+            deep_set(data, "Alas.Emulator.Serial", "127.0.0.1:5555")
+            deep_set(data, "Alas.Emulator.ScreenshotMethod", "DroidCast_raw")
+            deep_set(data, "Alas.Emulator.ControlMethod", "MaaTouch")
+            for arg in deep_get(self.args, keys="Alas.DropRecord", default={}).keys():
                 remove_drop_save(arg)
 
         return data
 
-    def save_callback(self, key: str, value: t.Any) -> t.Iterable[t.Tuple[str, t.Any]]:
+    def save_callback(self, key: str, value: t.Any) -> t.Iterable[tuple[str, t.Any]]:
         """
         Args:
             key: Key path in config json, such as "Main.Emotion.Fleet1Value"
@@ -789,7 +798,7 @@ class ConfigUpdater:
         return new
 
     @staticmethod
-    def write_file(config_name, data, mod_name='alas'):
+    def write_file(config_name, data, mod_name="alas"):
         """
         Write config file.
 
@@ -817,7 +826,7 @@ class ConfigUpdater:
         return data
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Process the whole config generation.
 
@@ -832,7 +841,7 @@ if __name__ == '__main__':
     # Ensure running in Alas root folder
     import os
 
-    os.chdir(os.path.join(os.path.dirname(__file__), '../../'))
+    os.chdir(os.path.join(os.path.dirname(__file__), "../../"))
 
     ConfigGenerator().generate()
-    ConfigUpdater().update_file('template', is_template=True)
+    ConfigUpdater().update_file("template", is_template=True)

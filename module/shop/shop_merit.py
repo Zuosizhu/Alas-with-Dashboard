@@ -7,7 +7,7 @@ from module.shop.ui import ShopUI
 
 
 class MeritShop(ShopClerk, ShopUI, ShopStatus):
-    shop_template_folder = './assets/shop/merit'
+    shop_template_folder = "./assets/shop/merit"
 
     @cached_property
     def shop_filter(self):
@@ -26,7 +26,7 @@ class MeritShop(ShopClerk, ShopUI, ShopStatus):
         shop_grid = self.shop_grid
         shop_merit_items = ShopItemGrid(shop_grid, templates={}, amount_area=(60, 74, 96, 95))
         shop_merit_items.load_template_folder(self.shop_template_folder)
-        shop_merit_items.load_cost_template_folder('./assets/shop/cost')
+        shop_merit_items.load_cost_template_folder("./assets/shop/cost")
         return shop_merit_items
 
     def shop_items(self):
@@ -51,7 +51,7 @@ class MeritShop(ShopClerk, ShopUI, ShopStatus):
             int: merit amount
         """
         self._currency = self.status_get_merit()
-        logger.info(f'Merit: {self._currency}')
+        logger.info(f"Merit: {self._currency}")
         return self._currency
 
     def run(self):
@@ -64,7 +64,7 @@ class MeritShop(ShopClerk, ShopUI, ShopStatus):
 
         # When called, expected to be in
         # correct Merit Shop interface
-        logger.hr('Merit Shop', level=1)
+        logger.hr("Merit Shop", level=1)
 
         # Execute buy operations
         # Refresh if enabled and available

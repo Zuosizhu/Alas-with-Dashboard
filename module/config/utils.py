@@ -9,19 +9,19 @@ import module.config.server as server_
 from deploy.atomic import atomic_read_text, atomic_read_bytes, atomic_write
 from module.submodule.utils import *
 
-LANGUAGES = ['zh-CN', 'en-US', 'ja-JP', 'zh-TW']
+LANGUAGES = ["zh-CN", "en-US", "ja-JP", "zh-TW"]
 SERVER_TO_LANG = {
-    'cn': 'zh-CN',
-    'en': 'en-US',
-    'jp': 'ja-JP',
-    'tw': 'zh-TW',
+    "cn": "zh-CN",
+    "en": "en-US",
+    "jp": "ja-JP",
+    "tw": "zh-TW",
 }
 LANG_TO_SERVER = {v: k for k, v in SERVER_TO_LANG.items()}
 SERVER_TO_TIMEZONE = {
-    'cn': timedelta(hours=8),
-    'en': timedelta(hours=-7),
-    'jp': timedelta(hours=9),
-    'tw': timedelta(hours=8),
+    "cn": timedelta(hours=8),
+    "en": timedelta(hours=-7),
+    "jp": timedelta(hours=9),
+    "tw": timedelta(hours=8),
 }
 DEFAULT_TIME = datetime(2020, 1, 1, 0, 0)
 
@@ -29,41 +29,41 @@ DEFAULT_TIME = datetime(2020, 1, 1, 0, 0)
 # https://stackoverflow.com/questions/8640959/how-can-i-control-what-scalar-form-pyyaml-uses-for-my-data/15423007
 def str_presenter(dumper, data):
     if len(data.splitlines()) > 1:  # check for multiline string
-        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
 
 
 yaml.add_representer(str, str_presenter)
 yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
 
 
-def filepath_args(filename='args', mod_name='alas'):
-    if mod_name == 'alas':
-        return f'./module/config/argument/{filename}.json'
+def filepath_args(filename="args", mod_name="alas"):
+    if mod_name == "alas":
+        return f"./module/config/argument/{filename}.json"
     else:
-        return os.path.join(get_mod_filepath(mod_name), f'./module/config/argument/{filename}.json')
+        return os.path.join(get_mod_filepath(mod_name), f"./module/config/argument/{filename}.json")
 
 
 def filepath_argument(filename):
-    return f'./module/config/argument/{filename}.yaml'
+    return f"./module/config/argument/{filename}.yaml"
 
 
-def filepath_i18n(lang, mod_name='alas'):
-    if mod_name == 'alas':
-        return os.path.join('./module/config/i18n', f'{lang}.json')
+def filepath_i18n(lang, mod_name="alas"):
+    if mod_name == "alas":
+        return os.path.join("./module/config/i18n", f"{lang}.json")
     else:
-        return os.path.join(get_mod_filepath(mod_name), './module/config/i18n', f'{lang}.json')
+        return os.path.join(get_mod_filepath(mod_name), "./module/config/i18n", f"{lang}.json")
 
 
-def filepath_config(filename, mod_name='alas'):
-    if mod_name == 'alas':
-        return os.path.join('./config', f'{filename}.json')
+def filepath_config(filename, mod_name="alas"):
+    if mod_name == "alas":
+        return os.path.join("./config", f"{filename}.json")
     else:
-        return os.path.join('./config', f'{filename}.{mod_name}.json')
+        return os.path.join("./config", f"{filename}.{mod_name}.json")
 
 
 def filepath_code():
-    return './module/config/config_generated.py'
+    return "./module/config/config_generated.py"
 
 
 def read_file(file):
@@ -77,13 +77,13 @@ def read_file(file):
     Returns:
         dict, list:
     """
-    print(f'read: {file}')
-    if file.endswith('.json'):
+    print(f"read: {file}")
+    if file.endswith(".json"):
         content = atomic_read_bytes(file)
         if not content:
             return {}
         return json.loads(content)
-    elif file.endswith('.yaml'):
+    elif file.endswith(".yaml"):
         content = atomic_read_text(file)
         data = list(yaml.safe_load_all(content))
         if len(data) == 1:
@@ -92,7 +92,7 @@ def read_file(file):
             data = {}
         return data
     else:
-        print(f'Unsupported config file extension: {file}')
+        print(f"Unsupported config file extension: {file}")
         return {}
 
 
@@ -104,20 +104,22 @@ def write_file(file, data):
         file (str):
         data (dict, list):
     """
-    print(f'write: {file}')
-    if file.endswith('.json'):
+    print(f"write: {file}")
+    if file.endswith(".json"):
         content = json.dumps(data, indent=2, ensure_ascii=False, sort_keys=False, default=str)
         atomic_write(file, content)
-    elif file.endswith('.yaml'):
+    elif file.endswith(".yaml"):
         if isinstance(data, list):
             content = yaml.safe_dump_all(
-                data, default_flow_style=False, encoding='utf-8', allow_unicode=True, sort_keys=False)
+                data, default_flow_style=False, encoding="utf-8", allow_unicode=True, sort_keys=False
+            )
         else:
             content = yaml.safe_dump(
-                data, default_flow_style=False, encoding='utf-8', allow_unicode=True, sort_keys=False)
+                data, default_flow_style=False, encoding="utf-8", allow_unicode=True, sort_keys=False
+            )
         atomic_write(file, content)
     else:
-        print(f'Unsupported config file extension: {file}')
+        print(f"Unsupported config file extension: {file}")
 
 
 def iter_folder(folder, is_dir=False, ext=None):
@@ -134,26 +136,26 @@ def iter_folder(folder, is_dir=False, ext=None):
         sub = os.path.join(folder, file)
         if is_dir:
             if os.path.isdir(sub):
-                yield sub.replace('\\\\', '/').replace('\\', '/')
+                yield sub.replace("\\\\", "/").replace("\\", "/")
         elif ext is not None:
             if not os.path.isdir(sub):
                 _, extension = os.path.splitext(file)
                 if extension == ext:
-                    yield os.path.join(folder, file).replace('\\\\', '/').replace('\\', '/')
+                    yield os.path.join(folder, file).replace("\\\\", "/").replace("\\", "/")
         else:
-            yield os.path.join(folder, file).replace('\\\\', '/').replace('\\', '/')
+            yield os.path.join(folder, file).replace("\\\\", "/").replace("\\", "/")
 
 
 def alas_template():
     """
-        Returns:
-            list[str]: Name of all Alas instances, except `template`.
-        """
+    Returns:
+        list[str]: Name of all Alas instances, except `template`.
+    """
     out = []
-    for file in os.listdir('./config'):
+    for file in os.listdir("./config"):
         name, extension = os.path.splitext(file)
-        if name == 'template' and extension == '.json':
-            out.append(f'{name}-alas')
+        if name == "template" and extension == ".json":
+            out.append(f"{name}-alas")
 
     out.extend(list_mod_template())
 
@@ -166,17 +168,17 @@ def alas_instance():
         list[str]: Name of all Alas instances, except `template`.
     """
     out = []
-    for file in os.listdir('./config'):
+    for file in os.listdir("./config"):
         name, extension = os.path.splitext(file)
         config_name, mod_name = os.path.splitext(name)
         mod_name = mod_name[1:]
-        if name != 'template' and extension == '.json' and mod_name == '':
+        if name != "template" and extension == ".json" and mod_name == "":
             out.append(name)
 
     out.extend(list_mod_instance())
 
     if not len(out):
-        out = ['alas']
+        out = ["alas"]
 
     return out
 
@@ -192,17 +194,17 @@ def parse_value(value, data):
     Returns:
 
     """
-    if 'option' in data:
-        if value not in data['option']:
-            return data['value']
+    if "option" in data:
+        if value not in data["option"]:
+            return data["value"]
     if isinstance(value, str):
-        if value == '':
+        if value == "":
             return None
-        if value == 'true' or value == 'True':
+        if value == "true" or value == "True":
             return True
-        if value == 'false' or value == 'False':
+        if value == "false" or value == "False":
             return False
-        if '.' in value:
+        if "." in value:
             try:
                 return float(value)
             except ValueError:
@@ -237,14 +239,14 @@ def data_to_type(data, **kwargs):
         str:
     """
     kwargs.update(data)
-    if isinstance(kwargs['value'], bool):
-        return 'checkbox'
-    elif 'option' in kwargs and kwargs['option']:
-        return 'select'
-    elif 'Filter' in kwargs['arg']:
-        return 'textarea'
+    if isinstance(kwargs["value"], bool):
+        return "checkbox"
+    elif "option" in kwargs and kwargs["option"]:
+        return "select"
+    elif "Filter" in kwargs["arg"]:
+        return "textarea"
     else:
-        return 'input'
+        return "input"
 
 
 def data_to_path(data):
@@ -255,7 +257,7 @@ def data_to_path(data):
     Returns:
         str: <func>.<group>.<arg>
     """
-    return '.'.join([data.get(attr, '') for attr in ['func', 'group', 'arg']])
+    return ".".join([data.get(attr, "") for attr in ["func", "group", "arg"]])
 
 
 def path_to_arg(path):
@@ -268,7 +270,7 @@ def path_to_arg(path):
     Returns:
         str: Such as `Scheduler_ServerUpdate`
     """
-    return path.replace('.', '_')
+    return path.replace(".", "_")
 
 
 def dict_to_kv(dictionary, allow_none=True):
@@ -280,11 +282,11 @@ def dict_to_kv(dictionary, allow_none=True):
     Returns:
         str: Such as `path='Scheduler.ServerUpdate', value=True`
     """
-    return ', '.join([f'{k}={repr(v)}' for k, v in dictionary.items() if allow_none or v is not None])
+    return ", ".join([f"{k}={repr(v)}" for k, v in dictionary.items() if allow_none or v is not None])
 
 
 def server_timezone() -> timedelta:
-    return SERVER_TO_TIMEZONE.get(server_.server, SERVER_TO_TIMEZONE['cn'])
+    return SERVER_TO_TIMEZONE.get(server_.server, SERVER_TO_TIMEZONE["cn"])
 
 
 def server_time_offset() -> timedelta:
@@ -333,15 +335,15 @@ def ensure_time(second, n=3, precision=3):
         float:
     """
     if isinstance(second, tuple):
-        multiply = 10 ** precision
+        multiply = 10**precision
         return random_normal_distribution_int(second[0] * multiply, second[1] * multiply, n) / multiply
     elif isinstance(second, str):
-        if ',' in second:
-            lower, upper = second.replace(' ', '').split(',')
+        if "," in second:
+            lower, upper = second.replace(" ", "").split(",")
             lower, upper = int(lower), int(upper)
             return ensure_time((lower, upper), n=n, precision=precision)
-        if '-' in second:
-            lower, upper = second.replace(' ', '').split('-')
+        if "-" in second:
+            lower, upper = second.replace(" ", "").split("-")
             lower, upper = int(lower), int(upper)
             return ensure_time((lower, upper), n=n, precision=precision)
         else:
@@ -359,8 +361,9 @@ def get_os_next_reset():
     """
     diff = server_time_offset()
     server_now = datetime.now() - diff
-    server_reset = (server_now.replace(day=1) + timedelta(days=32)) \
-        .replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    server_reset = (server_now.replace(day=1) + timedelta(days=32)).replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0
+    )
     local_reset = server_reset + diff
     return local_reset
 
@@ -374,10 +377,10 @@ def get_os_reset_remain():
 
     next_reset = get_os_next_reset()
     now = datetime.now()
-    logger.attr('OpsiNextReset', next_reset)
+    logger.attr("OpsiNextReset", next_reset)
 
     remain = int((next_reset - now).total_seconds() // 86400)
-    logger.attr('ResetRemain', remain)
+    logger.attr("ResetRemain", remain)
     return remain
 
 
@@ -390,13 +393,13 @@ def get_server_next_update(daily_trigger):
         datetime.datetime
     """
     if isinstance(daily_trigger, str):
-        daily_trigger = daily_trigger.replace(' ', '').split(',')
+        daily_trigger = daily_trigger.replace(" ", "").split(",")
 
     diff = server_time_offset()
     local_now = datetime.now()
     trigger = []
     for t in daily_trigger:
-        h, m = [int(x) for x in t.split(':')]
+        h, m = [int(x) for x in t.split(":")]
         future = local_now.replace(hour=h, minute=m, second=0, microsecond=0) + diff
         s = (future - local_now).total_seconds() % 86400
         future = local_now + timedelta(seconds=s)
@@ -414,13 +417,13 @@ def get_server_last_update(daily_trigger):
         datetime.datetime
     """
     if isinstance(daily_trigger, str):
-        daily_trigger = daily_trigger.replace(' ', '').split(',')
+        daily_trigger = daily_trigger.replace(" ", "").split(",")
 
     diff = server_time_offset()
     local_now = datetime.now()
     trigger = []
     for t in daily_trigger:
-        h, m = [int(x) for x in t.split(':')]
+        h, m = [int(x) for x in t.split(":")]
         future = local_now.replace(hour=h, minute=m, second=0, microsecond=0) + diff
         s = (future - local_now).total_seconds() % 86400 - 86400
         future = local_now + timedelta(seconds=s)
@@ -470,8 +473,7 @@ def get_nearest_weekday_date(target):
     if days_ahead <= 0:
         # Target day has already happened
         days_ahead += 7
-    server_reset = (server_now + timedelta(days=days_ahead)) \
-        .replace(hour=0, minute=0, second=0, microsecond=0)
+    server_reset = (server_now + timedelta(days=days_ahead)).replace(hour=0, minute=0, second=0, microsecond=0)
 
     local_reset = server_reset + diff
     return local_reset
@@ -507,7 +509,7 @@ def random_id(length=32):
     Returns:
         str: Random azurstat id.
     """
-    return ''.join(random.sample(string.ascii_lowercase + string.digits, length))
+    return "".join(random.sample(string.ascii_lowercase + string.digits, length))
 
 
 def to_list(text, length=1):
@@ -522,7 +524,7 @@ def to_list(text, length=1):
     """
     if text.isdigit():
         return [int(text)] * length
-    out = [int(letter.strip()) for letter in text.split(',')]
+    out = [int(letter.strip()) for letter in text.split(",")]
     return out
 
 
@@ -561,14 +563,14 @@ def time_delta(_timedelta):
     """
     _time_delta = abs(_timedelta.total_seconds())
     d_base = datetime(2010, 1, 1, 0, 0, 0)
-    d = datetime(2010, 1, 1, 0, 0, 0)-_timedelta
+    d = datetime(2010, 1, 1, 0, 0, 0) - _timedelta
     _time_dict = {
-        'Y': d.year - d_base.year,
-        'M': d.month - d_base.month,
-        'D': d.day - d_base.day,
-        'h': d.hour - d_base.hour,
-        'm': d.minute - d_base.minute,
-        's': d.second - d_base.second
+        "Y": d.year - d_base.year,
+        "M": d.month - d_base.month,
+        "D": d.day - d_base.day,
+        "h": d.hour - d_base.hour,
+        "m": d.minute - d_base.minute,
+        "s": d.second - d_base.second,
     }
     # _sec ={
     #     'Y': 365*24*60*60,
@@ -584,5 +586,5 @@ def time_delta(_timedelta):
     return _time_dict
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     get_os_reset_remain()

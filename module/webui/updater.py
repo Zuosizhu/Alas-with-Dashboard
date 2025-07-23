@@ -2,7 +2,8 @@ import datetime
 import subprocess
 import threading
 import time
-from typing import Generator, List, Tuple
+from typing import List, Tuple
+from collections.abc import Generator
 
 import requests
 from deploy.config import ExecutionError
@@ -39,12 +40,10 @@ class Updater(DeployConfig, GitManager, PipManager):
 
     def execute_output(self, command) -> str:
         command = command.replace(r"\\", "/").replace("\\", "/").replace('"', '"')
-        log = subprocess.run(
-            command, capture_output=True, text=True, encoding="utf8", shell=True
-        ).stdout
+        log = subprocess.run(command, capture_output=True, text=True, encoding="utf8", shell=True).stdout
         return log
 
-    def get_commit(self, revision="", n=1, short_sha1=False) -> Tuple:
+    def get_commit(self, revision="", n=1, short_sha1=False) -> tuple:
         """
         Return:
             (sha1, author, isotime, message,)
@@ -83,21 +82,15 @@ class Updater(DeployConfig, GitManager, PipManager):
 
         source = "origin"
         for _ in range(3):
-            if self.execute(
-                f'"{self.git}" fetch {source} {self.Branch}', allow_failure=True
-            ):
+            if self.execute(f'"{self.git}" fetch {source} {self.Branch}', allow_failure=True):
                 break
         else:
             logger.warning("Git fetch failed")
             return False
 
-        log = self.execute_output(
-            f'"{self.git}" log --not --remotes={source}/* -1 --oneline'
-        )
+        log = self.execute_output(f'"{self.git}" log --not --remotes={source}/* -1 --oneline')
         if log:
-            logger.info(
-                f"Cannot find local commit {log.split()[0]} in upstream, skip update"
-            )
+            logger.info(f"Cannot find local commit {log.split()[0]} in upstream, skip update")
             return False
 
         sha1, _, _, message = self.get_commit(f"..{source}/{self.Branch}")
@@ -172,9 +165,7 @@ class Updater(DeployConfig, GitManager, PipManager):
 
         if get_commit.status_code != 200:
             # for develops
-            logger.info(
-                f"Cannot find local commit {local_sha[:8]} in upstream, skip update"
-            )
+            logger.info(f"Cannot find local commit {local_sha[:8]} in upstream, skip update")
             return 0
 
         logger.info(f"Update {sha[:8]} available")
@@ -216,7 +207,7 @@ class Updater(DeployConfig, GitManager, PipManager):
         logger.info("Waiting all running alas finish.")
         self._wait_update(instances, names)
 
-    def _wait_update(self, instances: List[ProcessManager], names):
+    def _wait_update(self, instances: list[ProcessManager], names):
         if self.state == "cancel":
             self.state = 1
         self.state = "wait"

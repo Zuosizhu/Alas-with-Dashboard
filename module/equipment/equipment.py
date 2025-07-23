@@ -25,8 +25,14 @@ class Equipment(StorageHandler):
         while 1:
             if not swipe_timer.started() or swipe_timer.reached():
                 swipe_timer.reset()
-                self.device.swipe_vector(vector=(distance, 0), box=SWIPE_AREA.area, random_range=SWIPE_RANDOM_RANGE,
-                                         padding=0, duration=(0.1, 0.12), name='SHIP_SWIPE')
+                self.device.swipe_vector(
+                    vector=(distance, 0),
+                    box=SWIPE_AREA.area,
+                    random_range=SWIPE_RANDOM_RANGE,
+                    padding=0,
+                    duration=(0.1, 0.12),
+                    name="SHIP_SWIPE",
+                )
                 # self.wait_until_appear(check_button, offset=(30, 30))
                 skip_first_screenshot = True
                 while 1:
@@ -37,26 +43,26 @@ class Equipment(StorageHandler):
                     if self.appear(check_button, offset=(30, 30)):
                         break
                     if self.appear(RETIRE_EQUIP_CONFIRM, offset=(30, 30)):
-                        logger.info('RETIRE_EQUIP_CONFIRM popup in _ship_view_swipe()')
+                        logger.info("RETIRE_EQUIP_CONFIRM popup in _ship_view_swipe()")
                         return False
                     # Popup when enhancing a NPC ship
-                    if self.handle_popup_confirm('SHIP_VIEW_SWIPE'):
+                    if self.handle_popup_confirm("SHIP_VIEW_SWIPE"):
                         continue
                 swipe_count += 1
 
             self.device.screenshot()
 
             if self.appear(RETIRE_EQUIP_CONFIRM, offset=(30, 30)):
-                logger.info('RETIRE_EQUIP_CONFIRM popup in _ship_view_swipe()')
+                logger.info("RETIRE_EQUIP_CONFIRM popup in _ship_view_swipe()")
                 return False
             if SWIPE_CHECK.match(self.device.image):
                 if swipe_count > 1:
-                    logger.info('Same ship on multiple swipes')
+                    logger.info("Same ship on multiple swipes")
                     return False
                 continue
 
             if self.appear(check_button, offset=(30, 30)) and not SWIPE_CHECK.match(self.device.image):
-                logger.info('New ship detected on swipe')
+                logger.info("New ship detected on swipe")
                 return True
 
     def ship_view_next(self, check_button=EQUIPMENT_OPEN):
@@ -81,7 +87,7 @@ class Equipment(StorageHandler):
             # Long click accidentally became normal click, exit from dock
             if long_click:
                 if self.appear(DOCK_CHECK, offset=(20, 20), interval=3):
-                    logger.info(f'ship_info_enter {DOCK_CHECK} -> {BACK_ARROW}')
+                    logger.info(f"ship_info_enter {DOCK_CHECK} -> {BACK_ARROW}")
                     self.device.click(BACK_ARROW)
                     continue
             if enter_timer.reached():
@@ -115,11 +121,16 @@ class Equipment(StorageHandler):
             detail.
         """
         ship_side_navbar = ButtonGrid(
-            origin=(21, 118), delta=(0, 94.5), button_shape=(60, 75), grid_shape=(1, 5), name='SHIP_SIDE_NAVBAR')
+            origin=(21, 118), delta=(0, 94.5), button_shape=(60, 75), grid_shape=(1, 5), name="SHIP_SIDE_NAVBAR"
+        )
 
-        return Navbar(grids=ship_side_navbar,
-                      active_color=(247, 255, 173), active_threshold=221,
-                      inactive_color=(140, 162, 181), inactive_threshold=221)
+        return Navbar(
+            grids=ship_side_navbar,
+            active_color=(247, 255, 173),
+            active_threshold=221,
+            inactive_color=(140, 162, 181),
+            inactive_threshold=221,
+        )
 
     def ship_side_navbar_ensure(self, upper=None, bottom=None):
         """
@@ -158,7 +169,7 @@ class Equipment(StorageHandler):
         return False
 
     def ship_equipment_take_off(self, skip_first_screenshot=True):
-        logger.info('Equipment take off')
+        logger.info("Equipment take off")
         bar_timer = Timer(5)
         off_timer = Timer(5)
         confirm_timer = Timer(5)
@@ -178,7 +189,7 @@ class Equipment(StorageHandler):
             if self.handle_storage_full():
                 continue
 
-            if confirm_timer.reached() and self.handle_popup_confirm('EQUIPMENT_TAKE_OFF'):
+            if confirm_timer.reached() and self.handle_popup_confirm("EQUIPMENT_TAKE_OFF"):
                 confirm_timer.reset()
                 off_timer.reset()
                 bar_timer.reset()
@@ -196,7 +207,7 @@ class Equipment(StorageHandler):
                     bar_timer.reset()
                     continue
 
-        logger.info('Equipment take off ended')
+        logger.info("Equipment take off ended")
 
     def fleet_equipment_take_off(self, enter, long_click, out):
         """
@@ -205,7 +216,7 @@ class Equipment(StorageHandler):
             long_click (bool): How to click enter
             out (Button): Button to confirm exit success.
         """
-        logger.hr('Equipment take off')
+        logger.hr("Equipment take off")
         self.ship_info_enter(enter, long_click=long_click)
 
         while True:
@@ -218,7 +229,7 @@ class Equipment(StorageHandler):
         self.equipment_has_take_on = False
 
     def ship_equipment_take_on_preset(self, index, skip_first_screenshot=True):
-        logger.info('Equipment take on preset')
+        logger.info("Equipment take on preset")
         bar_timer = Timer(5)
         on_timer = Timer(5)
 
@@ -252,7 +263,7 @@ class Equipment(StorageHandler):
                 bar_timer.reset()
                 continue
 
-        logger.info('Equipment take on ended')
+        logger.info("Equipment take on ended")
 
     def fleet_equipment_take_on_preset(self, preset_record, enter, long_click, out):
         """
@@ -262,10 +273,10 @@ class Equipment(StorageHandler):
             long_click (bool): How to click enter
             out (Button): Button to confirm exit success.
         """
-        logger.hr('Equipment take on')
+        logger.hr("Equipment take on")
         self.ship_info_enter(enter, long_click=long_click)
 
-        for index in '9'.join([str(x) for x in preset_record if x > 0]):
+        for index in "9".join([str(x) for x in preset_record if x > 0]):
             index = int(index)
             if index == 9:
                 self.ship_view_next()

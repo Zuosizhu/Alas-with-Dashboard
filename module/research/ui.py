@@ -28,8 +28,13 @@ class ResearchUI(UI):
             in: is_in_research
             out: is_in_queue
         """
-        self.ui_click(RESEARCH_GOTO_QUEUE, check_button=self.is_in_queue, appear_button=self.is_in_research,
-                      retry_wait=1, skip_first_screenshot=skip_first_screenshot)
+        self.ui_click(
+            RESEARCH_GOTO_QUEUE,
+            check_button=self.is_in_queue,
+            appear_button=self.is_in_research,
+            retry_wait=1,
+            skip_first_screenshot=skip_first_screenshot,
+        )
 
     def queue_quit(self, skip_first_screenshot=True):
         """
@@ -37,8 +42,12 @@ class ResearchUI(UI):
             in: is_in_queue
             out: is_in_research, project stabled
         """
-        self.ui_back(check_button=self.is_in_research, appear_button=self.is_in_queue,
-                     retry_wait=3, skip_first_screenshot=skip_first_screenshot)
+        self.ui_back(
+            check_button=self.is_in_research,
+            appear_button=self.is_in_queue,
+            retry_wait=3,
+            skip_first_screenshot=skip_first_screenshot,
+        )
         self.ensure_research_center_stable()
 
     def get_items(self):
@@ -69,8 +78,7 @@ class ResearchUI(UI):
             self.device.sleep(1.5)
             self.device.screenshot()
             drop.add(self.device.image)
-            self.device.swipe_vector((0, 250), box=ITEMS_3_SWIPE.area, random_range=(-10, -10, 10, 10),
-                                     padding=0)
+            self.device.swipe_vector((0, 250), box=ITEMS_3_SWIPE.area, random_range=(-10, -10, 10, 10), padding=0)
             self.device.sleep(2)
             self.device.screenshot()
             drop.add(self.device.image)
@@ -88,22 +96,22 @@ class ResearchUI(UI):
             info = status.crop((0, -40, 200, 0))
             piece = rgb2gray(crop(image, info.area, copy=False))
             if TEMPLATE_WAITING.match(piece, scaling=scaling, similarity=0.75):
-                out.append('waiting')
+                out.append("waiting")
             elif TEMPLATE_RUNNING.match(piece, scaling=scaling, similarity=0.75):
-                out.append('running')
+                out.append("running")
             elif TEMPLATE_DETAIL.match(piece, scaling=scaling, similarity=0.75):
-                out.append('detail')
+                out.append("detail")
             else:
-                out.append('unknown')
+                out.append("unknown")
 
-        logger.info(f'Research status: {out}')
+        logger.info(f"Research status: {out}")
         return out
 
     def is_research_stabled(self):
-        return self.is_in_research() and 'detail' in self.get_research_status(self.device.image)
+        return self.is_in_research() and "detail" in self.get_research_status(self.device.image)
 
     def research_detail_quit(self, skip_first_screenshot=True):
-        logger.info('Research detail quit')
+        logger.info("Research detail quit")
         click_timer = Timer(10)
         while 1:
             if skip_first_screenshot:
@@ -114,15 +122,17 @@ class ResearchUI(UI):
             if self.is_research_stabled():
                 break
 
-            if self.appear(RESEARCH_UNAVAILABLE, offset=(20, 20)) \
-                    or self.appear(RESEARCH_START, offset=(20, 20)) \
-                    or self.appear(RESEARCH_STOP, offset=(20, 20)):
+            if (
+                self.appear(RESEARCH_UNAVAILABLE, offset=(20, 20))
+                or self.appear(RESEARCH_START, offset=(20, 20))
+                or self.appear(RESEARCH_STOP, offset=(20, 20))
+            ):
                 if click_timer.reached():
                     self.device.click(RESEARCH_DETAIL_QUIT)
                     click_timer.reset()
 
     def research_detail_cancel(self, skip_first_screenshot=True):
-        logger.info('Research detail cancel')
+        logger.info("Research detail cancel")
         while 1:
             if skip_first_screenshot:
                 skip_first_screenshot = False
@@ -134,7 +144,7 @@ class ResearchUI(UI):
 
             if self.appear_then_click(RESEARCH_STOP, offset=(20, 20), interval=5):
                 continue
-            if self.handle_popup_confirm('RESEARCH_CANCEL'):
+            if self.handle_popup_confirm("RESEARCH_CANCEL"):
                 continue
             if self.appear(RESEARCH_START, offset=(20, 20), interval=5):
                 self.device.click(RESEARCH_DETAIL_QUIT)
