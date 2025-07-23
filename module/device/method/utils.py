@@ -50,8 +50,14 @@ from module.logger import logger
 RETRY_TRIES = 5
 RETRY_DELAY = 3
 
-# Patch uiautomator2 appdir
-u2.init.appdir = os.path.dirname(uiautomator2cache.__file__)
+# Patch uiautomator2 appdir - compatibility with newer uiautomator2 versions
+try:
+    u2.init.appdir = os.path.dirname(uiautomator2cache.__file__)
+except AttributeError:
+    # Newer uiautomator2 doesn't have init.appdir, set it directly if needed
+    if hasattr(u2, 'init'):
+        u2.init.appdir = os.path.dirname(uiautomator2cache.__file__)
+    # Otherwise skip this patch for newer versions
 
 # Patch uiautomator2 logger
 u2_logger = u2.logger
@@ -67,7 +73,11 @@ def setup_logger(*args, **kwargs):
 
 
 u2.setup_logger = setup_logger
-u2.init.setup_logger = setup_logger
+# Compatibility with older uiautomator2 versions
+try:
+    u2.init.setup_logger = setup_logger
+except AttributeError:
+    pass  # Newer versions don't have this
 
 
 # Patch Initer

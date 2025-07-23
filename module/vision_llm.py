@@ -59,22 +59,15 @@ def call_vision_model(screen_b64, template_b64, template_name):
     Call Gemini Flash 2.5 vision model to analyze template matching.
     """
     try:
-        from google import genai
-        from google.genai import types
-        from google.api_core import client_options
+        import google.generativeai as genai
 
         # Check API key
         if not GOOGLE_API_KEY:
             vision_logger.warning(ERROR_NO_API_KEY)
             return {'error': 'No API key', 'model': GEMINI_MODEL}
 
-        # Initialize client with timeout
-        client = genai.Client(
-            api_key=GOOGLE_API_KEY,
-            client_options=client_options.ClientOptions(
-                api_endpoint="generative-ai.googleapis.com",
-            )
-        )
+        # Configure API key
+        genai.configure(api_key=GOOGLE_API_KEY)
         
         # Decode base64 images
         screen_bytes = base64.b64decode(screen_b64)
@@ -93,19 +86,21 @@ def call_vision_model(screen_b64, template_b64, template_name):
             _, template_buffer = cv2.imencode('.png', template_img)
             template_bytes = template_buffer.tobytes()
         
-        # Create image parts
-        screen_image = types.Part.from_bytes(data=screen_bytes, mime_type='image/png')
-        template_image = types.Part.from_bytes(data=template_bytes, mime_type='image/png')
+        # Create PIL Images from bytes for Gemini
+        import io
+        from PIL import Image
+        
+        screen_image = Image.open(io.BytesIO(screen_bytes))
+        template_image = Image.open(io.BytesIO(template_bytes))
         
         # Use configured prompt template
         prompt = TEMPLATE_MATCHING_PROMPT.format(template_name=template_name)
         
-        # Make API call with timeout
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=[prompt, screen_image, template_image],
-            request_options={"timeout": API_TIMEOUT}
-        )
+        # Create model instance
+        model = genai.GenerativeModel(GEMINI_MODEL)
+        
+        # Make API call
+        response = model.generate_content([prompt, screen_image, template_image])
         
         # Parse response
         if ENABLE_JSON_PARSING:
