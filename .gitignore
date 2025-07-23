@@ -1,5 +1,6 @@
 ### AzurLaneAutoScript
 log
+logs/
 config/backup/*
 config/*.ini
 !config/template.ini
@@ -250,6 +251,7 @@ adb_port.ini
 *.exe
 !popup.exe
 *.zip
+platform-tools/
 console.bat
 .vscode/*
 
