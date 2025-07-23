@@ -1,0 +1,52 @@
+# config.vision_llm_config.py.template
+# Copy this file to config/vision_llm_config.py and fill in your values.
+
+# Your Google API Key for Gemini
+GOOGLE_API_KEY = "YOUR_API_KEY_HERE"
+
+# The specific Gemini model to use
+GEMINI_MODEL = "gemini-1.5-flash"
+
+# The log file for vision model analysis
+VISION_LOG_FILE = "logs/vision_llm.log"
+
+# Log level (DEBUG, INFO, WARNING, ERROR)
+LOG_LEVEL = "INFO"
+
+# If True, only log when the traditional system finds a match
+LOG_ONLY_MATCHES = True
+
+# Timeout for the API call in seconds
+API_TIMEOUT = 15
+
+# Max dimensions for images sent to the API to reduce cost/latency
+MAX_IMAGE_SIZE = (1024, 768)
+
+# Master switch to enable/disable all LLM logging
+ENABLE_LLM_LOGGING = True
+
+# Enable/disable JSON parsing of the LLM response
+ENABLE_JSON_PARSING = True
+
+# If JSON parsing fails, enable/disable fallback to simple text analysis
+ENABLE_FALLBACK_PARSING = True
+
+# The prompt to use for template matching
+TEMPLATE_MATCHING_PROMPT = """You are analyzing a screenshot from the Azur Lane mobile game to find a specific UI element.
+
+TASK: Determine if the template image (second image) appears in the screenshot (first image).
+
+Template name: {template_name}
+
+Please analyze both images and respond with:
+1. Whether the template is found (true/false)
+2. If found, the approximate bounding box coordinates [x1, y1, x2, y2]
+3. Confidence level (0.0 to 1.0)
+4. Brief explanation of what you see
+
+Format your response as JSON:
+{{"found": boolean, "bounding_box": [x1, y1, x2, y2], "confidence": float, "explanation": "string"}}"""
+
+# Error messages
+ERROR_NO_API_KEY = "GOOGLE_API_KEY not found in environment variables or config"
+ERROR_MISSING_DEPS = "google-generativeai package not installed. Run: pip install google-generativeai"

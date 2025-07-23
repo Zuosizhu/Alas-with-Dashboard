@@ -61,14 +61,20 @@ def call_vision_model(screen_b64, template_b64, template_name):
     try:
         from google import genai
         from google.genai import types
-        
+        from google.api_core import client_options
+
         # Check API key
         if not GOOGLE_API_KEY:
             vision_logger.warning(ERROR_NO_API_KEY)
             return {'error': 'No API key', 'model': GEMINI_MODEL}
-        
-        # Initialize client
-        client = genai.Client(api_key=GOOGLE_API_KEY)
+
+        # Initialize client with timeout
+        client = genai.Client(
+            api_key=GOOGLE_API_KEY,
+            client_options=client_options.ClientOptions(
+                api_endpoint="generative-ai.googleapis.com",
+            )
+        )
         
         # Decode base64 images
         screen_bytes = base64.b64decode(screen_b64)
@@ -97,7 +103,8 @@ def call_vision_model(screen_b64, template_b64, template_name):
         # Make API call with timeout
         response = client.models.generate_content(
             model=GEMINI_MODEL,
-            contents=[prompt, screen_image, template_image]
+            contents=[prompt, screen_image, template_image],
+            request_options={"timeout": API_TIMEOUT}
         )
         
         # Parse response
@@ -124,7 +131,7 @@ def call_vision_model(screen_b64, template_b64, template_name):
         vision_logger.warning(ERROR_MISSING_DEPS)
         return {'error': 'Missing dependencies', 'model': GEMINI_MODEL}
     except Exception as e:
-        vision_logger.error(f"Gemini API call failed: {e}")
+        vision_logger.error(f"Gemini API call failed for template '{template_name}': {e}")
         return {'error': str(e), 'model': GEMINI_MODEL}
 
 # --- Core Logging Function ---
