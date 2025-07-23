@@ -134,8 +134,8 @@ logger.setLevel(logging.DEBUG if logger_debug else logging.INFO)
 file_formatter = logging.Formatter(
     fmt="%(asctime)s.%(msecs)03d | %(levelname)s | %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
-console_formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d │ %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-web_formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d │ %(message)s", datefmt="%H:%M:%S")
+console_formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d | %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+web_formatter = logging.Formatter(fmt="%(asctime)s.%(msecs)03d | %(message)s", datefmt="%H:%M:%S")
 
 # Add console logger
 # console = logging.StreamHandler(stream=sys.stdout)
@@ -280,7 +280,7 @@ def print(*objects: ConsoleRenderable, **kwargs):
             hdlr.console.print(*objects)
 
 
-def rule(title="", *, characters="─", style="rule.line", end="\n", align="center"):
+def rule(title="", *, characters="-", style="rule.line", end="\n", align="center"):
     rule = Rule(title=title, characters=characters, style=style, end=end, align=align)
     print(rule)
 
@@ -288,17 +288,17 @@ def rule(title="", *, characters="─", style="rule.line", end="\n", align="cent
 def hr(title, level=3):
     title = str(title).upper()
     if level == 1:
-        logger.rule(title, characters="═")
+        logger.rule(title, characters="=")
         logger.info(title)
     if level == 2:
-        logger.rule(title, characters="─")
+        logger.rule(title, characters="-")
         logger.info(title)
     if level == 3:
         logger.info(f"[bold]<<< {title} >>>[/bold]", extra={"markup": True})
     if level == 0:
-        logger.rule(characters="═")
+        logger.rule(characters="=")
         logger.rule(title, characters=" ")
-        logger.rule(characters="═")
+        logger.rule(characters="=")
 
 
 def attr(name, text):
