@@ -6,22 +6,30 @@ import base64
 import os
 import numpy as np
 
-# Import configuration
+# Import configuration - try ollama first, fallback to gemini
+USING_OLLAMA = False
 try:
-    from config.vision_llm_config import *
+    from config.vision_ollama_config import *
+    USING_OLLAMA = ENABLE_OLLAMA_VISION
 except ImportError:
-    # Fallback configuration if config file not available
-    GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
-    GEMINI_MODEL = "gemini-2.5-flash"
-    VISION_LOG_FILE = "logs/vision_llm.log"
-    LOG_LEVEL = "DEBUG"
-    LOG_ONLY_MATCHES = True
-    API_TIMEOUT = 10
-    MAX_IMAGE_SIZE = (800, 600)
-    ENABLE_LLM_LOGGING = True
-    ENABLE_JSON_PARSING = True
-    ENABLE_FALLBACK_PARSING = True
-    TEMPLATE_MATCHING_PROMPT = """You are analyzing a screenshot from the Azur Lane mobile game to find a specific UI element.
+    pass
+
+if not USING_OLLAMA:
+    try:
+        from config.vision_llm_config import *
+    except ImportError:
+        # Fallback configuration if config file not available
+        GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+        GEMINI_MODEL = "gemini-2.5-flash"
+        VISION_LOG_FILE = "logs/vision_llm.log"
+        LOG_LEVEL = "DEBUG"
+        LOG_ONLY_MATCHES = True
+        API_TIMEOUT = 10
+        MAX_IMAGE_SIZE = (800, 600)
+        ENABLE_LLM_LOGGING = True
+        ENABLE_JSON_PARSING = True
+        ENABLE_FALLBACK_PARSING = True
+        TEMPLATE_MATCHING_PROMPT = """You are analyzing a screenshot from the Azur Lane mobile game to find a specific UI element.
 
 TASK: Determine if the template image (second image) appears in the screenshot (first image).
 
@@ -35,8 +43,36 @@ Please analyze both images and respond with:
 
 Format your response as JSON:
 {{"found": boolean, "bounding_box": [x1, y1, x2, y2], "confidence": float, "explanation": "string"}}"""
-    ERROR_NO_API_KEY = "GOOGLE_API_KEY not found in environment variables"
-    ERROR_MISSING_DEPS = "google-generativeai package not installed. Run: pip install google-generativeai"
+        ERROR_NO_API_KEY = "GOOGLE_API_KEY not found in environment variables"
+        ERROR_MISSING_DEPS = "google-generativeai package not installed. Run: pip install google-generativeai"
+
+# Set consistent template matching prompt for ollama
+if USING_OLLAMA:
+    TEMPLATE_MATCHING_PROMPT = """You are an expert computer vision system specialized in analyzing Azur Lane mobile game UI elements.
+
+CONTEXT: Azur Lane is a mobile game with anime-style graphics featuring naval combat. UI elements include buttons, menus, ship portraits, resource counters, battle indicators, and navigation elements. The interface uses blue/white color schemes with stylized fonts and icons.
+
+TASK: Analyze the screenshot (first image) to locate the template UI element (second image).
+
+Template name: {template_name}
+
+ANALYSIS REQUIREMENTS:
+1. Compare the template against all regions of the screenshot
+2. Look for visual similarities in shape, color, text, and iconography
+3. Account for slight variations in lighting, scaling, or UI state changes
+4. Consider that UI elements may have hover effects or different states
+5. Be precise with bounding box coordinates if found
+
+RESPONSE FORMAT (JSON only):
+{{"found": boolean, "bounding_box": [x1, y1, x2, y2], "confidence": float, "explanation": "string"}}
+
+Where:
+- found: true if template is clearly visible in screenshot
+- bounding_box: [left, top, right, bottom] coordinates as ratios (0.0-1.0), null if not found
+- confidence: 0.0-1.0 based on visual similarity and certainty
+- explanation: Brief description of what you identified and location
+
+Focus on accuracy over speed. If uncertain, err on the side of caution with lower confidence."""
 
 # --- Logger Configuration ---
 # Ensure logs directory exists
@@ -53,8 +89,110 @@ formatter = logging.Formatter('%(asctime)s - %(message)s')
 fh.setFormatter(formatter)
 vision_logger.addHandler(fh)
 
-# --- LLM Interaction (Gemini Flash 2.5) ---
+# --- Ollama Vision Model ---
+def call_ollama_vision(screen_b64, template_b64, template_name):
+    """
+    Call Ollama vision model (llava-phi3) to analyze template matching.
+    """
+    try:
+        import requests
+        import json
+        
+        # Decode base64 images
+        screen_bytes = base64.b64decode(screen_b64)
+        template_bytes = base64.b64decode(template_b64)
+        
+        # Resize images if too large
+        screen_img = cv2.imdecode(np.frombuffer(screen_bytes, np.uint8), cv2.IMREAD_COLOR)
+        max_size = MAX_IMAGE_SIZE if isinstance(MAX_IMAGE_SIZE, int) else MAX_IMAGE_SIZE[0]
+        if screen_img.shape[1] > max_size or screen_img.shape[0] > max_size:
+            height, width = screen_img.shape[:2]
+            if width > height:
+                new_width = max_size
+                new_height = int((height * max_size) / width)
+            else:
+                new_height = max_size
+                new_width = int((width * max_size) / height)
+            screen_img = cv2.resize(screen_img, (new_width, new_height))
+            _, screen_buffer = cv2.imencode('.png', screen_img)
+            screen_b64 = base64.b64encode(screen_buffer).decode('utf-8')
+        
+        template_img = cv2.imdecode(np.frombuffer(template_bytes, np.uint8), cv2.IMREAD_COLOR)
+        if template_img.shape[1] > max_size or template_img.shape[0] > max_size:
+            height, width = template_img.shape[:2]
+            if width > height:
+                new_width = max_size
+                new_height = int((height * max_size) / width)
+            else:
+                new_height = max_size
+                new_width = int((width * max_size) / height)
+            template_img = cv2.resize(template_img, (new_width, new_height))
+            _, template_buffer = cv2.imencode('.png', template_img)
+            template_b64 = base64.b64encode(template_buffer).decode('utf-8')
+        
+        # Prepare prompt
+        prompt = TEMPLATE_MATCHING_PROMPT.format(template_name=template_name)
+        
+        # Prepare request for ollama
+        payload = {
+            "model": VISION_MODEL,
+            "prompt": prompt,
+            "images": [screen_b64, template_b64],
+            "stream": False
+        }
+        
+        # Make API call
+        response = requests.post(
+            f"{OLLAMA_API_BASE}/api/generate",
+            json=payload,
+            timeout=API_TIMEOUT
+        )
+        response.raise_for_status()
+        
+        result_text = response.json()["response"]
+        
+        # Parse JSON response
+        try:
+            # Try direct JSON parse first
+            result = json.loads(result_text.strip())
+            result['model'] = VISION_MODEL
+            return result
+        except json.JSONDecodeError:
+            # Try extracting JSON from markdown code blocks
+            import re
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', result_text, re.DOTALL)
+            if json_match:
+                try:
+                    result = json.loads(json_match.group(1))
+                    result['model'] = VISION_MODEL
+                    return result
+                except json.JSONDecodeError:
+                    pass
+            
+            # Fallback parsing
+            return {
+                'found': 'found' in result_text.lower() or 'detected' in result_text.lower(),
+                'bounding_box': None,
+                'confidence': 0.5,
+                'explanation': result_text[:200],
+                'model': VISION_MODEL
+            }
+            
+    except Exception as e:
+        vision_logger.error(f"Ollama API call failed for template '{template_name}': {e}")
+        return {'error': str(e), 'model': VISION_MODEL}
+
 def call_vision_model(screen_b64, template_b64, template_name):
+    """
+    Dispatcher function that calls the appropriate vision model based on configuration.
+    """
+    if USING_OLLAMA:
+        return call_ollama_vision(screen_b64, template_b64, template_name)
+    else:
+        return call_gemini_vision(screen_b64, template_b64, template_name)
+
+# --- LLM Interaction (Gemini Flash 2.5) ---
+def call_gemini_vision(screen_b64, template_b64, template_name):
     """
     Call Gemini Flash 2.5 vision model to analyze template matching.
     """
@@ -142,8 +280,11 @@ def _log_vision_task(screen_image, template_image, template_name, traditional_re
         _, template_buffer = cv2.imencode('.png', template_image)
         template_b64 = base64.b64encode(template_buffer).decode('utf-8')
 
-        # 2. Call the vision model
-        llm_result = call_vision_model(screen_b64, template_b64, template_name)
+        # 2. Call the vision model (ollama or gemini)
+        if USING_OLLAMA:
+            llm_result = call_ollama_vision(screen_b64, template_b64, template_name)
+        else:
+            llm_result = call_gemini_vision(screen_b64, template_b64, template_name)
 
         # 3. Log results
         log_entry = {

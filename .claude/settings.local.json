@@ -4,7 +4,11 @@
       "Bash(./platform-tools/adb.exe:*)",
       "Bash(ls:*)",
       "Bash(rm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(ollama list:*)",
+      "Bash(ollama pull:*)"
     ],
     "deny": []
   }
