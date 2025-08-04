@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import threading
 import time
 from datetime import datetime, timedelta
@@ -34,10 +35,10 @@ class AzurLaneAutoScript:
             return config
         except RequestHumanTakeover:
             logger.critical('Request human takeover')
-            exit(1)
+            sys.exit(1)
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            sys.exit(1)
 
     @cached_property
     def device(self):
@@ -47,10 +48,10 @@ class AzurLaneAutoScript:
             return device
         except RequestHumanTakeover:
             logger.critical('Request human takeover')
-            exit(1)
+            sys.exit(1)
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            sys.exit(1)
 
     @cached_property
     def checker(self):
@@ -60,7 +61,7 @@ class AzurLaneAutoScript:
             return checker
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            sys.exit(1)
 
     def run(self, command, skip_first_screenshot=False):
         try:
@@ -101,7 +102,7 @@ class AzurLaneAutoScript:
                     title=f"Alas <{self.config_name}> crashed",
                     content=f"<{self.config_name}> GamePageUnknownError",
                 )
-                exit(1)
+                sys.exit(1)
             else:
                 self.checker.wait_until_available()
                 return False
@@ -113,7 +114,7 @@ class AzurLaneAutoScript:
                 title=f"Alas <{self.config_name}> crashed",
                 content=f"<{self.config_name}> ScriptError",
             )
-            exit(1)
+            sys.exit(1)
         except RequestHumanTakeover:
             logger.critical('Request human takeover')
             handle_notify(
@@ -121,7 +122,7 @@ class AzurLaneAutoScript:
                 title=f"Alas <{self.config_name}> crashed",
                 content=f"<{self.config_name}> RequestHumanTakeover",
             )
-            exit(1)
+            sys.exit(1)
         except Exception as e:
             logger.exception(e)
             self.save_error_log()
@@ -130,7 +131,7 @@ class AzurLaneAutoScript:
                 title=f"Alas <{self.config_name}> crashed",
                 content=f"<{self.config_name}> Exception occured",
             )
-            exit(1)
+            sys.exit(1)
 
     def save_error_log(self):
         """
@@ -450,7 +451,7 @@ class AzurLaneAutoScript:
                 if self.stop_event.is_set():
                     logger.info("Update event detected")
                     logger.info(f"[{self.config_name}] exited. Reason: Update")
-                    exit(0)
+                    sys.exit(0)
 
             time.sleep(5)
 
@@ -572,7 +573,7 @@ class AzurLaneAutoScript:
                     title=f"Alas <{self.config_name}> crashed",
                     content=f"<{self.config_name}> RequestHumanTakeover\nTask `{task}` failed 3 or more times.",
                 )
-                exit(1)
+                sys.exit(1)
 
             if success:
                 del_cached_property(self, 'config')
