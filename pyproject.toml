@@ -1,0 +1,84 @@
+[tool.poetry]
+name = "azurlaneautoscript"
+version = "0.1.0"
+description = "Azur Lane bot with GUI, designed for 24/7 running scenes"
+authors = ["LmeSzinc"]
+license = "GPL-3.0"
+readme = "README.md"
+homepage = "https://github.com/LmeSzinc/AzurLaneAutoScript"
+repository = "https://github.com/LmeSzinc/AzurLaneAutoScript"
+documentation = "https://github.com/LmeSzinc/AzurLaneAutoScript/wiki"
+keywords = ["azurlane", "automation", "bot"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+packages = [
+    { include = "module" },
+    { include = "campaign" },
+    { include = "deploy" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<3.8"
+
+# Image processing
+numpy = "1.16.6"
+scipy = "1.4.1"
+pillow = "8.3.2"
+opencv-python = "4.5.3.56"
+imageio = "2.27.0"
+
+# Device connection
+adbutils = "0.11.0"
+uiautomator2 = "2.16.17"
+uiautomator2cache = "0.3.0.1"
+wrapt = "1.13.1"
+retrying = "1.3.3"
+lz4 = "3.1.3"
+av = "10.0.0"
+psutil = "5.9.3"
+
+# Utils
+rich = "11.2.0"
+tqdm = "4.62.3"
+jellyfish = "0.11.2"
+pyyaml = "5.4.1"
+inflection = "0.5.1"
+pydantic = "1.10.2"
+aiofiles = "0.7.0"
+prettytable = "2.2.1"
+anyio = "1.3.1"
+
+# Pushing
+onepush = "1.4.0"
+pycryptodome = "3.9.9"
+pypresence = "4.2.1"
+
+# OCR
+cnocr = "1.2.2"
+mxnet = "1.6.0"
+
+# WebUI
+pywebio = "1.6.2"
+starlette = "0.14.2"
+uvicorn = {extras = ["standard"], version = "0.17.6"}
+alas-webapp = "0.3.7"
+zerorpc = "0.6.3"
+pyzmq = "22.3.0"
+
+[tool.poetry.group.dev.dependencies]
+# Add development dependencies here if needed
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+alas = "alas:main"
