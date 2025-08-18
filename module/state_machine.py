@@ -1,8 +1,13 @@
 from module.ui.ui import UI
-from module.ui.page import Page, page_dorm
+from module.ui.page import Page, page_main, page_dorm, page_commission, page_research, page_shop, page_guild
 from module.tool import Tool
 from module.dorm.dorm import RewardDorm
 from module.dorm.buy_furniture import BuyFurniture
+from module.commission.commission import RewardCommission
+from module.research.research import RewardResearch
+from module.shop.shop_general import GeneralShop
+from module.guild.lobby import GuildLobby
+from module.freebies.mail import Mail
 
 class StateMachine:
     def __init__(self, ui: UI):
@@ -63,8 +68,20 @@ class StateMachine:
         """
         dorm_handler = RewardDorm(self.ui.config, self.ui.device)
         buy_furniture_handler = BuyFurniture(self.ui.config, self.ui.device)
+        commission_handler = RewardCommission(self.ui.config, self.ui.device)
+        research_handler = RewardResearch(self.ui.config, self.ui.device)
+        shop_handler = GeneralShop(self.ui.config, self.ui.device)
+        guild_handler = GuildLobby(self.ui.config, self.ui.device)
+        mail_handler = Mail(self.ui.config, self.ui.device)
 
         return {
+            page_main: [
+                Tool(
+                    name="main.collect_mail",
+                    description="Collects mail rewards.",
+                    execute=mail_handler.run
+                )
+            ],
             page_dorm: [
                 Tool(
                     name="dorm.collect_rewards",
@@ -88,6 +105,34 @@ class StateMachine:
                     name="dorm.get_ship_count",
                     description="Gets the number of ships currently in the dorm.",
                     execute=dorm_handler.get_dorm_ship_amount
+                )
+            ],
+            page_commission: [
+                Tool(
+                    name="commission.run",
+                    description="Receives rewards from completed commissions and starts new ones.",
+                    execute=commission_handler.run
+                )
+            ],
+            page_research: [
+                Tool(
+                    name="research.run",
+                    description="Handles receiving completed research, starting new projects, and filling the queue.",
+                    execute=research_handler.run
+                )
+            ],
+            page_shop: [
+                Tool(
+                    name="shop.run",
+                    description="Buys items from the general shop based on user filters.",
+                    execute=shop_handler.run
+                )
+            ],
+            page_guild: [
+                Tool(
+                    name="guild.collect_lobby_rewards",
+                    description="Collects rewards from guild reports in the lobby.",
+                    execute=guild_handler.guild_lobby
                 )
             ]
         }
