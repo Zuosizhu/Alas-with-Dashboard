@@ -14,6 +14,8 @@ from module.config.deep import deep_get, deep_set
 from module.exception import *
 from module.logger import logger
 from module.notify import handle_notify
+from module.ui.page import page_dorm, page_dormmenu, page_commission, page_research, page_guild, page_shop, page_main
+from module.dorm.assets import DORM_RED_DOT
 
 
 class AzurLaneAutoScript:
@@ -62,6 +64,39 @@ class AzurLaneAutoScript:
         except Exception as e:
             logger.exception(e)
             sys.exit(1)
+
+    @cached_property
+    def ui(self):
+        try:
+            from module.ui.ui import UI
+            ui = UI(self.config, device=self.device)
+            return ui
+        except Exception as e:
+            logger.exception(e)
+            sys.exit(1)
+
+    @cached_property
+    def state_machine(self):
+        try:
+            from module.state_machine import StateMachine
+            state_machine = StateMachine(ui=self.ui)
+            return state_machine
+        except Exception as e:
+            logger.exception(e)
+            sys.exit(1)
+
+    def cal_dorm_delay(self, ships):
+        dict_delay = {
+            0: self.config.Scheduler_SuccessInterval,
+            1: 1000,
+            2: 556,
+            3: 417,
+            4: 358,
+            5: 313,
+            6: 278,
+        }
+        delay = dict_delay.get(ships, self.config.Scheduler_SuccessInterval)
+        return delay
 
     def run(self, command, skip_first_screenshot=False):
         try:
@@ -183,28 +218,89 @@ class AzurLaneAutoScript:
             UI(self.config, device=self.device).ui_goto_main()
 
     def research(self):
-        from module.research.research import RewardResearch
-        RewardResearch(config=self.config, device=self.device).run()
+        self.ui.ui_ensure(page_research)
+        tools = self.state_machine.get_available_tools()
+        for tool in tools:
+            if tool.name == "research.run":
+                tool.execute()
+                break
 
     def commission(self):
-        from module.commission.commission import RewardCommission
-        RewardCommission(config=self.config, device=self.device).run()
+        self.ui.ui_ensure(page_commission)
+        tools = self.state_machine.get_available_tools()
+        for tool in tools:
+            if tool.name == "commission.run":
+                tool.execute()
+                break
 
     def tactical(self):
         from module.tactical.tactical_class import RewardTacticalClass
         RewardTacticalClass(config=self.config, device=self.device).run()
 
     def dorm(self):
-        from module.dorm.dorm import RewardDorm
-        RewardDorm(config=self.config, device=self.device).run()
+        if not self.config.Dorm_Feed and not self.config.Dorm_Collect and not self.config.BuyFurniture_Enable:
+            self.config.Scheduler_Enable = False
+            self.config.task_stop()
+
+        self.ui.ui_ensure(page_dormmenu)
+        self.ui.handle_info_bar()
+
+        collect = self.config.Dorm_Collect
+        if not self.ui.appear(DORM_RED_DOT, offset=(30, 30)):
+            logger.info('Nothing to collect. Dorm collecting skipped.')
+            collect = False
+
+        if not self.config.Dorm_Feed and not collect and not self.config.BuyFurniture_Enable:
+            return
+
+        self.ui.ui_goto(page_dorm, skip_first_screenshot=True)
+
+        # Get tools
+        tools = self.state_machine.get_available_tools()
+
+        # Execute tools based on config
+        if self.config.Dorm_Feed:
+            logger.hr('Dorm feed', level=1)
+            for tool in tools:
+                if tool.name == "dorm.feed_ships":
+                    tool.execute()
+                    break
+
+        if collect:
+            logger.hr('Dorm collect', level=1)
+            for tool in tools:
+                if tool.name == "dorm.collect_rewards":
+                    tool.execute()
+                    break
+
+        if self.config.BuyFurniture_Enable:
+            logger.hr('Dorm buy furniture', level=1)
+            for tool in tools:
+                if tool.name == "dorm.buy_furniture":
+                    tool.execute(buy_option=self.config.BuyFurniture_BuyOption)
+                    break
+
+        # Scheduler
+        ships = 0
+        for tool in tools:
+            if tool.name == "dorm.get_ship_count":
+                ships = tool.execute()
+                break
+        delay = self.cal_dorm_delay(ships)
+        logger.info(f'Ships in dorm: {ships}, task to delay: {delay}')
+        self.config.task_delay(minute=delay)
 
     def meowfficer(self):
         from module.meowfficer.meowfficer import RewardMeowfficer
         RewardMeowfficer(config=self.config, device=self.device).run()
 
     def guild(self):
-        from module.guild.guild_reward import RewardGuild
-        RewardGuild(config=self.config, device=self.device).run()
+        self.ui.ui_ensure(page_guild)
+        tools = self.state_machine.get_available_tools()
+        for tool in tools:
+            if tool.name == "guild.collect_lobby_rewards":
+                tool.execute()
+                break
 
     def reward(self):
         from module.reward.reward import Reward
@@ -215,8 +311,13 @@ class AzurLaneAutoScript:
         Awaken(config=self.config, device=self.device).run()
 
     def shop_frequent(self):
-        from module.shop.shop_reward import RewardShop
-        RewardShop(config=self.config, device=self.device).run_frequent()
+        self.ui.ui_ensure(page_shop)
+        tools = self.state_machine.get_available_tools()
+        for tool in tools:
+            if tool.name == "shop.run":
+                tool.execute()
+                break
+        self.config.task_delay(server_update=True)
 
     def shop_once(self):
         from module.shop.shop_reward import RewardShop
@@ -229,6 +330,14 @@ class AzurLaneAutoScript:
     def gacha(self):
         from module.gacha.gacha_reward import RewardGacha
         RewardGacha(config=self.config, device=self.device).run()
+
+    def mail(self):
+        self.ui.ui_ensure(page_main)
+        tools = self.state_machine.get_available_tools()
+        for tool in tools:
+            if tool.name == "main.collect_mail":
+                tool.execute()
+                break
 
     def freebies(self):
         from module.freebies.freebies import Freebies

@@ -7,7 +7,7 @@ from module.commission.commission import RewardCommission
 from module.research.research import RewardResearch
 from module.shop.shop_general import GeneralShop
 from module.guild.lobby import GuildLobby
-from module.freebies.mail import Mail
+from module.freebies.mail_white import MailWhite as Mail
 
 class StateMachine:
     def __init__(self, ui: UI):
