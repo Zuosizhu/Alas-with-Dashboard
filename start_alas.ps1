@@ -9,7 +9,8 @@ Non-blocking launcher that:
 
 param(
     [int]$Port = 22267,
-    [bool]$ForceStopExisting = $true,
+    [bool]$ForceStopExisting = $false,
+    [switch]$ForceRestart,
     [string]$ExtraArgs = "",
     [switch]$SkipLogTail,
     [switch]$SkipBrowser
@@ -129,8 +130,95 @@ function Ensure-EmulatorAndDevice() {
     }
 }
 
+function Get-WebuiPort() {
+    $DefaultPort = 22267
+    try {
+        $deployPath = Join-Path $PSScriptRoot "config\deploy.yaml"
+        if (Test-Path $deployPath) {
+            $raw = Get-Content $deployPath -Raw
+            $m = [Regex]::Match($raw, 'WebuiPort:\s*(\d+)')
+            if ($m.Success) { return [int]$m.Groups[1].Value }
+        }
+    } catch {}
+    return $DefaultPort
+}
+
+function Open-BrowserIfRequested([int]$ChosenPort, [switch]$SkipBrowser) {
+    if ($SkipBrowser) { return }
+    $url = "http://localhost:$ChosenPort/"
+    try {
+        $candidates = @(
+            'firefox',
+            'C:\\Program Files\\Mozilla Firefox\\firefox.exe',
+            'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe'
+        )
+        $opened = $false
+        foreach ($bin in $candidates) {
+            try { Start-Process $bin $url | Out-Null; $opened = $true; break } catch {}
+        }
+        if (-not $opened) { try { Start-Process 'chrome' $url | Out-Null; $opened = $true } catch {} }
+        if (-not $opened) { Start-Process $url | Out-Null }
+    } catch { try { Start-Process "cmd" "/c start $url" | Out-Null } catch {} }
+}
+
+function Tail-LogIfRequested([string]$LogFile, [switch]$SkipLogTail) {
+    if ($SkipLogTail) { return }
+    $tailCmd = "Write-Host 'Tailing $LogFile' -ForegroundColor Cyan; `n" +
+               "if (Test-Path '$LogFile') { Get-Content -Path '$LogFile' -Wait -Tail 50 } else { `n" +
+               "Write-Host 'Waiting for log file to appear...' -ForegroundColor Yellow; `n" +
+               "while (-not (Test-Path '$LogFile')) { Start-Sleep -Milliseconds 200 }; `n" +
+               "Get-Content -Path '$LogFile' -Wait -Tail 0 }"
+    Start-Process -FilePath "pwsh.exe" -ArgumentList @('-NoLogo','-NoExit','-Command', $tailCmd) | Out-Null
+}
+
+# Paths and files (needed early for detection/attach)
+$RepoRoot = $PSScriptRoot
+$LogDir = Join-Path $RepoRoot "log"
+if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
+$PidFile = Join-Path $LogDir "alas_gui.pid"
+$LatestLogMarker = Join-Path $LogDir "latest_launch.txt"
+$GuiScript = Join-Path $RepoRoot "gui.py"
+$VenvPath = Join-Path $RepoRoot ".venv"
+$PythonExe = Join-Path $VenvPath "Scripts\python.exe"
+
+# Early detection: if an instance is running, attach (unless forced)
+Write-Section "Checking for existing ALAS instances"
+$likelyPaths = @([Regex]::Escape($GuiScript), [Regex]::Escape($RepoRoot))
+$cmdRegex = "(" + ($likelyPaths -join "|") + ")"
+$Existing = @()
+try {
+    $Existing = Get-CimInstance Win32_Process | Where-Object {
+        $_.Name -match '^python(\.exe)?$' -and $_.CommandLine -match $cmdRegex
+    }
+} catch {}
+
+if ($Existing.Count -gt 0 -and -not $ForceRestart -and -not $ForceStopExisting) {
+    Write-Host ("Detected existing ALAS instance (PID(s): {0})" -f ($Existing.ProcessId -join ', ')) -ForegroundColor Yellow
+    $attachLog = if (Test-Path $LatestLogMarker) { Get-Content $LatestLogMarker -Raw } else { $null }
+    $port = Get-WebuiPort
+    # Show current listener information, if available
+    try {
+        $listener = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue | Where-Object { $_.State -eq 'Listen' }
+        if ($listener) {
+            $owningPid = $listener.OwningProcess
+            $p = Get-CimInstance Win32_Process -Filter "ProcessId=$owningPid"
+            if ($p) {
+                Write-Host "Listener PID $owningPid on port $port" -ForegroundColor Gray
+                if ($p.ExecutablePath) { Write-Host "  ExecutablePath: $($p.ExecutablePath)" -ForegroundColor Gray }
+                if ($p.CommandLine)    { Write-Host "  CommandLine   : $($p.CommandLine)" -ForegroundColor Gray }
+            }
+        }
+    } catch {}
+
+    # Open browser and tail current/last log, then exit
+    Open-BrowserIfRequested -ChosenPort $port -SkipBrowser:$SkipBrowser
+    if ($attachLog) { Tail-LogIfRequested -LogFile $attachLog -SkipLogTail:$SkipLogTail }
+    Write-Host "An instance is already running. Not starting a new one. Use -ForceRestart to restart." -ForegroundColor Green
+    exit 0
+}
+
 # Ensure any existing ALAS instance is stopped first
-if ($ForceStopExisting) {
+if ($ForceStopExisting -or $ForceRestart) {
     $StopScript = Join-Path $PSScriptRoot "stop_alas.ps1"
     if (Test-Path $StopScript) {
         try {
@@ -142,17 +230,8 @@ if ($ForceStopExisting) {
     }
 }
 
-# Paths and files
-$RepoRoot = $PSScriptRoot
-$LogDir = Join-Path $RepoRoot "log"
-if (-not (Test-Path $LogDir)) { New-Item -ItemType Directory -Path $LogDir | Out-Null }
 $Timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $LogFile = Join-Path $LogDir "launch_$Timestamp.txt"
-$PidFile = Join-Path $LogDir "alas_gui.pid"
-$LatestLogMarker = Join-Path $LogDir "latest_launch.txt"
-$GuiScript = Join-Path $RepoRoot "gui.py"
-$VenvPath = Join-Path $RepoRoot ".venv"
-$PythonExe = Join-Path $VenvPath "Scripts\python.exe"
 
 # Auto-provision virtual environment with uv if missing
 if (-not (Test-Path $VenvPath)) {
@@ -198,25 +277,30 @@ $env:PYTHONIOENCODING = "utf-8"
 $env:PYTHONLEGACYWINDOWSSTDIO = "utf-8"
 $env:PYTHONUTF8 = "1"
 
-# Find and stop existing ALAS processes
-Write-Section "Checking for existing ALAS instances"
-$likelyPaths = @([Regex]::Escape($GuiScript), [Regex]::Escape($RepoRoot))
-$cmdRegex = "(" + ($likelyPaths -join "|") + ")"
-$Existing = @()
-try {
-    $Existing = Get-CimInstance Win32_Process | Where-Object {
-        $_.Name -match '^python(\.exe)?$' -and $_.CommandLine -match $cmdRegex
-    }
-} catch {}
+# Ensure venv takes precedence for any child process lookups of "python"
+$env:VIRTUAL_ENV = $VenvPath
+$env:PATH = (Join-Path $VenvPath 'Scripts') + ";" + $env:PATH
 
-if ($Existing.Count -gt 0) {
-    Write-Host ("Found {0} ALAS process(es)" -f $Existing.Count) -ForegroundColor Yellow
-    foreach ($proc in $Existing) {
-        Write-Host "  PID $($proc.ProcessId): $($proc.CommandLine)" -ForegroundColor Gray
-    Try-StopProcessGracefully -TargetPid $proc.ProcessId -TimeoutSec 5
+# Find and stop existing ALAS processes
+if ($ForceStopExisting -or $ForceRestart) {
+    Write-Section "Checking for existing ALAS instances"
+    $likelyPaths = @([Regex]::Escape($GuiScript), [Regex]::Escape($RepoRoot))
+    $cmdRegex = "(" + ($likelyPaths -join "|") + ")"
+    $Existing = @()
+    try {
+        $Existing = Get-CimInstance Win32_Process | Where-Object {
+            $_.Name -match '^python(\.exe)?$' -and $_.CommandLine -match $cmdRegex
+        }
+    } catch {}
+    if ($Existing.Count -gt 0) {
+        Write-Host ("Found {0} ALAS process(es)" -f $Existing.Count) -ForegroundColor Yellow
+        foreach ($proc in $Existing) {
+            Write-Host "  PID $($proc.ProcessId): $($proc.CommandLine)" -ForegroundColor Gray
+            Try-StopProcessGracefully -TargetPid $proc.ProcessId -TimeoutSec 5
+        }
+    } else {
+        Write-Host "No matching ALAS python process found." -ForegroundColor Green
     }
-} else {
-    Write-Host "No matching ALAS python process found." -ForegroundColor Green
 }
 
 # Also ensure the selected port is free; if python owns it, stop it. If non-Python holds it, pick next free port.
@@ -228,10 +312,15 @@ try {
         $owner = Get-Process -Id $ownerPid -ErrorAction SilentlyContinue
         Write-Host "Port $ChosenPort is currently in use by PID $ownerPid ($($owner.Name))" -ForegroundColor Yellow
         $isPython = $owner -and ($owner.Name -match '^python(\\.exe)?$')
-        if ($isPython) {
-            Write-Host "Stopping Python process on port $ChosenPort..." -ForegroundColor Yellow
+        if ($isPython -and ($ForceStopExisting -or $ForceRestart)) {
+            Write-Host "Stopping Python process on port $ChosenPort (forced)..." -ForegroundColor Yellow
             Try-StopProcessGracefully -TargetPid $ownerPid -TimeoutSec 5
             Start-Sleep -Milliseconds 500
+        } elseif ($isPython) {
+            Write-Host "Python already listening on $ChosenPort; assuming ALAS is running. Attaching instead of starting a new one." -ForegroundColor Yellow
+            Open-BrowserIfRequested -ChosenPort $ChosenPort -SkipBrowser:$SkipBrowser
+            if (Test-Path $LatestLogMarker) { Tail-LogIfRequested -LogFile (Get-Content $LatestLogMarker -Raw) -SkipLogTail:$SkipLogTail }
+            exit 0
         } else {
             # Find next free port (up to +20)
             for ($p = $Port; $p -le ($Port + 20); $p++) {
@@ -319,6 +408,30 @@ if (-not $SkipBrowser) {
         try { Start-Process "cmd" "/c start $url" | Out-Null } catch {}
     }
 }
+
+# Best-effort: verify which process owns the web UI port and show its executable path
+try {
+    $verifyTimeoutMs = 4000
+    $elapsed = 0
+    $step = 250
+    $listener = $null
+    while ($elapsed -lt $verifyTimeoutMs) {
+        $listener = Get-NetTCPConnection -LocalPort $ChosenPort -ErrorAction SilentlyContinue | Where-Object { $_.State -eq 'Listen' }
+        if ($listener) { break }
+        Start-Sleep -Milliseconds $step
+        $elapsed += $step
+    }
+    if ($listener) {
+        $owningPid = $listener.OwningProcess
+        # Use CIM to get both ExecutablePath and CommandLine for clarity
+        $p = Get-CimInstance Win32_Process -Filter "ProcessId=$owningPid"
+        if ($p) {
+            Write-Host "Listener PID $owningPid on port $ChosenPort" -ForegroundColor Gray
+            if ($p.ExecutablePath) { Write-Host "  ExecutablePath: $($p.ExecutablePath)" -ForegroundColor Gray }
+            if ($p.CommandLine)    { Write-Host "  CommandLine   : $($p.CommandLine)" -ForegroundColor Gray }
+        }
+    }
+} catch { }
 
 Write-Host "`nDone. This terminal can be closed. Use stop_alas.ps1 to stop the GUI." -ForegroundColor Green
 exit 0
