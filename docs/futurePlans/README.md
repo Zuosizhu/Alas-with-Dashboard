@@ -1,8 +1,7 @@
-# Future Plans Directory
+# Future Plans
 
-This directory contains architectural planning documents and future development proposals for the Azur Lane automation project.
+This directory contains architectural planning documents for the Azur Lane automation project.
 
-## Documents
+## Current Document
 
-- `multi_agent_conversion_plan.md` - Comprehensive plan for converting the autonomous system to a multi-agent architecture using LangGraph
-- `technical_architecture.md` - Detailed technical architecture analysis
+- `multi_agent_conversion_plan.md` - Complete plan for converting the autonomous system to a multi-agent architecture using LangGraph with emphasis on GUI preservation and screenshot-based vision verification
