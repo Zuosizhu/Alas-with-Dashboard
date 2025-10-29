@@ -154,13 +154,34 @@ $GuiScript = Join-Path $RepoRoot "gui.py"
 $VenvPath = Join-Path $RepoRoot ".venv"
 $PythonExe = Join-Path $VenvPath "Scripts\python.exe"
 
+# Auto-provision virtual environment with uv if missing
+if (-not (Test-Path $VenvPath)) {
+    try {
+        $uv = Get-Command uv -ErrorAction Stop
+        Write-Section "Provisioning Python venv using uv"
+        $pyCandidate = "C:\\Python37\\python.exe"
+        $args = @('venv')
+        if (Test-Path $pyCandidate) { $args += @('--python', $pyCandidate) }
+        $args += @($VenvPath)
+        & $uv.Source $args | Out-Null
+        if (Test-Path (Join-Path $RepoRoot 'requirements.txt')) {
+            Write-Host "Syncing dependencies via uv pip sync" -ForegroundColor Gray
+            & $uv.Source 'pip' 'sync' '-p' $VenvPath 'requirements.txt' | Out-Null
+        }
+    } catch {
+        Write-Host "ERROR: Virtual environment not found at $VenvPath and 'uv' is not available to create it." -ForegroundColor Red
+        Write-Host "Install uv (https://docs.astral.sh/uv/), or create venv manually: python -m venv .venv" -ForegroundColor Yellow
+        exit 1
+    }
+}
+
 Write-Section "ALAS Launcher"
 Write-Host "Log file: $LogFile" -ForegroundColor Gray
 
 # Validate prerequisites
 if (-not (Test-Path $VenvPath)) {
     Write-Host "ERROR: Virtual environment not found at $VenvPath" -ForegroundColor Red
-    Write-Host "Create it with: python -m venv .venv" -ForegroundColor Yellow
+    Write-Host "Create it with: uv venv .venv (preferred) or python -m venv .venv" -ForegroundColor Yellow
     exit 1
 }
 if (-not (Test-Path $PythonExe)) {
