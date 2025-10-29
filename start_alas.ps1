@@ -276,9 +276,24 @@ if (-not $SkipBrowser) {
     Write-Section "Opening browser"
     $url = "http://localhost:$ChosenPort/"
     try {
-        # Prefer Chrome if available
-        try { Start-Process 'chrome' $url | Out-Null }
-        catch { Start-Process $url | Out-Null }
+        # Prefer Firefox if available (PATH or typical install locations)
+        $candidates = @(
+            'firefox',
+            'C:\\Program Files\\Mozilla Firefox\\firefox.exe',
+            'C:\\Program Files (x86)\\Mozilla Firefox\\firefox.exe'
+        )
+        $opened = $false
+        foreach ($bin in $candidates) {
+            try { Start-Process $bin $url | Out-Null; $opened = $true; break } catch {}
+        }
+        if (-not $opened) {
+            # Fallback to Chrome if available
+            try { Start-Process 'chrome' $url | Out-Null; $opened = $true } catch {}
+        }
+        if (-not $opened) {
+            # Final fallback: let Windows resolve default handler
+            Start-Process $url | Out-Null
+        }
     } catch {
         try { Start-Process "cmd" "/c start $url" | Out-Null } catch {}
     }
