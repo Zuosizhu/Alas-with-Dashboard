@@ -1,5 +1,6 @@
 ### AzurLaneAutoScript
 log
+logs/
 config/backup/*
 config/*.ini
 !config/template.ini
@@ -19,6 +20,12 @@ config/reloadflag
 config/reloadalas
 test.py
 test/
+.kilocode/
+.ruff_cache/
+python-3.7.9-embed-amd64/
+PatrickConfig_export.json
+nul
+-p/
 
 # Created by .ignore support plugin (hsz.mobi)
 
