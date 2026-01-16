@@ -69,7 +69,7 @@ Deploy:
 
     # Whether to use ocr server
     # [Default] false
-    UseOcrServer: false
+    UseOcrServer: true
     # Whether to start ocr server when start GUI
     # [Default] false
     StartOcrServer: false

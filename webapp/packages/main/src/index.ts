@@ -29,9 +29,9 @@ if (import.meta.env.MODE === 'development') {
 /**
  * Load deploy settings and start Alas web server.
  */
-let alas = new PyShell(webuiPath, webuiArgs);
+const alas = new PyShell(webuiPath, webuiArgs);
 alas.end(function (err: string) {
-  // if (err) throw err;
+  if (err) console.error(err);
 });
 
 
@@ -74,21 +74,21 @@ const createWindow = async () => {
     // Dev tools
     globalShortcut.register('Ctrl+Shift+I', function () {
       if (mainWindow?.webContents.isDevToolsOpened()) {
-        mainWindow?.webContents.closeDevTools()
+        mainWindow?.webContents.closeDevTools();
       } else {
-        mainWindow?.webContents.openDevTools()
+        mainWindow?.webContents.openDevTools();
       }
     });
     // Refresh
     globalShortcut.register('Ctrl+R', function () {
-      mainWindow?.reload()
+      mainWindow?.reload();
     });
     globalShortcut.register('Ctrl+Shift+R', function () {
-      mainWindow?.reload()
+      mainWindow?.reload();
     });
   });
   mainWindow.on('blur', function () {
-    globalShortcut.unregisterAll()
+    globalShortcut.unregisterAll();
   });
 
   // Minimize, maximize, close window.
@@ -104,7 +104,7 @@ const createWindow = async () => {
   ipcMain.on('window-close', function () {
     alas.kill(function () {
       mainWindow?.close();
-    })
+    });
   });
 
   // Tray
@@ -114,30 +114,30 @@ const createWindow = async () => {
       label: 'Show',
       click: function () {
         mainWindow?.show();
-      }
+      },
     },
     {
       label: 'Hide',
       click: function () {
         mainWindow?.hide();
-      }
+      },
     },
     {
       label: 'Exit',
       click: function () {
         alas.kill(function () {
           mainWindow?.close();
-        })
-      }
-    }
+        });
+      },
+    },
   ]);
   tray.setToolTip('Alas');
   tray.setContextMenu(contextMenu);
   tray.on('click', () => {
-    mainWindow?.isVisible() ? mainWindow?.hide() : mainWindow?.show()
+    mainWindow?.isVisible() ? mainWindow?.hide() : mainWindow?.show();
   });
   tray.on('right-click', () => {
-    tray.popUpContextMenu(contextMenu)
+    tray.popUpContextMenu(contextMenu);
   });
 };
 
@@ -173,7 +173,7 @@ alas.on('stderr', function (message: string) {
    */
   if (message.includes('Application startup complete') || message.includes('bind on address')) {
     alas.removeAllListeners('stderr');
-    loadURL()
+    loadURL();
   }
 });
 
@@ -207,4 +207,3 @@ if (import.meta.env.PROD) {
     .then(({autoUpdater}) => autoUpdater.checkForUpdatesAndNotify())
     .catch((e) => console.error('Failed check updates:', e));
 }
-

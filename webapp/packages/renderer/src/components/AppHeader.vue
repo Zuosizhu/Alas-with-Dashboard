@@ -1,11 +1,23 @@
 <template>
   <div class="app-header">
-    <div class="header-drag"></div>
+    <div class="header-drag" />
     <div class="header-icon">
-      <ArrowDownOutlined class="icon" @click="trayWin"></ArrowDownOutlined>
-      <MinusOutlined class="icon" @click="minimizeWin"></MinusOutlined>
-      <BorderOutlined class="icon" @click="maximizeWin"></BorderOutlined>
-      <CloseOutlined class="icon" @click="closeWin"></CloseOutlined>
+      <ArrowDownOutlined
+        class="icon"
+        @click="trayWin"
+      />
+      <MinusOutlined
+        class="icon"
+        @click="minimizeWin"
+      />
+      <BorderOutlined
+        class="icon"
+        @click="maximizeWin"
+      />
+      <CloseOutlined
+        class="icon"
+        @click="closeWin"
+      />
     </div>
   </div>
 </template>

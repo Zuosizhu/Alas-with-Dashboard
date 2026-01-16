@@ -1,7 +1,7 @@
 {
   "env": {
     "browser": true,
-    "node": false
+    "node": true
   },
   "extends": [
     /** @see https://eslint.vuejs.org/rules/ */

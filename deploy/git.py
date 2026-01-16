@@ -3,6 +3,10 @@ from deploy.git_over_cdn.client import GitOverCdnClient
 from deploy.logger import logger
 from deploy.utils import *
 
+import argparse
+import subprocess
+import sys
+
 
 class GitManager(DeployConfig):
     @cached_property
@@ -101,5 +105,63 @@ class GitManager(DeployConfig):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(add_help=True)
+    sub = parser.add_subparsers(dest="cmd")
+
+    fetch_upstream = sub.add_parser("fetch-upstream")
+    fetch_upstream.add_argument("--remote", default="upstream")
+    fetch_upstream.add_argument("--url", required=True)
+    fetch_upstream.add_argument("--branch", default="master")
+
+    sync_upstream = sub.add_parser("sync-upstream")
+    sync_upstream.add_argument("--remote", default="upstream")
+    sync_upstream.add_argument("--url")
+    sync_upstream.add_argument("--branch", default="master")
+    sync_upstream.add_argument("--strategy", choices=["rebase", "merge", "ff-only"], default="rebase")
+
+    args, unknown = parser.parse_known_args()
+
     self = GitManager()
+
+    git_exe = self.git
+
+    def run_git(*argv):
+        return subprocess.check_call([git_exe, *argv], stdout=sys.stdout, stderr=sys.stderr)
+
+    if args.cmd == "fetch-upstream":
+        remote = args.remote
+        url = args.url
+        branch = args.branch
+
+        try:
+            run_git("remote", "set-url", remote, url)
+        except Exception:
+            run_git("remote", "add", remote, url)
+
+        run_git("fetch", remote, branch)
+        run_git("--no-pager", "log", "--no-merges", "-1", "--oneline", f"{remote}/{branch}")
+        sys.exit(0)
+
+    if args.cmd == "sync-upstream":
+        remote = args.remote
+        url = args.url
+        branch = args.branch
+        strategy = args.strategy
+
+        if url:
+            try:
+                run_git("remote", "set-url", remote, url)
+            except Exception:
+                run_git("remote", "add", remote, url)
+
+        run_git("fetch", remote, branch)
+        if strategy == "rebase":
+            run_git("rebase", f"{remote}/{branch}")
+        elif strategy == "merge":
+            run_git("merge", f"{remote}/{branch}")
+        else:
+            run_git("merge", "--ff-only", f"{remote}/{branch}")
+        run_git("--no-pager", "log", "--no-merges", "-1", "--oneline")
+        sys.exit(0)
+
     self.goc_client.get_status()

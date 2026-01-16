@@ -16,6 +16,7 @@ class ModelProxy:
     def init(cls, address="127.0.0.1:22268"):
         import zerorpc
 
+        cls.online = True
         logger.info(f"Connecting to OCR server {address}")
         cls.client = zerorpc.Client(timeout=5)
         cls.client.connect(f"tcp://{address}")
@@ -25,6 +26,11 @@ class ModelProxy:
         except:
             cls.online = False
             logger.warning("Ocr server not running")
+            try:
+                cls.client.close()
+            except Exception:
+                pass
+            cls.client = None
 
     @classmethod
     def close(cls):
@@ -36,6 +42,10 @@ class ModelProxy:
 
     def __init__(self, lang) -> None:
         self.lang = lang
+
+    def _ensure_online(self):
+        if not self.online:
+            raise RuntimeError("OCR server not running")
 
     def ocr(self, img_fp):
         """
@@ -51,8 +61,7 @@ class ModelProxy:
                 return self.client("ocr", self.lang, img_str)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).ocr(img_fp)
+        self._ensure_online()
 
     def ocr_for_single_line(self, img_fp):
         """
@@ -68,8 +77,7 @@ class ModelProxy:
                 return self.client("ocr_for_single_line", self.lang, img_str)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).ocr_for_single_line(img_fp)
+        self._ensure_online()
 
     def ocr_for_single_lines(self, img_list):
         """
@@ -85,8 +93,7 @@ class ModelProxy:
                 return self.client("ocr_for_single_lines", self.lang, img_str_list)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).ocr_for_single_lines(img_list)
+        self._ensure_online()
 
     def set_cand_alphabet(self, cand_alphabet: str):
         if self.online:
@@ -94,8 +101,7 @@ class ModelProxy:
                 return self.client("set_cand_alphabet", self.lang, cand_alphabet)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).set_cand_alphabet(cand_alphabet)
+        self._ensure_online()
 
     def atomic_ocr(self, img_fp, cand_alphabet=None):
         """
@@ -112,8 +118,7 @@ class ModelProxy:
                 return self.client("atomic_ocr", self.lang, img_str, cand_alphabet)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).atomic_ocr(img_fp, cand_alphabet)
+        self._ensure_online()
 
     def atomic_ocr_for_single_line(self, img_fp, cand_alphabet=None):
         """
@@ -130,8 +135,7 @@ class ModelProxy:
                 return self.client("atomic_ocr_for_single_line", self.lang, img_str, cand_alphabet)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).atomic_ocr_for_single_line(img_fp, cand_alphabet)
+        self._ensure_online()
 
     def atomic_ocr_for_single_lines(self, img_list, cand_alphabet=None):
         """
@@ -148,8 +152,7 @@ class ModelProxy:
                 return self.client("atomic_ocr_for_single_lines", self.lang, img_str_list, cand_alphabet)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).atomic_ocr_for_single_lines(img_list, cand_alphabet)
+        self._ensure_online()
 
     def debug(self, img_list):
         """
@@ -165,14 +168,13 @@ class ModelProxy:
                 return self.client("debug", self.lang, img_str_list)
             except:
                 self.online = False
-        from module.ocr.models import OCR_MODEL
-        return OCR_MODEL.__getattribute__(self.lang).debug(img_list)
+        self._ensure_online()
 
 
 class ModelProxyFactory:
     def __getattribute__(self, __name: str) -> ModelProxy:
         if __name in ["azur_lane", "cnocr", "jp", "tw", "azur_lane_jp"]:
-            if ModelProxy.client is None:
+            if ModelProxy.client is None or not ModelProxy.online:
                 ModelProxy.init(address=State.deploy_config.OcrClientAddress)
             return ModelProxy(lang=__name)
         else:

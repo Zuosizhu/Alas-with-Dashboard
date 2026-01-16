@@ -238,10 +238,7 @@ if (-not (Test-Path $VenvPath)) {
     try {
         $uv = Get-Command uv -ErrorAction Stop
         Write-Section "Provisioning Python venv using uv"
-        $pyCandidate = "C:\\Python37\\python.exe"
-        $args = @('venv')
-        if (Test-Path $pyCandidate) { $args += @('--python', $pyCandidate) }
-        $args += @($VenvPath)
+        $args = @('venv', $VenvPath)
         & $uv.Source $args | Out-Null
         if (Test-Path (Join-Path $RepoRoot 'requirements.txt')) {
             Write-Host "Syncing dependencies via uv pip sync" -ForegroundColor Gray

@@ -1,18 +1,18 @@
 <template>
   <div id="app">
-    <app-header></app-header>
-    <router-view></router-view>
+    <AppHeader />
+    <router-view />
   </div>
 </template>
 
 <script lang="ts">
   import {defineComponent} from 'vue';
-  import AppHeader from '/@/components/AppHeader.vue'
+  import AppHeader from '/@/components/AppHeader.vue';
 
   export default defineComponent({
     name: 'App',
     components: {
-      AppHeader
+      AppHeader,
     },
   });
 </script>

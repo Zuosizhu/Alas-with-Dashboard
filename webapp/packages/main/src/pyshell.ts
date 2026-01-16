@@ -15,13 +15,13 @@ export class PyShell extends PythonShell {
     super(script, options);
   }
 
-  on(event: string, listener: (...args: any[]) => void): this {
+  on(event: string, listener: (...args: unknown[]) => void): this {
     this.removeAllListeners(event);
     super.on(event, listener);
     return this;
   }
 
-  kill(callback: (...args: any[]) => void): this {
+  kill(callback: (...args: unknown[]) => void): this {
     treeKill(this.childProcess.pid, 'SIGTERM', callback);
     return this;
   }

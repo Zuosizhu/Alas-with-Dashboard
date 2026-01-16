@@ -4,6 +4,7 @@ import sys
 import threading
 import time
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
 
 import inflection
 from cached_property import cached_property
@@ -696,6 +697,136 @@ class AzurLaneAutoScript:
                 break
 
 
+def _json_dumps(obj: Any) -> str:
+    import json
+
+    return json.dumps(obj, ensure_ascii=False, default=str)
+
+
+def cli_main(argv: Optional[List[str]] = None) -> int:
+    import argparse
+    import json
+
+    from module.state_machine import StateMachine
+    from module.ui.page import Page
+
+    parser = argparse.ArgumentParser(prog="alas")
+    parser.add_argument("--config", default="alas")
+    subparsers = parser.add_subparsers(dest="command")
+
+    tools_parser = subparsers.add_parser("tools")
+    tools_sub = tools_parser.add_subparsers(dest="tools_cmd")
+
+    tools_list = tools_sub.add_parser("list")
+    tools_list.add_argument("--offline", action="store_true")
+
+    tools_call = tools_sub.add_parser("call")
+    tools_call.add_argument("name")
+    tools_call.add_argument("--json", dest="json_args", default=None)
+
+    page_parser = subparsers.add_parser("page")
+    page_sub = page_parser.add_subparsers(dest="page_cmd")
+
+    page_sub.add_parser("current")
+    page_goto = page_sub.add_parser("goto")
+    page_goto.add_argument("page")
+
+    adb_parser = subparsers.add_parser("adb")
+    adb_sub = adb_parser.add_subparsers(dest="adb_cmd")
+
+    adb_screenshot = adb_sub.add_parser("screenshot")
+    adb_screenshot.add_argument("--out", required=True)
+
+    adb_tap = adb_sub.add_parser("tap")
+    adb_tap.add_argument("x", type=int)
+    adb_tap.add_argument("y", type=int)
+
+    adb_swipe = adb_sub.add_parser("swipe")
+    adb_swipe.add_argument("x1", type=int)
+    adb_swipe.add_argument("y1", type=int)
+    adb_swipe.add_argument("x2", type=int)
+    adb_swipe.add_argument("y2", type=int)
+    adb_swipe.add_argument("--duration-ms", type=int, default=None)
+
+    args = parser.parse_args(argv)
+
+    if args.command is None:
+        AzurLaneAutoScript(config_name=args.config).loop()
+        return 0
+
+    if args.command == "tools":
+        if args.tools_cmd == "list":
+            if args.offline:
+                sys.stdout.write(_json_dumps(StateMachine.tool_specs()) + "\n")
+                return 0
+
+            script = AzurLaneAutoScript(config_name=args.config)
+            tools = [
+                {"name": t.name, "description": t.description, "parameters": t.parameters}
+                for t in script.state_machine.get_all_tools()
+            ]
+            sys.stdout.write(_json_dumps(tools) + "\n")
+            return 0
+
+        if args.tools_cmd == "call":
+            tool_args: Dict[str, Any] = {}
+            if args.json_args:
+                tool_args = json.loads(args.json_args)
+                if not isinstance(tool_args, dict):
+                    raise TypeError("--json must be a JSON object")
+
+            script = AzurLaneAutoScript(config_name=args.config)
+            result = script.state_machine.call_tool(args.name, **tool_args)
+            sys.stdout.write(_json_dumps(result) + "\n")
+            return 0
+
+        raise SystemExit("missing tools subcommand")
+
+    if args.command == "page":
+        script = AzurLaneAutoScript(config_name=args.config)
+        if args.page_cmd == "current":
+            page = script.state_machine.get_current_state()
+            sys.stdout.write(str(page) + "\n")
+            return 0
+        if args.page_cmd == "goto":
+            destination = Page.all_pages.get(args.page)
+            if destination is None:
+                raise KeyError(f"unknown page: {args.page}")
+            script.state_machine.transition(destination)
+            sys.stdout.write(f"navigated to {args.page}\n")
+            return 0
+        raise SystemExit("missing page subcommand")
+
+    if args.command == "adb":
+        script = AzurLaneAutoScript(config_name=args.config)
+        if args.adb_cmd == "screenshot":
+            image = script.device.screenshot()
+            from PIL import Image
+
+            if getattr(image, "shape", None) is not None and len(image.shape) == 3 and image.shape[2] == 3:
+                img = Image.fromarray(image[:, :, ::-1])
+            else:
+                img = Image.fromarray(image)
+            img.save(args.out)
+            sys.stdout.write(f"saved {args.out}\n")
+            return 0
+        if args.adb_cmd == "tap":
+            script.device.click_adb(args.x, args.y)
+            sys.stdout.write(f"tapped {args.x},{args.y}\n")
+            return 0
+        if args.adb_cmd == "swipe":
+            duration = 0.1 if args.duration_ms is None else (int(args.duration_ms) / 1000.0)
+            script.device.swipe_adb((args.x1, args.y1), (args.x2, args.y2), duration=duration)
+            sys.stdout.write(f"swiped {args.x1},{args.y1}->{args.x2},{args.y2}\n")
+            return 0
+        raise SystemExit("missing adb subcommand")
+
+    raise SystemExit(f"unknown command: {args.command}")
+
+
+def main() -> None:
+    raise SystemExit(cli_main())
+
+
 if __name__ == '__main__':
-    alas = AzurLaneAutoScript()
-    alas.loop()
+    raise SystemExit(cli_main())

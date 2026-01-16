@@ -1,5 +1,8 @@
 <template>
-  <iframe class="alas" :src="url"></iframe>
+  <iframe
+    class="alas"
+    :src="url"
+  />
 </template>
 
 <script lang="ts">
