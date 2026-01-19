@@ -910,7 +910,8 @@
       "campaign_main": "主線圖",
       "coalition_20230323": "極地風暴",
       "coalition_20240627": "歡迎來到童心學院",
-      "coalition_20250626": "The Neon City Investigator",
+      "coalition_20250626": "迷彩都市的尋蹤者",
+      "coalition_20251120": "DATE A LANE",
       "event_20200227_cn": "Northern Overture",
       "event_20200312_cn": "斯圖爾特的硝煙",
       "event_20200326_cn": "Microlayer Medley",
@@ -958,7 +959,7 @@
       "event_20220324_cn": "復刻虛像構築之塔",
       "event_20220407_tw": "蒼紅的迴響(復刻)",
       "event_20220414_cn": "復刻-永夜幻光",
-      "event_20220428_cn": "虹彩的終幕曲",
+      "event_20220428_cn": "復刻虹彩的終幕曲",
       "event_20220526_cn": "泠誓光庭",
       "event_20220728_cn": "雄鷹的敘事歌",
       "event_20220818_cn": "遠匯點作戰",
@@ -983,12 +984,14 @@
       "event_20241024_cn": "颶風與沉眠之海",
       "event_20241121_cn": "危險發明逼近中",
       "event_20241219_cn": "星光下的餘暉",
-      "event_20250227_cn": "Paradiso of Shackled Light",
+      "event_20250227_cn": "樊籠內的神光",
       "event_20250424_cn": "揚起鬱金之旗",
       "event_20250520_cn": "高塔上的薔薇",
       "event_20250724_cn": "鍊金術士與天際交會之塔",
       "event_20250814_cn": "奇淵下的秘密",
       "event_20250912_cn": "起舞於天原之上",
+      "event_20251023_cn": "颶風與自由群島",
+      "event_20251218_cn": "響徹於天穹之音",
       "raid_20200624": "特別演習埃塞克斯級(復刻)",
       "raid_20210708": "復刻穿越彼方的水線",
       "raid_20220127": "演習神秘事件調查",
@@ -1038,7 +1041,10 @@
       "war_archives_20220414_cn": "檔案 永夜幻光",
       "war_archives_20220428_cn": "檔案 虹彩的終幕曲",
       "war_archives_20220526_cn": "檔案 泠誓光庭",
-      "war_archives_20220728_cn": "檔案 雄鷹的敘事歌"
+      "war_archives_20220728_cn": "檔案 雄鷹的敘事歌",
+      "war_archives_20220915_cn": "檔案 紫絳槿嵐",
+      "war_archives_20221222_cn": "檔案 定向折疊",
+      "war_archives_20231026_cn": "檔案 飓風與青春之泉"
     },
     "Mode": {
       "name": "地圖模式",
@@ -1404,12 +1410,6 @@
       "name": "刷緊急委託",
       "help": "警告：這個功能可以讓玩家獲取少量的鑽石，但不是一個能高效獲取鑽石的方法\n玩碧藍航線不久的玩家，很容易迷信零破和低耗等，而忽視了角色養成\n執行這個功能只會讓你自己感覺很充實，而你的帳號實際零提升\n這個功能的主要用途，是讓陣容成型的玩家獲取額外的魔方，請理性地把鑽石當作副產物\n\n這個功能將在旗艦32級之後更換旗艦\n關於緊急委託刷新機制，可閱讀 https://bbs.nga.cn/read.php?tid=27134956\n委託油耗比: A3 > A1 > 2-4 > 2-1，有活動圖時建議選活動圖，2-1會撿問號有更多物資\n一隊會完成所有的戰鬥，前排應當為百級零破驅逐帶輸出裝，後排應該為33級及以下白船零破航母\n二隊應提供跨隊支援（跨隊彈幕、跨隊輔助）"
     },
-    "ChangeFlagship": {
-      "name": "更換旗艦",
-      "help": "當旗艦等級>=32或紅臉時更換旗艦，選擇不更換則會強制紅臉出擊\n尋找等級在1-31之間的白皮航母，同時會在退役時選擇更換下來的旗艦。所有等級大於1級的白船航母均會被視為退役目標，請務必鎖定不是目標的船。換船時更換旗艦裝備，這通過記錄之前的裝備完成。\n\n換裝備只會更換正在裝備中的欄位，即使是白裝也會更換。如果指定了旗艦，則會更換全部5個裝備，未指定旗艦隻會更換設備。",
-      "ship": "更換艦船",
-      "ship_equip": "更換艦船 + 裝備"
-    },
     "CommonCV": {
       "name": "指定旗艦航母",
       "help": "",
@@ -1423,8 +1423,7 @@
       "name": "更換前排",
       "help": "當前排紅臉時更換前排，選擇不更換則會強制紅臉出擊\n換前排通過找一艘心情不低於10、等級70的白鷹或鐵血的白船驅逐完成，所以盡量保證有足夠多的驅逐。國服則為等級100的白鷹白船驅逐。\n\n換裝備只會更換正在裝備中的欄位，即使是白裝也會更換。前排會更換全部5個裝備。",
       "disabled": "不更换",
-      "ship": "更換艦船",
-      "ship_equip": "更換艦船 + 裝備"
+      "ship": "更換艦船"
     },
     "CommonDD": {
       "name": "指定前排",
@@ -1545,11 +1544,18 @@
     "Mode": {
       "name": "難度",
       "help": "SP圖需要使用活動每日SP運行",
-      "easy": "簡單",
-      "normal": "普通",
-      "hard": "困難",
-      "sp": "sp",
-      "ex": "EX"
+      "area1-normal": "area1-normal",
+      "area1-hard": "area1-hard",
+      "area2-normal": "area2-normal",
+      "area2-hard": "area2-hard",
+      "area3-normal": "area3-normal",
+      "area3-hard": "area3-hard",
+      "area4-normal": "area4-normal",
+      "area4-hard": "area4-hard",
+      "area5-normal": "area5-normal",
+      "area5-hard": "area5-hard",
+      "area6-normal": "area6-normal",
+      "area6-hard": "area6-hard"
     },
     "Fleet": {
       "name": "出擊隊伍",
@@ -2286,28 +2292,30 @@
   },
   "PrivateQuarters": {
     "_info": {
-      "name": "宿舍計劃",
-      "help": "PrivateQuarters._info.help"
+      "name": "宿舍計劃設定",
+      "help": ""
     },
     "BuyRoses": {
-      "name": "PrivateQuarters.BuyRoses.name",
-      "help": "PrivateQuarters.BuyRoses.help"
+      "name": "購買每週浪漫滿分",
+      "help": "此功能未於台服實現\n浪漫滿分購買數量每週一刷新\n每次執行會嘗試一次性全部購買，若物資不夠（24K物資）則取消購買並延後至明日執行"
     },
     "BuyCake": {
-      "name": "PrivateQuarters.BuyCake.name",
-      "help": "PrivateQuarters.BuyCake.help"
+      "name": "購買每週蛋糕禮盒",
+      "help": "此功能未於台服實現\n蛋糕禮盒購買數量每週一刷新\n每次執行會嘗試一次性全部購買，若鑽石不夠（210鑽石）則取消購買並延後至明日執行"
     },
     "TargetInteract": {
-      "name": "PrivateQuarters.TargetInteract.name",
-      "help": "PrivateQuarters.TargetInteract.help"
+      "name": "清空每日精力",
+      "help": "與選擇的艦娘互動清空今日精力"
     },
     "TargetShip": {
-      "name": "PrivateQuarters.TargetShip.name",
-      "help": "PrivateQuarters.TargetShip.help",
-      "anchorage": "anchorage",
-      "noshiro": "noshiro",
-      "sirius": "sirius",
-      "new_jersey": "new_jersey"
+      "name": "選擇每日互動的艦娘",
+      "help": "選擇需要與之每日互動的艦娘\n台服將跳過大鳳",
+      "anchorage": "安克拉治",
+      "noshiro": "能代",
+      "sirius": "天狼星",
+      "new_jersey": "紐澤西",
+      "taihou": "大鳳",
+      "aegir": "埃吉爾"
     }
   },
   "Daily": {
