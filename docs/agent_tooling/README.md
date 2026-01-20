@@ -1,0 +1,65 @@
+# Agent Tooling
+
+> **Status**: In Progress - MCP server prototype operational
+
+Implements: [NORTH_STAR.md](../NORTH_STAR.md) requirement for **deterministic tools first**
+
+## Current Implementation
+
+### MCP Server (`agent_orchestrator/alas_mcp_server.py`)
+
+A JSON-RPC server that exposes ALAS capabilities as MCP tools:
+
+**ADB Tools** (low-level device interaction):
+| Tool | Description |
+|------|-------------|
+| `adb.screenshot` | Capture screen, returns base64 PNG |
+| `adb.tap` | Tap coordinate (x, y) |
+| `adb.swipe` | Swipe between coordinates |
+
+**State Tools** (ALAS state machine integration):
+| Tool | Description |
+|------|-------------|
+| `alas.get_current_state` | Return current UI page name |
+| `alas.goto` | Navigate to target page (e.g., `page_main`) |
+
+**Tool Tools** (dynamic tool discovery):
+| Tool | Description |
+|------|-------------|
+| `alas.list_tools` | List all registered deterministic tools |
+| `alas.call_tool` | Invoke a tool by name with arguments |
+
+### Architecture
+
+```
+┌─────────────────┐    JSON-RPC     ┌──────────────────┐
+│  Orchestrator   │ ◄────────────► │  alas_mcp_server │
+│ (Claude/Gemini) │    stdin/out    │   (persistent)   │
+└─────────────────┘                 └────────┬─────────┘
+                                             │ imports
+                                    ┌────────▼─────────┐
+                                    │   alas_wrapped   │
+                                    │  (ALAS + hooks)  │
+                                    └──────────────────┘
+```
+
+The server runs as a **persistent process** to avoid ALAS's 5-8 second startup penalty. OCR models and game state remain loaded in memory.
+
+## Philosophy
+
+ALAS's 9 years of game automation engineering encodes implicit knowledge about:
+- Screen state recognition (OCR, pixel/mask matching)
+- Action sequencing (what to click, when, in what order)
+- Error handling (retry logic, timeout recovery)
+
+We extract this implicit knowledge into explicit, callable tools that:
+1. Are deterministic and fast (no LLM in the hot path)
+2. Expose clear success/failure states
+3. Provide context for LLM recovery when they fail
+
+## Next Steps
+
+- [ ] Extract more ALAS task handlers as individual tools
+- [ ] Add tool metadata (expected states, produced states)
+- [ ] Implement proper MCP transport (currently stdio JSON-RPC)
+- [ ] Add tool result validation

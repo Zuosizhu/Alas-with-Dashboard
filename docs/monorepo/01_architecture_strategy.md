@@ -65,3 +65,15 @@ We will implement a Git Hook (or a simpler `dev_sync.py` script) that enforces h
 3.  **Link Upstream:** `git submodule add <url> upstream_alas`.
 4.  **Populate:** Run the initial copy scripts to create `alas_baseline` and `alas_wrapped`.
 5.  **Refactor:** Port the specific `state_machine.py` work from `legacy_archive` into `alas_wrapped`.
+
+---
+
+## Python Environment Strategy
+
+| Folder | Python Version | Reasoning |
+| :--- | :--- | :--- |
+| **`upstream_alas`** (Submodule) | **Python 3.7** | Strictly bound by the upstream `requirements.txt`. |
+| **`alas_baseline`** (Reference) | **Python 3.7** | Must mimic upstream exactly to serve as a control group for debugging. |
+| **`alas_wrapped`** (The Body) | **Python 3.7 (Start) -> 3.10+ (Goal)** | Start with 3.7 for compatibility. We will attempt to modernize dependencies to 3.10+ to unify with the Agent environment if feasible. |
+| **`legacy_archive`** (Old Snapshot) | **Python 3.7** | Historical state of the project. |
+| **`agent_orchestrator`** (The Brain) | **Python 3.10+** | Requires modern libraries for LangGraph, Pydantic v2, and LLM orchestration that are incompatible with Python 3.7. |

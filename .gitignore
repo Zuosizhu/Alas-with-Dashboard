@@ -1,4 +1,8 @@
 ### AzurLaneAutoScript
+# Working copies of ALAS (not committed to repo)
+alas_baseline/
+alas_wrapped/
+
 log
 logs/
 config/backup/*
