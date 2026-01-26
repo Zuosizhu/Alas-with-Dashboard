@@ -1,6 +1,6 @@
 from module.base.timer import Timer
 from module.logger import logger
-from module.os_handler.assets import PORT_DOCK_CHECK, PORT_ENTER, PORT_GOTO_DOCK, PORT_GOTO_MISSION, PORT_GOTO_SUPPLY, PORT_MISSION_ACCEPT, PORT_MISSION_CHECK, PORT_MISSION_RED_DOT
+from module.os_handler.assets import *
 from module.os_shop.assets import PORT_SUPPLY_CHECK
 from module.os_shop.shop import OSShop
 
@@ -54,14 +54,8 @@ class PortHandler(OSShop):
                       skip_first_screenshot=True)
 
         confirm_timer = Timer(1.5, count=3).start()
-        skip_first_screenshot = True
         success = True
-        while 1:
-            if skip_first_screenshot:
-                skip_first_screenshot = False
-            else:
-                self.device.screenshot()
-
+        for _ in self.loop():
             if self.appear_then_click(PORT_MISSION_ACCEPT, offset=(20, 20), interval=0.2):
                 confirm_timer.reset()
                 continue
@@ -110,14 +104,8 @@ class PortHandler(OSShop):
         self.ui_click(PORT_GOTO_DOCK, appear_button=PORT_CHECK, check_button=PORT_DOCK_CHECK,
                       skip_first_screenshot=True)
 
-        skip_first_screenshot = True
         repaired = False
-        while 1:
-            if skip_first_screenshot:
-                skip_first_screenshot = False
-            else:
-                self.device.screenshot()
-
+        for _ in self.loop():
             # End
             if self.info_bar_count():
                 break
