@@ -46,6 +46,26 @@ The `alas_wrapped/` codebase is Python 3.7 legacy code with:
 
 When extracting tools, expose the **behavior** not the implementation details.
 
+## MCP Tool Status (Verified 2026-01-26)
+
+All 7 MCP tools verified end-to-end against running MEmu emulator (127.0.0.1:21503).
+
+| Tool | Category | Status | Notes |
+|------|----------|--------|-------|
+| `adb.screenshot` | ADB | Working | Returns base64 PNG. Requires `lz4` package. |
+| `adb.tap` | ADB | Working | Taps (x, y) coordinate on device. |
+| `adb.swipe` | ADB | Working | Swipes from (x1,y1) to (x2,y2). |
+| `alas.get_current_state` | State | Working | Returns current page via StateMachine. |
+| `alas.goto` | State | Working | Navigates to named page (e.g. `page_main`). |
+| `alas.list_tools` | Tool | Working | Returns 9 registered domain tools. |
+| `alas.call_tool` | Tool | Working | Invokes a registered tool by name. |
+
+### Environment Prerequisites
+
+- MEmu emulator running with ADB on `127.0.0.1:21503`
+- `lz4` package installed (required by `adb.screenshot` for decompression)
+- ALAS config `alas` present in `alas_wrapped/config/`
+
 ## Cross-References
 
 - Tool extraction plan: [docs/plans/tooling-architecture.md](./docs/plans/tooling-architecture.md)

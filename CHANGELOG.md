@@ -4,6 +4,17 @@ All notable changes to the ALAS AI Agent project.
 
 ## [Unreleased]
 
+### Fixed
+- **StateMachine import**: `GeneralShop` renamed to `GeneralShop_250814` upstream (2025-08-14 shop UI update); aliased in `state_machine.py`
+- **StateMachine wiring**: Added `state_machine` cached_property to `AzurLaneAutoScript` in `alas.py` — MCP server expected this property but it was never wired
+- **alas_wrapped tracking**: Removed from `.gitignore` and deleted stale `.git` file (was pointing to upstream_alas submodule). `alas_wrapped/` is now tracked by the parent repo.
+
+### Verified
+- All 7 MCP tools verified end-to-end against running MEmu emulator (127.0.0.1:21503):
+  - `adb.screenshot`, `adb.tap`, `adb.swipe` (ADB layer)
+  - `alas.get_current_state`, `alas.goto` (State layer)
+  - `alas.list_tools`, `alas.call_tool` (Tool discovery layer)
+
 ### Documentation
 - Restructured `/docs` with subdomain organization
 - Rewrote NORTH_STAR.md to capture actual vision
