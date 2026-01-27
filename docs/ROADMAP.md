@@ -21,7 +21,8 @@ See [AGENTS.md](../AGENTS.md) for the full agent documentation index.
 
 **What works today:**
 - Monorepo structure operational with upstream sync tooling
-- MCP server prototype with 7 tools (ADB + state + tool discovery)
+- MCP server with 7 tools verified end-to-end (ADB + state + tool discovery)
+- StateMachine wired into `AzurLaneAutoScript` via `cached_property` — all state and tool-discovery MCP tools functional
 - Persistent process model avoiding ALAS startup penalty
 - Tool ambiguity: same interface for Claude Code and future Gemini orchestrator
 

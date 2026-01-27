@@ -42,10 +42,10 @@
 - **Implementation**: `scripts/dev_sync.py`
 
 ### Agent Tooling
-- **Status**: 🔄 In Progress
+- **Status**: ✅ Working (verified 2026-01-26)
 - **Summary**: Extract ALAS's implicit workflows into callable MCP tools
 - **Key Doc**: [agent_tooling/README.md](./agent_tooling/README.md)
-- **Implementation**: `agent_orchestrator/alas_mcp_server.py` (7 tools operational)
+- **Implementation**: `agent_orchestrator/alas_mcp_server.py` (7 tools verified end-to-end)
 
 ### Agent Orchestration
 - **Status**: ⏳ Planned
@@ -54,10 +54,10 @@
 - **Depends on**: Agent Tooling (tool layer exists), Vision Integration
 
 ### State Machine
-- **Status**: 🔄 In Progress
+- **Status**: ✅ Working (verified 2026-01-26)
 - **Summary**: Explicit state machine extracted from ALAS's implicit workflow logic
 - **Key Doc**: [state_machine/README.md](./state_machine/README.md)
-- **Implementation**: Basic exposure via `alas.get_current_state`, `alas.goto`
+- **Implementation**: StateMachine wired into `AzurLaneAutoScript` via `cached_property`; exposed via `alas.get_current_state`, `alas.goto`, `alas.list_tools`, `alas.call_tool`
 
 ### Vision Integration
 - **Status**: ⏳ Planned
