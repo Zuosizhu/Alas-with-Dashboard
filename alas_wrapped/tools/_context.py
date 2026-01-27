@@ -27,6 +27,7 @@ class ToolContext(UI):
         Args:
             config_name: Name of the config to load (default: "alas")
         """
+        super().__init__(config=config_name)
         self.config_name = config_name
         self._config: Optional[AzurLaneConfig] = None
         self._device: Optional[Device] = None
