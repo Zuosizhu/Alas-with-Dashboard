@@ -34,10 +34,10 @@ class AzurLaneAutoScript:
             return config
         except RequestHumanTakeover:
             logger.critical('Request human takeover')
-            exit(1)
+            raise
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            raise RequestHumanTakeover(str(e))
 
     @cached_property
     def device(self):
@@ -47,10 +47,10 @@ class AzurLaneAutoScript:
             return device
         except RequestHumanTakeover:
             logger.critical('Request human takeover')
-            exit(1)
+            raise
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            raise RequestHumanTakeover(str(e))
 
     @cached_property
     def checker(self):
@@ -60,7 +60,7 @@ class AzurLaneAutoScript:
             return checker
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            raise RequestHumanTakeover(str(e))
 
     @cached_property
     def state_machine(self):
@@ -71,9 +71,34 @@ class AzurLaneAutoScript:
             return StateMachine(ui=ui)
         except Exception as e:
             logger.exception(e)
-            exit(1)
+            raise RequestHumanTakeover(str(e))
 
     def run(self, command, skip_first_screenshot=False):
+        """
+        Args:
+            command (str): Task name to run.
+            skip_first_screenshot (bool):
+        """
+        # Command whitelist for security
+        allowed_commands = [
+            'restart', 'start', 'goto_main', 'research', 'commission', 'tactical',
+            'dorm', 'meowfficer', 'guild', 'reward', 'awaken', 'shop_frequent',
+            'shop_once', 'shipyard', 'gacha', 'freebies', 'minigame', 'private_quarters',
+            'daily', 'hard', 'exercise', 'sos', 'war_archives', 'raid_daily',
+            'event_a', 'event_b', 'event_c', 'event_d', 'event_sp', 'maritime_escort',
+            'opsi_ash_assist', 'opsi_ash_beacon', 'opsi_explore', 'opsi_shop',
+            'opsi_voucher', 'opsi_daily', 'opsi_obscure', 'opsi_month_boss',
+            'opsi_abyssal', 'opsi_archive', 'opsi_stronghold', 'opsi_meowfficer_farming',
+            'opsi_hazard1_leveling', 'opsi_cross_month', 'main', 'main2', 'main3',
+            'event', 'event2', 'raid', 'hospital', 'coalition', 'coalition_sp',
+            'c72_mystery_farming', 'c122_medium_leveling', 'c124_large_leveling',
+            'gems_farming', 'daemon', 'opsi_daemon', 'event_story',
+            'azur_lane_uncensored', 'benchmark', 'game_manager'
+        ]
+        if command not in allowed_commands:
+            logger.error(f'Command "{command}" is not in the whitelist.')
+            return False
+
         try:
             if not skip_first_screenshot:
                 self.device.screenshot()
@@ -101,48 +126,47 @@ class AzurLaneAutoScript:
             self.config.task_call('Restart')
             self.device.sleep(10)
             return False
-        except GamePageUnknownError:
-            logger.info('Game server may be under maintenance or network may be broken, check server status now')
-            self.checker.check_now()
-            if self.checker.is_available():
-                logger.critical('Game page unknown')
-                self.save_error_log()
-                handle_notify(
-                    self.config.Error_OnePushConfig,
-                    title=f"Alas <{self.config_name}> crashed",
-                    content=f"<{self.config_name}> GamePageUnknownError",
-                )
-                exit(1)
-            else:
-                self.checker.wait_until_available()
-                return False
-        except ScriptError as e:
-            logger.exception(e)
-            logger.critical('This is likely to be a mistake of developers, but sometimes just random issues')
-            handle_notify(
-                self.config.Error_OnePushConfig,
-                title=f"Alas <{self.config_name}> crashed",
-                content=f"<{self.config_name}> ScriptError",
-            )
-            exit(1)
-        except RequestHumanTakeover:
-            logger.critical('Request human takeover')
-            handle_notify(
-                self.config.Error_OnePushConfig,
-                title=f"Alas <{self.config_name}> crashed",
-                content=f"<{self.config_name}> RequestHumanTakeover",
-            )
-            exit(1)
-        except Exception as e:
-            logger.exception(e)
-            self.save_error_log()
-            handle_notify(
-                self.config.Error_OnePushConfig,
-                title=f"Alas <{self.config_name}> crashed",
-                content=f"<{self.config_name}> Exception occured",
-            )
-            exit(1)
-
+                except GamePageUnknownError:
+                    logger.info('Game server may be under maintenance or network may be broken, check server status now')        
+                    self.checker.check_now()
+                    if self.checker.is_available():
+                        logger.critical('Game page unknown')
+                        self.save_error_log()
+                        handle_notify(
+                            self.config.Error_OnePushConfig,
+                            title=f"Alas <{self.config_name}> crashed",
+                            content=f"<{self.config_name}> GamePageUnknownError",
+                        )
+                        raise RequestHumanTakeover('GamePageUnknownError')
+                    else:
+                        self.checker.wait_until_available()
+                        return False
+                except ScriptError as e:
+                    logger.exception(e)
+                    logger.critical('This is likely to be a mistake of developers, but sometimes just random issues')
+                    handle_notify(
+                        self.config.Error_OnePushConfig,
+                        title=f"Alas <{self.config_name}> crashed",
+                        content=f"<{self.config_name}> ScriptError",
+                    )
+                    raise RequestHumanTakeover(str(e))
+                except RequestHumanTakeover:
+                    logger.critical('Request human takeover')
+                    handle_notify(
+                        self.config.Error_OnePushConfig,
+                        title=f"Alas <{self.config_name}> crashed",
+                        content=f"<{self.config_name}> RequestHumanTakeover",
+                    )
+                    raise
+                except Exception as e:
+                    logger.exception(e)
+                    self.save_error_log()
+                    handle_notify(
+                        self.config.Error_OnePushConfig,
+                        title=f"Alas <{self.config_name}> crashed",
+                        content=f"<{self.config_name}> Exception occured",
+                    )
+                    raise RequestHumanTakeover(str(e))
     def save_error_log(self):
         """
         Save last 60 screenshots in ./log/error/<timestamp>
@@ -461,7 +485,7 @@ class AzurLaneAutoScript:
                 if self.stop_event.is_set():
                     logger.info("Update event detected")
                     logger.info(f"[{self.config_name}] exited. Reason: Update")
-                    exit(0)
+                    return False
 
             time.sleep(5)
 
@@ -568,9 +592,9 @@ class AzurLaneAutoScript:
             self.is_first_task = False
 
             # Check failures
-            failed = deep_get(self.failure_record, keys=task, default=0)
+            failed = self.failure_record.get(task, 0)
             failed = 0 if success else failed + 1
-            deep_set(self.failure_record, keys=task, value=failed)
+            self.failure_record[task] = failed
             if failed >= 3:
                 logger.critical(f"Task `{task}` failed 3 or more times.")
                 logger.critical("Possible reason #1: You haven't used it correctly. "
@@ -583,7 +607,7 @@ class AzurLaneAutoScript:
                     title=f"Alas <{self.config_name}> crashed",
                     content=f"<{self.config_name}> RequestHumanTakeover\nTask `{task}` failed 3 or more times.",
                 )
-                exit(1)
+                raise RequestHumanTakeover(f"Task `{task}` failed 3 or more times.")
 
             if success:
                 del_cached_property(self, 'config')
