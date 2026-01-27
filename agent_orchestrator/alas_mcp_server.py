@@ -2,9 +2,19 @@ import argparse
 import base64
 import io
 import json
+import os
+import sys
 from typing import Optional, List, Dict, Any
 from PIL import Image
 from fastmcp import FastMCP
+
+# Ensure project root is in path for ALAS imports
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+alas_wrapped = os.path.join(project_root, "alas_wrapped")
+if project_root not in sys.path:
+    sys.path.append(project_root)
+if alas_wrapped not in sys.path:
+    sys.path.append(alas_wrapped)
 
 # Initialize FastMCP server
 mcp = FastMCP("alas-mcp", version="1.0.0")

@@ -9,6 +9,8 @@ from functools import wraps
 
 import uiautomator2 as u2
 from adbutils import AdbClient, AdbDevice, AdbTimeout, ForwardItem, ReverseItem
+if not hasattr(AdbClient, '_connect') and hasattr(AdbClient, 'make_connection'):
+    AdbClient._connect = AdbClient.make_connection
 from adbutils.errors import AdbError
 
 from module.base.decorator import Config, cached_property, del_cached_property, run_once
