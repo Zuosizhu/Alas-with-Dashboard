@@ -16,3 +16,4 @@
 - [ ] **Exercise Optimization** — Spread exercises over time, target max rank-gap opponents, log results
 - [ ] **Dock Inventory Scanner** — Deterministic scripted scan of entire dock to build structured ship girl inventory (+ stretch: item inventory)
 - [ ] **Equipment Outfitter** — Manage limited best-in-slot gear across exercises, fleets, etc. by sharing equipment between ship girls
+- [ ] **Safety: Anti-Scrap/Retire Guard** — State-machine-aware safeguards to prevent accidental ship retirement, scrapping, or deletion

@@ -96,3 +96,33 @@ The best equipment in the game exists in limited quantities. Different game mode
 ### Design note
 
 This is a higher-level tool that builds on the inventory data from the Dock Inventory Scanner. It likely comes after that foundation is in place.
+
+---
+
+## Safety: Anti-Scrap/Retire Guard
+
+A cross-cutting safety system to ensure that no automated tool — whether deterministic or agent-driven — can accidentally retire, scrap, disassemble, or delete a ship girl or valuable equipment.
+
+### Context
+
+Retiring or scrapping a ship girl is irreversible. The game does have confirmation dialogs, but automation that clicks through screens quickly could inadvertently confirm a destructive action. This is the single highest-risk failure mode for any tool that interacts with the dock, equipment, or dorm. It must be addressed as a foundational concern before any of the other tools (inventory scanner, outfitter, morale rotation) are trusted to run unattended.
+
+### Principles
+
+- **State machine awareness:** Since we're building a state machine that tracks where we are in the UI flow, we should know exactly which screens are "dangerous" (retire, scrap, disassemble, enhance-consume, etc.) and treat them as forbidden zones unless explicitly and intentionally entered
+- **Allowlist, not blocklist:** Tools should only be permitted to interact with screens they are designed for. Any unrecognized screen should trigger a halt, not a best-guess click
+- **Never confirm destructive dialogs:** Any confirmation dialog related to retirement, scrapping, or disassembly should be an automatic "Cancel" — no tool should ever confirm these unless it is the express purpose of a dedicated, carefully guarded tool
+- **Lock protection awareness:** The game supports locking ship girls to prevent accidental retirement. The system should verify locks are in place and warn if unlocked high-value girls are detected
+- **Screenshot-on-danger:** If the state machine detects it has entered or is near a dangerous screen, take a screenshot and log it immediately before doing anything else
+- **Halt on confusion:** If OCR or screen detection is uncertain about what screen we're on, halt rather than proceed. False negatives (stopping unnecessarily) are always preferable to false positives (clicking through a scrap confirmation)
+
+### Requirements
+
+- Maintain a list of "dangerous screen" states in the state machine (retire, scrap, disassemble, enhance-feed, etc.)
+- Any tool that navigates the dock or equipment UI must check the current state against this list before every click
+- If a dangerous screen is detected unexpectedly, immediately:
+  1. Screenshot and log
+  2. Press Cancel/Back
+  3. Halt the current tool and surface an alert
+- Provide a "dry run" or "read-only" mode for new tools so they can be tested without any clicks that modify game state
+- Consider a separate "scrap tool" in the far future that is the ONLY code path allowed to confirm retirement — with its own multi-layer safeguards (confirmation prompt, value check, lock check)
