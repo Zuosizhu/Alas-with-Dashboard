@@ -53,7 +53,7 @@ All 7 MCP tools refactored from hand-rolled JSON-RPC to **FastMCP 3.0** framewor
 **Improvements:**
 - ✅ Type-safe function signatures (automatic schema generation)
 - ✅ Structured error handling (ValueError, KeyError → proper JSON-RPC error codes)
-- ✅ 39% code reduction (230 → 140 lines)
+- ✅ ~30% code reduction (230 → 160 lines)
 - ✅ Unit testable (tools are plain Python functions)
 
 | Tool | Category | Status | Notes |

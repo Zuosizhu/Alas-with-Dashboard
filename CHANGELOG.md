@@ -6,15 +6,16 @@ All notable changes to the ALAS AI Agent project.
 
 ### Changed
 - **MCP Server**: Migrated from hand-rolled JSON-RPC to FastMCP 3.0 framework
-  - Eliminated 90 lines of protocol boilerplate (39% code reduction)
+  - ~30% code reduction (230 → 160 lines)
   - Added full type safety via function signature validation
   - Improved error handling (structured exception types → JSON-RPC error codes)
   - All 7 tools remain functionally identical, now with better maintainability
 
 ### Added
-- **ALAS Launcher Wrapper** (`my_tools/alas_launcher.py`): Combines emulator start + Azur Lane app launch
-  - Detects correct package name for server region (EN/CN/JP/etc.)
-  - Uses direct ADB fallback for launch if MCP client not yet configured
+- **Unit tests** (`test_alas_mcp.py`): 8 test cases covering all 7 MCP tools with mocked ALAS dependencies
+- **Integration tests** (`test_integration_mcp.py`): Async tests exercising FastMCP `call_tool` interface
+- **Server launcher** (`run_server.sh`): Shell script wrapper for running MCP server via `uv`
+- **Project config** (`pyproject.toml`): Dependency management with FastMCP 3.0, dev group for pytest
 
 ### Fixed
 - **StateMachine import**: `GeneralShop` renamed to `GeneralShop_250814` upstream (2025-08-14 shop UI update); aliased in `state_machine.py`

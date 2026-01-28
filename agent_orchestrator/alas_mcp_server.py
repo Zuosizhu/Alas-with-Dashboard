@@ -1,7 +1,6 @@
 import argparse
 import base64
 import io
-import json
 import os
 import sys
 from typing import Optional, List, Dict, Any
