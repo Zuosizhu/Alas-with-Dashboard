@@ -74,3 +74,25 @@ There is currently no way to get a structured view of everything you own in the 
 - Apply the same screenshot-and-enumerate approach to the item/equipment inventory
 - Simpler than ship girls since items can be captured from grid views without clicking into each one
 - Goal: a complete game inventory (ships + items) in structured data
+
+---
+
+## Equipment Outfitter
+
+A tool to manage and redistribute limited best-in-slot gear across ship girls depending on what content is being run.
+
+### Context
+
+The best equipment in the game exists in limited quantities. Different game modes (exercises, campaign fleets, events, etc.) may need the same gear on different ship girls. Currently there's no automated way to shuffle gear around — you have to manually unequip and re-equip pieces, which is tedious and error-prone. This tool would let you define equipment "loadouts" or priorities and have the system swap gear between ship girls as needed.
+
+### Requirements
+
+- Know what gear you have (depends on Dock Inventory Scanner being built first)
+- Track which ship girls need which equipment for which game modes (exercises vs. fleet sorties, etc.)
+- Swap equipment between ship girls programmatically — unequip from one, equip on another
+- Leverage ALAS's existing deterministic click infrastructure (known screen coordinates, button positions) for speed — no LLM agent needed in the loop
+- Many of these tools share a common principle: ALAS already knows the click locations, so the automation can be fast and scripted rather than requiring the agent to visually interpret every screen
+
+### Design note
+
+This is a higher-level tool that builds on the inventory data from the Dock Inventory Scanner. It likely comes after that foundation is in place.
