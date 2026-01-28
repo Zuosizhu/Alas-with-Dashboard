@@ -37,3 +37,27 @@ Improve how exercises are scheduled and scored beyond the current batch-run appr
   - The opponent's rank
   - Points gained after the fight
 - Use this logged data to inform future optimization (track trends, evaluate strategy)
+
+### Dock Inventory Scanner
+
+A deterministic (non-agent) tool that clicks into the dock and rapidly iterates through all ship girls to build a complete inventory. This should NOT require an LLM agent to drive — it should be scripted click-and-drag in fixed positions with screenshots, so it runs fast.
+
+**Core data to capture per ship girl:**
+- Name, level, rarity
+- Skills and skill levels
+- Gear/equipment loadouts
+- Skins owned
+
+**Requirements:**
+- Navigate into the dock, then systematically scroll through the entire roster taking screenshots at each position
+- Use deterministic screen coordinates (click/drag in the same spots) for speed — no agent decision-making in the loop
+- Apply filters or sorting in the dock UI as needed to ensure complete coverage
+- Parse the screenshots after capture to extract structured data (OCR, template matching, etc.)
+- Store results as a structured inventory (JSON, database, etc.) that can be queried
+- Support periodic refresh to track progression over time (level ups, skill upgrades, gear changes)
+- Useful for: tracking progress, identifying undergeared/underleveled girls, managing duplicates, optimizing fleet composition
+
+**Stretch goal — Item Inventory:**
+- Apply the same screenshot-and-enumerate approach to the item/equipment inventory
+- Simpler than ship girls since items can be captured from grid views without clicking into each one
+- Goal: a complete game inventory (ships + items) in structured data
