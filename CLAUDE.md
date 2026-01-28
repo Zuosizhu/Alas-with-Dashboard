@@ -46,19 +46,32 @@ The `alas_wrapped/` codebase is Python 3.7 legacy code with:
 
 When extracting tools, expose the **behavior** not the implementation details.
 
-## MCP Tool Status (Verified 2026-01-26)
+## MCP Tool Status (Migrated to FastMCP 3.0, 2026-01-26)
 
-All 7 MCP tools verified end-to-end against running MEmu emulator (127.0.0.1:21503).
+All 7 MCP tools refactored from hand-rolled JSON-RPC to **FastMCP 3.0** framework.
+
+**Improvements:**
+- ✅ Type-safe function signatures (automatic schema generation)
+- ✅ Structured error handling (ValueError, KeyError → proper JSON-RPC error codes)
+- ✅ ~30% code reduction (230 → 160 lines)
+- ✅ Unit testable (tools are plain Python functions)
 
 | Tool | Category | Status | Notes |
 |------|----------|--------|-------|
-| `adb.screenshot` | ADB | Working | Returns base64 PNG. Requires `lz4` package. |
-| `adb.tap` | ADB | Working | Taps (x, y) coordinate on device. |
-| `adb.swipe` | ADB | Working | Swipes from (x1,y1) to (x2,y2). |
+| `adb.screenshot` | ADB | Working | Returns base64 PNG. |
+| `adb.tap` | ADB | Working | Type-safe coordinates (`x: int, y: int`). |
+| `adb.swipe` | ADB | Working | Default duration 100ms. |
 | `alas.get_current_state` | State | Working | Returns current page via StateMachine. |
-| `alas.goto` | State | Working | Navigates to named page (e.g. `page_main`). |
-| `alas.list_tools` | Tool | Working | Returns 9 registered domain tools. |
-| `alas.call_tool` | Tool | Working | Invokes a registered tool by name. |
+| `alas.goto` | State | Working | Raises `ValueError` if page unknown. |
+| `alas.list_tools` | Tool | Working | Returns structured list. |
+| `alas.call_tool` | Tool | Working | Invokes registered tool by name. |
+
+### Launch Command
+```bash
+cd agent_orchestrator
+uv run alas_mcp_server.py --config alas
+```
+
 
 ### Environment Prerequisites
 

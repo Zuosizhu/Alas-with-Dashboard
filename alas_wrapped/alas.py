@@ -126,47 +126,48 @@ class AzurLaneAutoScript:
             self.config.task_call('Restart')
             self.device.sleep(10)
             return False
-                except GamePageUnknownError:
-                    logger.info('Game server may be under maintenance or network may be broken, check server status now')        
-                    self.checker.check_now()
-                    if self.checker.is_available():
-                        logger.critical('Game page unknown')
-                        self.save_error_log()
-                        handle_notify(
-                            self.config.Error_OnePushConfig,
-                            title=f"Alas <{self.config_name}> crashed",
-                            content=f"<{self.config_name}> GamePageUnknownError",
-                        )
-                        raise RequestHumanTakeover('GamePageUnknownError')
-                    else:
-                        self.checker.wait_until_available()
-                        return False
-                except ScriptError as e:
-                    logger.exception(e)
-                    logger.critical('This is likely to be a mistake of developers, but sometimes just random issues')
-                    handle_notify(
-                        self.config.Error_OnePushConfig,
-                        title=f"Alas <{self.config_name}> crashed",
-                        content=f"<{self.config_name}> ScriptError",
-                    )
-                    raise RequestHumanTakeover(str(e))
-                except RequestHumanTakeover:
-                    logger.critical('Request human takeover')
-                    handle_notify(
-                        self.config.Error_OnePushConfig,
-                        title=f"Alas <{self.config_name}> crashed",
-                        content=f"<{self.config_name}> RequestHumanTakeover",
-                    )
-                    raise
-                except Exception as e:
-                    logger.exception(e)
-                    self.save_error_log()
-                    handle_notify(
-                        self.config.Error_OnePushConfig,
-                        title=f"Alas <{self.config_name}> crashed",
-                        content=f"<{self.config_name}> Exception occured",
-                    )
-                    raise RequestHumanTakeover(str(e))
+        except GamePageUnknownError:
+            logger.info('Game server may be under maintenance or network may be broken, check server status now')        
+            self.checker.check_now()
+            if self.checker.is_available():
+                logger.critical('Game page unknown')
+                self.save_error_log()
+                handle_notify(
+                    self.config.Error_OnePushConfig,
+                    title=f"Alas <{self.config_name}> crashed",
+                    content=f"<{self.config_name}> GamePageUnknownError",
+                )
+                raise RequestHumanTakeover('GamePageUnknownError')
+            else:
+                logger.warning('Game server is under maintenance or network is broken, Alas will wait for it')
+                self.checker.wait_until_available()
+                return False
+        except ScriptError as e:
+            logger.exception(e)
+            logger.critical('This is likely to be a mistake of developers, but sometimes just random issues')
+            handle_notify(
+                self.config.Error_OnePushConfig,
+                title=f"Alas <{self.config_name}> crashed",
+                content=f"<{self.config_name}> ScriptError",
+            )
+            raise RequestHumanTakeover(str(e))
+        except RequestHumanTakeover:
+            logger.critical('Request human takeover')
+            handle_notify(
+                self.config.Error_OnePushConfig,
+                title=f"Alas <{self.config_name}> crashed",
+                content=f"<{self.config_name}> RequestHumanTakeover",
+            )
+            raise
+        except Exception as e:
+            logger.exception(e)
+            self.save_error_log()
+            handle_notify(
+                self.config.Error_OnePushConfig,
+                title=f"Alas <{self.config_name}> crashed",
+                content=f"<{self.config_name}> Exception occured",
+            )
+            raise RequestHumanTakeover(str(e))
     def save_error_log(self):
         """
         Save last 60 screenshots in ./log/error/<timestamp>
