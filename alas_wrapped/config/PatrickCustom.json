@@ -1381,7 +1381,7 @@
       "ServerUpdate": "00:00"
     },
     "Meowfficer": {
-      "BuyAmount": 1,
+      "BuyAmount": 3,
       "FortChoreMeowfficer": true
     },
     "MeowfficerTrain": {
@@ -1389,7 +1389,7 @@
       "Mode": "once_a_day",
       "RetainTalentedGold": true,
       "RetainTalentedPurple": true,
-      "EnhanceIndex": 1,
+      "EnhanceIndex": 12,
       "MaxFeedLevel": 5
     },
     "Storage": {
@@ -1518,8 +1518,8 @@
       "OpponentChooseMode": "leftmost",
       "OpponentTrial": 10,
       "ExerciseStrategy": "aggressive",
-      "LowHpThreshold": 0.3,
-      "LowHpConfirmWait": 0.1,
+      "LowHpThreshold": 0.25,
+      "LowHpConfirmWait": 1,
       "OpponentRefreshValue": 0,
       "OpponentRefreshRecord": "2026-02-04 19:04:22"
     },
@@ -1701,9 +1701,9 @@
   "OpsiGeneral": {
     "OpsiGeneral": {
       "UseLogger": true,
-      "BuyActionPointLimit": 0,
-      "OilLimit": 1000,
-      "RepairThreshold": 0.4,
+      "BuyActionPointLimit": 3,
+      "OilLimit": 10000,
+      "RepairThreshold": 0.3,
       "DoRandomMapEvent": true,
       "AkashiShopFilter": "ActionPoint > PurpleCoins"
     },
@@ -1864,7 +1864,7 @@
   },
   "OpsiArchive": {
     "Scheduler": {
-      "Enable": false,
+      "Enable": true,
       "NextRun": "2026-02-04 23:26:49",
       "Command": "OpsiArchive",
       "SuccessInterval": 60,
@@ -1900,7 +1900,7 @@
   },
   "OpsiMonthBoss": {
     "Scheduler": {
-      "Enable": false,
+      "Enable": true,
       "NextRun": "2026-02-04 23:26:49",
       "Command": "OpsiMonthBoss",
       "SuccessInterval": 0,
@@ -1908,7 +1908,7 @@
       "ServerUpdate": "00:00"
     },
     "OpsiMonthBoss": {
-      "Mode": "normal",
+      "Mode": "normal_hard",
       "CheckAdaptability": true,
       "ForceRun": false
     },
@@ -1921,7 +1921,7 @@
   },
   "OpsiMeowfficerFarming": {
     "Scheduler": {
-      "Enable": false,
+      "Enable": true,
       "NextRun": "2026-02-04 23:26:49",
       "Command": "OpsiMeowfficerFarming",
       "SuccessInterval": 30,

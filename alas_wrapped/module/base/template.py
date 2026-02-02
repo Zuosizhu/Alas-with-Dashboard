@@ -141,8 +141,32 @@ class Template(Resource):
         res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
 
         if coerced:
-            _, sim, _, _ = cv2.minMaxLoc(res)
-            logger.warning(f'Channel mismatch fixed in {self.name}. Sim: {sim:.3f}')
+            _, sim, _, point = cv2.minMaxLoc(res)
+            # 2026-02-04: Debounce log spam and save debug info for near-misses
+            if not hasattr(self, '_mismatch_count'):
+                self._mismatch_count = 0
+            self._mismatch_count += 1
+            
+            # Log every 100th occurrence or if similarity is very high
+            should_log = (self._mismatch_count % 100 == 1) or (sim > 0.8)
+            
+            if should_log:
+                logger.warning(f'Channel mismatch fixed in {self.name}. Sim: {sim:.3f} (Count: {self._mismatch_count})')
+            
+            # Targeted Akashi Debugging: Capture near-misses for inspection
+            if 0.70 < sim < 0.85 and 'AKASHI' in self.name:
+                from datetime import datetime
+                now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')
+                debug_path = f'./log/debug_mismatch_{self.name}_{now}.png'
+                try:
+                    h, w = template.shape[:2]
+                    x, y = point
+                    crop = image[y:y+h, x:x+w]
+                    cv2.imwrite(debug_path, crop)
+                    if should_log:
+                        logger.info(f'Saved debug mismatch image to {debug_path}')
+                except Exception:
+                    pass
 
         return res
 
@@ -156,6 +180,10 @@ class Template(Resource):
         Returns:
             bool: If matches.
         """
+        # Targeted Threshold for Akashi: Override similarity if we are looking for the merchant
+        if 'AKASHI' in self.name:
+            similarity = 0.75
+
         scaling = 1 / scaling
         if scaling != 1.0:
             image = cv2.resize(image, None, fx=scaling, fy=scaling)
