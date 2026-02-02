@@ -22,6 +22,7 @@ class ALASContext:
     def __init__(self, config_name: str):
         # We import here to avoid issues if the environment isn't fully set up during discovery
         from alas import AzurLaneAutoScript
+        self.config_name = config_name
         self.script = AzurLaneAutoScript(config_name=config_name)
         self._state_machine = self.script.state_machine
 
@@ -147,6 +148,36 @@ def alas_call_tool(name: str, arguments: Optional[Dict[str, Any]] = None) -> Any
     args = arguments or {}
     result = ctx._state_machine.call_tool(name, **args)
     return result
+
+
+@mcp.tool()
+def alas_login_ensure_main(
+    max_wait_s: float = 90.0,
+    poll_interval_s: float = 1.0,
+    dismiss_popups: bool = True,
+    get_ship: bool = True,
+) -> Dict[str, Any]:
+    """Ensure the game is at the main lobby (page_main).
+
+    This wraps ALAS's deterministic login handler and returns a structured
+    envelope suitable for a supervisor.
+
+    Returns:
+        {success, data, error, observed_state, expected_state}
+    """
+    if ctx is None:
+        raise RuntimeError("ALAS context not initialized")
+
+    from alas_wrapped.tools.login import ensure_main_with_config_device
+
+    return ensure_main_with_config_device(
+        ctx.script.config,
+        ctx.script.device,
+        max_wait_s=max_wait_s,
+        poll_interval_s=poll_interval_s,
+        dismiss_popups=dismiss_popups,
+        get_ship=get_ship,
+    )
 
 def main():
     global ctx
