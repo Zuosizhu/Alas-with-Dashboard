@@ -34,16 +34,36 @@ ALAS/                          [GIT REPO - public, the ONLY repo]
 
 **DO NOT** create additional git repos or submodules. If you find yourself running `git init` in a subfolder, stop - that's wrong.
 
+## Upstream Sync Workflow
+
+When Zuosizhu releases updates (new events, bug fixes, etc.):
+
+```
+upstream_alas/          (1) git submodule update --remote
+      ↓
+  MANUAL MERGE          (2) Compare changes, apply to alas_baseline
+      ↓
+alas_baseline/          (3) Test that it actually runs (upstream often doesn't work out-of-box)
+      ↓
+  MANUAL MERGE          (4) Apply relevant changes to alas_wrapped, preserving our customizations
+      ↓
+alas_wrapped/           (5) Test with MCP tools, commit
+```
+
+**Why two manual merges?**
+- `upstream_alas/` → `alas_baseline/`: Upstream ALAS often requires config fixes, path corrections, or patches to run on our setup. These fixes live in `alas_baseline/`.
+- `alas_baseline/` → `alas_wrapped/`: We preserve our MCP hooks, tool integrations, and customizations while bringing in the verified-working upstream changes.
+
 ## Key Directories
 
 | Folder | Purpose | Python Version |
 |--------|---------|----------------|
-| `upstream_alas/` | Read-only submodule - raw pull, never modify | - |
-| `alas_baseline/` | **Verified working ALAS** - the known-good state we build on | 3.8 (.venv) |
-| `alas_wrapped/` | Modified ALAS with MCP hooks | 3.8 (.venv) |
+| `upstream_alas/` | Read-only submodule - raw pull from Zuosizhu, never modify directly | - |
+| `alas_baseline/` | **Verified working ALAS** - upstream + manual fixes to make it run | 3.8 (.venv) |
+| `alas_wrapped/` | Modified ALAS with MCP hooks, tools, our customizations | 3.8 (.venv) |
 | `alas_wrapped/tools/` | **Only** tools that import ALAS internals (navigation.py, vision.py) | 3.8 |
 | `agent_orchestrator/` | Agent code, MCP server, modern tools (log_parser.py) | 3.10+ |
-| `scripts/` | Dev tooling (`dev_sync.py`) | 3.10+ |
+| `scripts/` | Dev tooling (if any) | 3.10+ |
 
 > **Tool placement rule:** If a tool imports from `module.*` or other ALAS internals, it goes in `alas_wrapped/tools/`. If it's standalone (no ALAS dependencies), it goes in `agent_orchestrator/` to escape the Python 3.7 constraint.
 
