@@ -10,8 +10,3 @@
 	url = https://github.com/Zuosizhu/Alas-with-Dashboard.git
 	# Intentionally unpinned - we want to track upstream changes
 
-[submodule "legacy_archive"]
-	path = legacy_archive
-	url = https://github.com/Coldaine/ALAS.git
-	# Self-referential: points to this repo's own history before monorepo restructure
-	# Pinned to ef37d0a9a (see git submodule status for current hash)
