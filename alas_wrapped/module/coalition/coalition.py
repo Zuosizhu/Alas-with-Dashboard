@@ -6,6 +6,7 @@ from module.coalition.combat import CoalitionCombat
 from module.exception import ScriptEnd, ScriptError
 from module.logger import logger
 from module.ocr.ocr import Digit
+from module.log_res.log_res import LogRes
 from module.ui.page import page_campaign_menu
 
 
@@ -69,6 +70,8 @@ class Coalition(CoalitionCombat, CampaignEvent):
             pt = ocr.ocr(self.device.image)
             # 999999 seems to be a default value, wait
             if pt not in [999999]:
+                LogRes(self.config).Pt = pt
+                self.config.update()
                 break
         else:
             logger.warning('Wait PT timeout, assume it is')
