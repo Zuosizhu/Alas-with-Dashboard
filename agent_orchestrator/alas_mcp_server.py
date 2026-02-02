@@ -3,9 +3,40 @@ import base64
 import io
 import os
 import sys
+import inspect
 from typing import Optional, List, Dict, Any
-from PIL import Image
-from fastmcp import FastMCP
+
+try:
+    from fastmcp import FastMCP as _FastMCP  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    class _FastMCP:
+        def __init__(self, name: str, version: str = "0.0.0"):
+            self.name = name
+            self.version = version
+            self._tools: Dict[str, Any] = {}
+
+        def tool(self, *args, **kwargs):
+            def decorator(func):
+                self._tools[func.__name__] = func
+                return func
+
+            return decorator
+
+        async def call_tool(self, name: str, arguments: Optional[Dict[str, Any]] = None):
+            if name not in self._tools:
+                raise ValueError(f"unknown tool: {name}")
+            result = self._tools[name](**(arguments or {}))
+            if inspect.isawaitable(result):
+                return await result
+            return result
+
+        def run(self, transport: str = "stdio"):
+            raise RuntimeError(
+                "fastmcp is not installed; cannot run the MCP server. "
+                "Install dependencies from agent_orchestrator/pyproject.toml."
+            )
+
+FastMCP = _FastMCP
 
 # Ensure project root is in path for ALAS imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -28,6 +59,7 @@ class ALASContext:
 
     def encode_screenshot_png_base64(self) -> str:
         """Preserve existing PNG encoding logic."""
+        from PIL import Image
         image = self.script.device.screenshot()
         if getattr(image, "shape", None) is not None and len(image.shape) == 3 and image.shape[2] == 3:
             img = Image.fromarray(image[:, :, ::-1])  # BGR→RGB

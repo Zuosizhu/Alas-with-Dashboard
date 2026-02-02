@@ -1,39 +1,7 @@
 import pytest
 import unittest.mock as mock
-import sys
-from types import ModuleType
-
-# Mock the 'alas' and 'module' modules
-m = ModuleType("alas")
-sys.modules["alas"] = m
-m.AzurLaneAutoScript = mock.Mock()
-
-m2 = ModuleType("module")
-sys.modules["module"] = m2
-m3 = ModuleType("module.ui")
-sys.modules["module.ui"] = m3
-m4 = ModuleType("module.ui.page")
-sys.modules["module.ui.page"] = m4
-m4.Page = mock.Mock()
-m4.Page.all_pages = {}
-
-# Mock fastmcp BEFORE importing alas_mcp_server
-fastmcp_module = ModuleType("fastmcp")
-sys.modules["fastmcp"] = fastmcp_module
-
-def mock_tool_decorator(*args, **kwargs):
-    def decorator(func):
-        return func
-    return decorator
-
-mock_fastmcp_class = mock.Mock()
-mock_fastmcp_class.return_value.tool = mock_tool_decorator
-fastmcp_module.FastMCP = mock_fastmcp_class
 
 import alas_mcp_server as alas_mcp_server
-
-# Inject Page into alas_mcp_server because it's imported inside a function there
-alas_mcp_server.Page = m4.Page
 
 @pytest.fixture
 def mock_ctx():
@@ -75,13 +43,15 @@ def test_alas_get_current_state(mock_ctx):
 
 def test_alas_goto_success(mock_ctx):
     mock_page = mock.Mock()
-    alas_mcp_server.Page.all_pages = {"page_main": mock_page}
+    from module.ui.page import Page
+    Page.all_pages = {"page_main": mock_page}
     result = alas_mcp_server.alas_goto("page_main")
     assert result == "navigated to page_main"
     mock_ctx._state_machine.transition.assert_called_with(mock_page)
 
 def test_alas_goto_invalid(mock_ctx):
-    alas_mcp_server.Page.all_pages = {}
+    from module.ui.page import Page
+    Page.all_pages = {}
     with pytest.raises(ValueError, match="unknown page"):
         alas_mcp_server.alas_goto("invalid_page")
 
