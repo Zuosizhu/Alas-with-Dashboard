@@ -3,7 +3,12 @@
 ## Executive Summary
 To achieve the dual goal of "Staying current with Upstream ALAS" and "Building a radical Agent Layer," we will restructure the project into a Monorepo. This separates **Upstream Tracking** from **Local Adaptation** and **Agent Orchestration**.
 
-## The 5-Folder Structure
+> **⚠️ Git Rule: One repo, one submodule.**
+> - `ALAS/` is the only git repo
+> - `upstream_alas/` is the only git submodule
+> - All other folders are just folders - never run `git init` in them
+
+## The 4-Folder Structure
 
 ### 1. `upstream_alas` (Git Submodule)
 *   **Source:** `Zuosizhu/Alas-with-Dashboard` (The active fork).
@@ -36,12 +41,6 @@ To achieve the dual goal of "Staying current with Upstream ALAS" and "Building a
     *   **External Tools:** Web search, discord integration, telemetry.
 *   **Dependency:** Depends on `alas_wrapped` (via import or IPC), but does not contain ALAS code.
 
-### 5. `legacy_archive` (Historical Context)
-*   **Source:** The repository state as of *today* (Friday, Jan 16, 2026).
-*   **Role:** Reference / Backup.
-*   **Mechanism:** A Git Submodule pointing to the repository state before this restructure.
-*   **Purpose:** To ensure we never lose the work done in the `feature/state-machine-integration` branch during the transition.
-
 ---
 
 ## Workflow & Syncing
@@ -73,7 +72,15 @@ We will implement a Git Hook (or a simpler `dev_sync.py` script) that enforces h
 | Folder | Python Version | Reasoning |
 | :--- | :--- | :--- |
 | **`upstream_alas`** (Submodule) | **Python 3.7** | Strictly bound by the upstream `requirements.txt`. |
-| **`alas_baseline`** (Reference) | **Python 3.7** | Must mimic upstream exactly to serve as a control group for debugging. |
+| **`alas_baseline`** (Verified Working) | **Python 3.7** | Must mimic upstream exactly to serve as the known-good state. |
 | **`alas_wrapped`** (The Body) | **Python 3.7 (Start) -> 3.10+ (Goal)** | Start with 3.7 for compatibility. We will attempt to modernize dependencies to 3.10+ to unify with the Agent environment if feasible. |
-| **`legacy_archive`** (Old Snapshot) | **Python 3.7** | Historical state of the project. |
 | **`agent_orchestrator`** (The Brain) | **Python 3.10+** | Requires modern libraries for LangGraph, Pydantic v2, and LLM orchestration that are incompatible with Python 3.7. |
+
+## Tool Placement Rule
+
+| Tool Type | Location | Python Version |
+| :--- | :--- | :--- |
+| Tools that import ALAS internals (`module.*`) | `alas_wrapped/tools/` | 3.7 |
+| Standalone tools (no ALAS dependencies) | `agent_orchestrator/` | 3.10+ |
+
+**Example:** `navigation.py` and `vision.py` import from `module.base.template`, so they live in `alas_wrapped/tools/`. `log_parser.py` is zero-dependency, so it lives in `agent_orchestrator/`.

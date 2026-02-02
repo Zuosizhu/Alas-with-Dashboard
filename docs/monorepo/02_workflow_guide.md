@@ -2,6 +2,21 @@
 
 This guide details the operational procedures for maintaining the ALAS Monorepo.
 
+## Git Structure
+
+> **⚠️ One repo, one submodule. Everything else is folders.**
+
+| Path | Type | Purpose |
+|------|------|---------|
+| `ALAS/` | Git repo (public) | The only repo - all work happens here |
+| `upstream_alas/` | Git submodule | Points to Zuosizhu/Alas-with-Dashboard for pulling upstream updates |
+| `alas_baseline/` | Folder | Verified working ALAS - NOT a submodule |
+| `alas_wrapped/` | Folder | Our modified ALAS with tools |
+| `agent_orchestrator/` | Folder | MCP server and agent code |
+| Everything else | Folders | Just folders, never separate repos |
+
+**Never run `git init` in subfolders.** If experimental work gets complex, use a scratch folder outside this repo, then migrate the results back.
+
 ## The Core Concept: Unidirectional Flow
 Changes flow **downstream** from the original developers (`upstream`) to our reference (`baseline`) and finally to our code (`wrapped`).
 `upstream` -> `baseline` -> `wrapped`
@@ -40,3 +55,19 @@ Changes flow **downstream** from the original developers (`upstream`) to our ref
     1.  Modify `agent_orchestrator` code (Python 3.10+).
     2.  If the Agent needs a new "Sense" or "Action", add a function to `alas_wrapped/module/state_machine.py`.
     3.  Restart the Agent (the persistent `alas_mcp_server` might need a restart if `wrapped` code changed).
+
+## 4. The Experimental Loop (When Things Get Complicated)
+*Goal: Get something working without polluting the main repo.*
+
+Sometimes development gets messy - debugging emulator connections, testing configs, etc. When this happens:
+
+1.  **Create a scratch folder** outside this repo (e.g., `../ALASGetFunctional/`)
+2.  **Clone upstream ALAS** there and get it working
+3.  **Experiment freely** - create tools, test scripts, whatever needed
+4.  **Once verified working**, migrate results back:
+    *   Working ALAS config → `alas_baseline/config/`
+    *   New tools → `alas_wrapped/tools/` or `agent_orchestrator/`
+    *   Documentation → `docs/`
+5.  **Delete the scratch folder** after successful migration
+
+**Important:** Do NOT run `git init` in the scratch folder subfolders. Keep it simple - the goal is to get back into the main repo cleanly.
