@@ -1,12 +1,8 @@
-# Submodule Pinning Strategy:
-# - upstream_alas: UNPINNED (intentional) - tracks third-party upstream for vendor branch workflow
-# - legacy_archive: PINNED to ef37d0a9a - self-referential snapshot of pre-restructure state (Jan 16, 2026)
-#
-# Note: Git stores the pinned commit hash in .git/modules/, not in this file.
-# Use `git submodule status` to see current pinned commits.
+# Git Structure: One repo, one submodule.
+# upstream_alas is the ONLY submodule - everything else is just folders.
 
 [submodule "upstream_alas"]
 	path = upstream_alas
 	url = https://github.com/Zuosizhu/Alas-with-Dashboard.git
-	# Intentionally unpinned - we want to track upstream changes
+	# Tracks upstream fork for game updates
 
