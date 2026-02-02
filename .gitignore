@@ -258,6 +258,12 @@ $RECYCLE.BIN/
 *.lnk
 adb_port.txt
 adb_port.ini
+
+# Local ALAS overrides / editor artifacts
+alas_wrapped/config/PatrickCustom.json
+alas_baseline/config/PatrickCustom.json
+alas_wrapped/config/*.bak
+alas_baseline/config/*.bak
 *.exe
 !popup.exe
 *.zip

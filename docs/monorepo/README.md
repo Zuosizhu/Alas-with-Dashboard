@@ -1,61 +1,71 @@
-# Monorepo Organization
+# Monorepo Organization & Sync Workflow
 
 > **Status**: Complete - structure in place and operational
 
-This subdomain documents the vendor branch pattern used to safely develop AI capabilities while staying current with upstream ALAS updates.
+This subdomain documents the vendor branch pattern and the operational procedures for staying current with upstream ALAS updates.
 
-## Quick Reference
+## High-Level Summary
 
-| Folder | Purpose | Python |
-|--------|---------|--------|
-| `upstream_alas` | Read-only submodule, upstream sync source | 3.7 |
-| `alas_baseline` | Clean copy for debugging reference | 3.7 |
-| `alas_wrapped` | Modified version with MCP integration | 3.7→3.10+ |
-| `agent_orchestrator` | AI agent and MCP server | 3.10+ |
-| `legacy_archive` | Historical snapshot | 3.7 |
+We use a **Monorepo** structure implementing the **Vendor Branch Pattern** to safely develop AI capabilities alongside a legacy bot.
 
-## Documents
+> **⚠️ Git Rule: One repo, one submodule. Everything else is folders.**
+> - `ALAS/` is the only git repo
+> - `upstream_alas/` is the only git submodule
+> - Never run `git init` in subfolders
 
-- [00_summary.md](./00_summary.md) - Quick reference of folders and roles
-- [01_architecture_strategy.md](./01_architecture_strategy.md) - Deep dive into vendor branch pattern
-- [02_workflow_guide.md](./02_workflow_guide.md) - Step-by-step sync instructions
+## Git Structure & Purpose
 
-## Tools
+| Path | Type | Purpose | Python |
+|------|------|---------|--------|
+| `upstream_alas/` | Submodule | Read-only mirror of `Zuosizhu/Alas-with-Dashboard` | 3.7 |
+| `alas_baseline/` | Folder | Verified working ALAS; a clean copy for debugging | 3.7 |
+| `alas_wrapped/` | Folder | Our modified version with MCP hooks | 3.7→3.10+ |
+| `agent_orchestrator/` | Folder | AI agent code and persistent MCP server | 3.10+ |
 
-### `scripts/dev_sync.py`
+## Tool Placement Rule
 
-The sync tool implements the workflow described in `02_workflow_guide.md`:
+| Tool Type | Location | Python Version |
+| :--- | :--- | :--- |
+| Tools importing ALAS internals (`module.*`) | `alas_wrapped/tools/` | 3.7 |
+| Standalone tools (zero ALAS dependencies) | `agent_orchestrator/` | 3.10+ |
 
-```bash
-# Full sync cycle: upstream → baseline → check wrapped drift
-python scripts/dev_sync.py --all
+---
 
-# Individual operations
-python scripts/dev_sync.py --sync-baseline   # Reset baseline from upstream
-python scripts/dev_sync.py --init-wrapped    # Initialize wrapped from baseline
-python scripts/dev_sync.py --check           # Show drift report
-```
-
-## Key Principle
+## The Sync Workflow
 
 Changes flow **downstream only**: `upstream → baseline → wrapped`
 
-Never modify `upstream_alas` directly. The submodule tracks the active fork (Zuosizhu/Alas-with-Dashboard) which receives game updates, OCR fixes, and event support.
+### 1. The Update Loop (Monthly)
+*Goal: Fetch game updates from the community.*
+
+1. **Update Submodule**:
+   ```bash
+   git submodule update --remote -- upstream_alas
+   ```
+2. **Sync to Baseline**:
+   - Delete `alas_baseline`, then copy `upstream_alas` to `alas_baseline`.
+   - Reapply safe local configs (e.g., `adb` paths).
+3. **Verify**: Run `alas_baseline/gui.py` to ensure the vanilla bot still launches.
+
+### 2. The Merge Loop
+*Goal: Apply fixes to our Agent-ready code.*
+
+1. **Diff Check**: Compare `alas_baseline` vs `alas_wrapped`.
+2. **Apply Changes**: Copy assets directly. For logic files, use a merge tool to ensure our hooks aren't overwritten.
+3. **Test**: Run `agent_orchestrator` tests to ensure the Agent can still drive the wrapped code.
+
+### 3. The Development Loop (Daily)
+1. Modify `agent_orchestrator` code (Python 3.10+).
+2. If new actions are needed, add a function to `alas_wrapped/module/state_machine.py`.
+3. Restart the persistent `alas_mcp_server`.
+
+---
 
 ## Submodule Strategy
 
-This repo uses two git submodules with different pinning strategies:
-
-### `upstream_alas` (Unpinned)
+### `upstream_alas`
 - **Source**: `https://github.com/Zuosizhu/Alas-with-Dashboard.git`
-- **Pinning**: Intentionally unpinned (tracks branch HEAD)
-- **Rationale**: We want to pull upstream changes regularly for game updates and bug fixes
-- **Security**: Third-party code, but necessary for vendor branch workflow
+- **Pinning**: Pinned by commit; updated via `git submodule update --remote -- upstream_alas`.
+- **Rationale**: Pull upstream changes regularly for game updates.
+- **Rule**: Never modify this folder directly.
 
-### `legacy_archive` (Pinned)
-- **Source**: `https://github.com/Coldaine/ALAS.git` (self-referential)
-- **Pinning**: Pinned to `ef37d0a9a` (pre-restructure state from Jan 16, 2026)
-- **Rationale**: Historical snapshot for reference, should not change
-- **Note**: This is a self-referential submodule pointing to this repo's own earlier commit
-
-To see current pinned commits: `git submodule status`

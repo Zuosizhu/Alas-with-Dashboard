@@ -50,14 +50,9 @@ All notable changes to the ALAS AI Agent project.
   - `alas_baseline`: Clean copy for debugging reference
   - `alas_wrapped`: Modified version with MCP integration
   - `agent_orchestrator`: AI agent code (Python 3.10+)
-  - `legacy_archive`: Historical snapshot submodule
 
 ### Added - Tooling
-- `scripts/dev_sync.py`: Sync tool for baseline/wrapped management
-  - `--sync-baseline`: Reset baseline from upstream
-  - `--check`: Compare baseline vs wrapped (drift detection)
-  - `--init-wrapped`: Initialize wrapped from baseline
-  - `--all`: Full sync cycle
+- Upstream sync workflow documented (manual process; automation script planned)
 
 ### Added - MCP Server (Prototype)
 - `agent_orchestrator/alas_mcp_server.py`: JSON-RPC MCP server

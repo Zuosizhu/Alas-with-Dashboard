@@ -57,9 +57,22 @@ We extract this implicit knowledge into explicit, callable tools that:
 2. Expose clear success/failure states
 3. Provide context for LLM recovery when they fail
 
+## Tool Contract (Required)
+
+All new tools should return this envelope:
+
+- `success: bool`
+- `data: object | null`
+- `error: str | null`
+- `observed_state: str | null`
+- `expected_state: str`
+
+The supervisor relies on `expected_state` / `observed_state` to decide whether to continue, retry, or escalate.
+
 ## Next Steps
 
 - [ ] Extract more ALAS task handlers as individual tools
+- [ ] Start with login as the first complete workflow tool (`alas.login.ensure_main`)
 - [ ] Add tool metadata (expected states, produced states)
-- [ ] Implement proper MCP transport (currently stdio JSON-RPC)
+- [ ] Keep MCP transport stable; expand the tool surface area first
 - [ ] Add tool result validation

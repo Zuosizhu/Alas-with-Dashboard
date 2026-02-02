@@ -14,14 +14,14 @@ The MCP server (`agent_orchestrator/alas_mcp_server.py`) provides the **tool exe
 - Tool ambiguity: same interface works for Claude Code (dev) or Gemini (production)
 
 ### What's Missing
-- Gemini CLI or LangGraph wrapper for orchestration
+- A transport-agnostic supervisor (Phase II) that can drive tools via MCP
 - Decision logic (when to call which tool)
 - Recovery patterns (detecting failure, invoking vision, deciding next action)
 
 ## Architecture
 
 ### Tier 1: Orchestrator (Not Yet Implemented)
-- **Target**: Gemini (CLI or LangGraph wrapper)
+- **Target**: Gemini supervisor (client can be CLI, service, or LangGraph later)
 - **Role**: Makes decisions about what tools to call
 - Monitors execution results
 - Triggers recovery when needed
@@ -51,8 +51,8 @@ This means tool development and debugging can happen in Claude Code, then deploy
 
 ## Next Steps
 
-- [ ] Implement basic Gemini CLI orchestrator
-- [ ] Add action history tracking
-- [ ] Implement failure detection (expected vs actual state)
-- [ ] Add vision integration for state understanding
+- [ ] Expand deterministic tool surface (login, commission, daily) so a supervisor has real actions to delegate
+- [ ] Standardize tool result envelope: `{success, data, error, observed_state, expected_state}`
+- [ ] Add action history tracking (minimal ring buffer is sufficient at first)
+- [ ] Define recovery contract: when to call vision, when to fail fast
 - [ ] Implement "fix or log" recovery pattern

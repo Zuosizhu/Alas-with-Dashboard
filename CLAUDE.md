@@ -1,9 +1,9 @@
 # Claude Code Instructions
 
 > You are working on ALAS - an LLM-augmented Azur Lane automation system.
-> See [AGENTS.md](./AGENTS.md) for general agent context.
+> See [AGENTS.md](./AGENTS.md) for general agent context and [docs/ROADMAP.md](./docs/ROADMAP.md) for project status/phasing.
 
-## Current Phase: Phase 0 (Direct Python Tools)
+## Your Role
 
 Claude Code is the **development-time orchestrator**. You call Python functions directly to test and develop tool extraction from ALAS.
 
@@ -12,7 +12,7 @@ Claude Code is the **development-time orchestrator**. You call Python functions 
 1. [docs/NORTH_STAR.md](./docs/NORTH_STAR.md) - Vision: replace ALAS with LLM-augmented system
 2. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - System diagram and subdomain status
 3. [docs/ROADMAP.md](./docs/ROADMAP.md) - Phase 0/I/II breakdown
-4. [docs/monorepo/00_summary.md](./docs/monorepo/00_summary.md) - Folder purposes
+4. [docs/monorepo/README.md](./docs/monorepo/README.md) - Folder purposes
 
 ## Git Structure
 
@@ -27,10 +27,10 @@ ALAS/                          [GIT REPO - public, the ONLY repo]
 ├── agent_orchestrator/        [folder]
 ├── scripts/                   [folder]
 ├── docs/                      [folder]
-└── legacy_archive/            [folder - NOT a submodule]
 ```
 
-**Why `upstream_alas/` is a submodule:** It points to the upstream fork (Zuosizhu/Alas-with-Dashboard). This lets us pull game updates without mixing upstream history into our repo. Run `git submodule update --remote upstream_alas` to fetch latest.
+
+**Why `upstream_alas/` is a submodule:** It points to the upstream fork (Zuosizhu/Alas-with-Dashboard). This lets us pull game updates without mixing upstream history into our repo. Run `git submodule update --remote -- upstream_alas` to fetch latest.
 
 **DO NOT** create additional git repos or submodules. If you find yourself running `git init` in a subfolder, stop - that's wrong.
 
@@ -129,7 +129,7 @@ Pull updates, verify in baseline, merge into wrapped.
 ```
 Once verified working, that state becomes the new baseline.
 
-## Your Role in Phase 0
+## Orchestration Philosophy
 
 1. **Extract tools** from `alas_wrapped/` into callable Python functions
 2. **Test directly** - call functions, observe results
@@ -203,11 +203,11 @@ python log_parser.py ../alas_baseline/log/2026-01-*.txt
 - Device issues (ADB timeouts, connection errors)
 - Combat statistics (if applicable)
 
-See [docs/PARSER_ARCHITECTURE_V2.md](./docs/PARSER_ARCHITECTURE_V2.md) for planned enhancements.
+See [docs/dev/log_parser.md](./docs/dev/log_parser.md) for planned enhancements.
 
 ## Cross-References
 
-- Tool extraction plan: [docs/plans/tooling-architecture.md](./docs/plans/tooling-architecture.md)
+- Tool extraction plan: [docs/archive/legacy/tooling-architecture.md](./docs/archive/legacy/tooling-architecture.md)
 - MCP server (7 tools): [agent_orchestrator/alas_mcp_server.py](./agent_orchestrator/alas_mcp_server.py)
-- Sync workflow: [docs/monorepo/02_workflow_guide.md](./docs/monorepo/02_workflow_guide.md)
-- Log parser docs: [docs/PARSER_ARCHITECTURE_V2.md](./docs/PARSER_ARCHITECTURE_V2.md)
+- Sync workflow: [docs/monorepo/README.md](./docs/monorepo/README.md)
+- Log parser docs: [docs/dev/log_parser.md](./docs/dev/log_parser.md)

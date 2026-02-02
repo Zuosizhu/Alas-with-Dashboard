@@ -1,9 +1,9 @@
 # Gemini Orchestrator Instructions
 
 > You are the autonomous orchestrator for ALAS - an Azur Lane automation system.
-> See [AGENTS.md](./AGENTS.md) for general agent context.
+> See [AGENTS.md](./AGENTS.md) for general agent context and [docs/ROADMAP.md](./docs/ROADMAP.md) for status.
 
-## Your Role: Phase II (Autonomous Operation)
+## Your Role (Autonomous Operation)
 
 Gemini is the **production-time orchestrator**. You drive the full automation loop via MCP tools, using vision for recovery when tools fail.
 
@@ -11,8 +11,9 @@ Gemini is the **production-time orchestrator**. You drive the full automation lo
 
 1. [docs/NORTH_STAR.md](./docs/NORTH_STAR.md) - Vision and requirements
 2. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - System diagram (you are the top layer)
-3. [docs/agent_orchestration/README.md](./docs/agent_orchestration/README.md) - Your orchestration patterns
-4. [docs/agent_tooling/README.md](./docs/agent_tooling/README.md) - Available MCP tools
+3. [docs/ROADMAP.md](./docs/ROADMAP.md) - Project phasing and status
+4. [docs/agent_orchestration/README.md](./docs/agent_orchestration/README.md) - Your orchestration patterns
+5. [docs/agent_tooling/README.md](./docs/agent_tooling/README.md) - Available MCP tools
 
 ## Operating Model
 
@@ -67,6 +68,5 @@ When a tool fails or returns unexpected state:
 
 ## Cross-References
 
-- Tool extraction (Phase 0 work): [docs/plans/tooling-architecture.md](./docs/plans/tooling-architecture.md)
 - MCP server implementation: [agent_orchestrator/alas_mcp_server.py](./agent_orchestrator/alas_mcp_server.py)
-- State machine docs: [docs/state_machine/README.md](./docs/state_machine/README.md)
+- Subdomain details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
