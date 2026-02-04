@@ -3,6 +3,7 @@ import asyncio
 import os
 import sys
 import unittest.mock as mock
+import inspect
 
 # Adjust path to find ALAS modules
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -12,16 +13,15 @@ if project_root not in sys.path:
 if alas_wrapped not in sys.path:
     sys.path.append(alas_wrapped)
 
-# We need to mock module.ui.page because alas_mcp_server imports from it inside alas_goto
-m2 = mock.Mock()
-sys.modules["module"] = m2
-m3 = mock.Mock()
-sys.modules["module.ui"] = m3
-m4 = mock.Mock()
-sys.modules["module.ui.page"] = m4
-
 from alas_mcp_server import mcp, ALASContext
 import alas_mcp_server as server
+
+
+async def _call_tool(name: str, arguments: dict):
+    result = mcp.call_tool(name, arguments)
+    if inspect.isawaitable(result):
+        return await result
+    return result
 
 @pytest.mark.asyncio
 async def test_server_startup_and_list_tools():
@@ -36,7 +36,7 @@ async def test_server_startup_and_list_tools():
     server.ctx = mock_ctx
     
     # FastMCP call_tool is async and returns a ToolResult
-    result = await mcp.call_tool("adb_tap", {"x": 10, "y": 20})
+    result = await _call_tool("adb_tap", {"x": 10, "y": 20})
     # For FastMCP 3.0, call_tool might return a ToolResult object
     # We check its content
     if hasattr(result, "content"):
@@ -55,9 +55,10 @@ async def test_alas_goto_integration():
     
     # Mock Page.all_pages
     mock_page = mock.Mock()
-    m4.Page.all_pages = {"page_main": mock_page}
+    from module.ui.page import Page
+    Page.all_pages = {"page_main": mock_page}
     
-    result = await mcp.call_tool("alas_goto", {"page": "page_main"})
+    result = await _call_tool("alas_goto", {"page": "page_main"})
     
     if hasattr(result, "content"):
         text = result.content[0].text
@@ -71,11 +72,12 @@ async def test_alas_goto_integration():
 async def test_alas_goto_invalid_integration():
     mock_ctx = mock.Mock()
     server.ctx = mock_ctx
-    m4.Page.all_pages = {}
+    from module.ui.page import Page
+    Page.all_pages = {}
     
     # FastMCP might raise a specific Error or the original ValueError
     try:
-        await mcp.call_tool("alas_goto", {"page": "invalid"})
+        await _call_tool("alas_goto", {"page": "invalid"})
         assert False, "Should have raised an exception"
     except Exception as e:
         assert "unknown page" in str(e).lower()
