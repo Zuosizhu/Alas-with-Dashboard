@@ -2,7 +2,27 @@
 
 All notable changes to the ALAS AI Agent project.
 
-## [Unreleased]
+## [Unreleased] - 2026-02-04
+
+### Changed
+- **Repository Consolidation**: Removed `alas_baseline/` directory.
+  - *Reasoning*: Having three parallel versions (`baseline`, `wrapped`, `upstream`) was causing developer confusion and patch fragmentation. 
+  - *Outcome*: `alas_wrapped/` is now the single source of truth for custom logic, while `upstream_alas/` remains as the submodule link for game updates.
+- **Log Parser Upgrade**: Enhanced `agent_orchestrator/log_parser.py` with `AkashiAnalyzer`.
+  - Now tracks merchant discoveries, successful purchases, and summarizes recognition "noise" (mismatch Sim scores).
+
+### Added
+- **Akashi Merchant Recognition Fix**: Implemented targeted threshold override in `alas_wrapped/module/base/template.py`.
+  - Lowered matching threshold from 0.85 to 0.75 specifically for `TEMPLATE_SIREN_AKASHI` to overcome recognition ceiling observed at 0.806.
+- **Template Debugging**: Added automatic debug screenshotting for "near-miss" template matches (70%-85% similarity).
+- **Project Launcher**: Restored `start_alas.bat` at the repository root.
+  - Automatically handles UTF-8 encoding, MEmu process checks, and launches `alas_wrapped` with `PatrickCustom` configuration.
+
+### Fixed
+- **Git Infrastructure**: Removed broken root-level git hooks (`pre-commit`, `pre-push`).
+  - *Reasoning*: Stale JavaScript-based hooks were blocking commits because they expected a `package.json` at the root that did not exist.
+- **Config Tracking**: Explicitly committed and tracked `alas_wrapped/config/PatrickCustom.json` to preserve active gameplay strategy.
+- **Documentation Recovery**: Restored `docs/ALAS_CONFIG_REFERENCE.md` explainining all ALAS configuration parameters.
 
 ### Changed
 - **MCP Server**: Migrated from hand-rolled JSON-RPC to FastMCP 3.0 framework
