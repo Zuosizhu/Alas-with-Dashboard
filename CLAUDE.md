@@ -98,6 +98,8 @@ alas_wrapped/.venv/
 
 ### 2. Configuration Files
 
+**`alas_wrapped/config/PatrickCustom.json`** - **ALWAYS COMMIT THIS FILE.** This is the live bot configuration containing task schedules, emulator settings, and gameplay preferences. It is the most important config file in the repo.
+
 **`config/deploy.yaml`** - Must point to correct executables:
 
 ```yaml
