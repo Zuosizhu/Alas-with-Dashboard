@@ -362,6 +362,39 @@ class CombatAnalyzer(BaseAnalyzer):
             self.fights.append(self.current_fight)
 
 
+class AkashiAnalyzer(BaseAnalyzer):
+    """Tracks Operation Siren merchant (Akashi) events"""
+
+    def __init__(self):
+        self.discoveries: List[LogLine] = []
+        self.purchases: List[str] = []
+        self.mismatch_warnings: Counter = Counter()
+        self.max_mismatch_sim: Dict[str, float] = {}
+
+    def feed(self, log: LogLine, state: SessionState):
+        msg = log.message
+        
+        # Discovery: "Found Akashi on (X, Y)"
+        if "Found Akashi" in msg:
+            self.discoveries.append(log)
+            
+        # Purchase: "Bought item: ItemName"
+        elif "Bought item:" in msg:
+            match = re.search(r"Bought item:\s*(.+)\.", msg)
+            if match:
+                self.purchases.append(match.group(1))
+
+        # Mismatch Warning: "Channel mismatch fixed in TEMPLATE_NAME. Sim: 0.XXX"
+        elif "Channel mismatch fixed in" in msg:
+            match = re.search(r"Channel mismatch fixed in ([\w_]+)\. Sim: ([\d.]+)", msg)
+            if match:
+                template_name = match.group(1)
+                sim = float(match.group(2))
+                self.mismatch_warnings[template_name] += 1
+                if sim > self.max_mismatch_sim.get(template_name, 0):
+                    self.max_mismatch_sim[template_name] = sim
+
+
 class ResourceAnalyzer(BaseAnalyzer):
     """Tracks resource readings from OCR"""
 
@@ -502,6 +535,7 @@ class AnalyzerPipeline:
         self.device = DeviceAnalyzer()
         self.loot = LootAnalyzer()
         self.skip = SkipAnalyzer()
+        self.akashi = AkashiAnalyzer()
         
         self.state = SessionState()
         self.options: Dict[str, bool] = {} # Feature flags
@@ -529,6 +563,7 @@ class AnalyzerPipeline:
         self.resource.feed(log, self.state)
         self.navigation.feed(log, self.state)
         self.device.feed(log, self.state)
+        self.akashi.feed(log, self.state)
         
         # Feed optional analyzers
         self.loot.feed(log, self.state)
@@ -679,6 +714,20 @@ class SummaryFormatter:
             if wins + losses > 0:
                 winrate = wins / (wins + losses) * 100
                 lines.append(f"  Winrate: {c(f'{winrate:.1f}%', Colors.CYAN)}")
+            lines.append("")
+
+        # Akashi summary
+        if pipeline.akashi.discoveries or pipeline.akashi.purchases or pipeline.akashi.mismatch_warnings:
+            lines.append(c("Akashi (Merchant)", Colors.BOLD))
+            lines.append(c("-" * 60, Colors.DIM))
+            lines.append(f"  Discoveries: {c(str(len(pipeline.akashi.discoveries)), Colors.GREEN)}")
+            lines.append(f"  Purchases:   {c(str(len(pipeline.akashi.purchases)), Colors.CYAN)}")
+            
+            if pipeline.akashi.mismatch_warnings:
+                lines.append(c("\n  Recognition Noise (Channel Mismatches):", Colors.YELLOW))
+                for template, count in pipeline.akashi.mismatch_warnings.most_common(5):
+                    max_sim = pipeline.akashi.max_mismatch_sim.get(template, 0)
+                    lines.append(f"    {template:30} x{count:4} (max sim: {max_sim:.3f})")
             lines.append("")
 
         # Device issues

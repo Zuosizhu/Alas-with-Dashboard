@@ -141,8 +141,35 @@ class Template(Resource):
         res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
 
         if coerced:
-            _, sim, _, _ = cv2.minMaxLoc(res)
-            logger.warning(f'Channel mismatch fixed in {self.name}. Sim: {sim:.3f}')
+            _, sim, _, point = cv2.minMaxLoc(res)
+            # 2026-02-04: Debounce log spam and save debug info for near-misses
+            # Only log every 100 occurrences or if sim is very high
+            should_log = False
+            if not hasattr(self, '_mismatch_count'):
+                self._mismatch_count = 0
+            self._mismatch_count += 1
+            
+            if self._mismatch_count % 100 == 1 or sim > 0.8:
+                should_log = True
+                
+            if should_log:
+                logger.warning(f'Channel mismatch fixed in {self.name}. Sim: {sim:.3f} (Count: {self._mismatch_count})')
+            
+            # If it's a "near miss" (e.g. Akashi), save a debug image for manual inspection
+            if 0.75 < sim < 0.85 and 'AKASHI' in self.name:
+                from datetime import datetime
+                now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')
+                debug_path = f'./log/debug_mismatch_{self.name}_{now}.png'
+                try:
+                    # Save the matched area for inspection
+                    h, w = template.shape[:2]
+                    x, y = point
+                    crop = image[y:y+h, x:x+w]
+                    cv2.imwrite(debug_path, crop)
+                    if should_log:
+                        logger.info(f'Saved debug mismatch image to {debug_path}')
+                except Exception as e:
+                    pass
 
         return res
 
