@@ -1,7 +1,20 @@
-# Claude Code Instructions
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 > You are working on ALAS - an LLM-augmented Azur Lane automation system.
 > See [AGENTS.md](./AGENTS.md) for general agent context and [docs/ROADMAP.md](./docs/ROADMAP.md) for project status/phasing.
+
+## The North Star (Sacrosanct)
+
+**[docs/NORTH_STAR.md](./docs/NORTH_STAR.md) is the immutable vision document.** All decisions must align with it:
+
+- **Replace ALAS entirely** with an LLM-augmented system
+- **Deterministic tools first** — fast, reliable programmatic operations for normal flow
+- **LLM for recovery only** — intervene when tools fail or state is unexpected
+- **Tool ambiguity** — same tools serve Claude Code (dev) and Gemini (prod)
+
+If a proposed change conflicts with NORTH_STAR.md, the change is wrong. The document captures 9 years of implicit ALAS workflow knowledge that we are extracting into explicit tools.
 
 ## Your Role
 
@@ -9,7 +22,7 @@ Claude Code is the **development-time orchestrator**. You call Python functions 
 
 ## Required Reading (in order)
 
-1. [docs/NORTH_STAR.md](./docs/NORTH_STAR.md) - Vision: replace ALAS with LLM-augmented system
+1. [docs/NORTH_STAR.md](./docs/NORTH_STAR.md) - **Sacrosanct vision** (read first, always)
 2. [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) - System diagram and subdomain status
 3. [docs/ROADMAP.md](./docs/ROADMAP.md) - Phase 0/I/II breakdown
 4. [docs/monorepo/README.md](./docs/monorepo/README.md) - Folder purposes
@@ -129,18 +142,60 @@ Pull updates, verify in baseline, merge into wrapped.
 ```
 Once verified working, that state becomes the new baseline.
 
-## Orchestration Philosophy
+## Development Workflow
 
-1. **Extract tools** from `alas_wrapped/` into callable Python functions
-2. **Test directly** - call functions, observe results
-3. **Document contracts** - preconditions, postconditions, return types
-4. **Log failures** - capture what doesn't work for later fixing
+### Branch and PR Process
 
-## Tool Philosophy
+**All non-trivial changes go through feature branches:**
 
-- **Deterministic first**: Tools should be fast, reliable programmatic operations
-- **LLM for recovery only**: You intervene when tools fail or state is unexpected
-- **Same interface**: Tools you develop will be used by Gemini in Phase II
+```bash
+# 1. Create a feature branch
+git checkout -b feature/descriptive-name
+
+# 2. Make changes, commit incrementally
+
+# 3. Push and create PR
+git push -u origin feature/descriptive-name
+gh pr create --title "feat: description" --body "## Summary\n..."
+```
+
+**Commit message prefixes:**
+- `feat:` - New functionality
+- `fix:` - Bug fixes
+- `docs:` - Documentation only
+- `refactor:` - Code changes that don't add features or fix bugs
+- `test:` - Adding or updating tests
+- `chore:` - Maintenance tasks
+
+### Documentation Requirements
+
+**Before completing any feature work:**
+
+1. **Update CHANGELOG.md** - Add entry under `[Unreleased]` section with:
+   - What changed (Added/Changed/Fixed/Removed)
+   - Why it matters (brief context)
+
+2. **Update relevant docs/** files if behavior changes:
+   - New tools → update `docs/agent_tooling/README.md`
+   - Architecture changes → update `docs/ARCHITECTURE.md`
+   - Process changes → update `docs/monorepo/README.md`
+
+3. **Update ROADMAP.md** if milestone status changes
+
+### Tool Contract (Required for New Tools)
+
+All extracted tools must return this envelope:
+```python
+{
+    "success": bool,
+    "data": object | None,     # Diagnostic info on failure
+    "error": str | None,       # Non-null on failure
+    "observed_state": str | None,
+    "expected_state": str
+}
+```
+
+This is the minimum the supervisor needs to reason about success/failure.
 
 ## Working With ALAS Code
 
@@ -205,9 +260,32 @@ python log_parser.py ../alas_baseline/log/2026-01-*.txt
 
 See [docs/dev/log_parser.md](./docs/dev/log_parser.md) for planned enhancements.
 
+## Common Commands
+
+```bash
+# Run tests (from repo root)
+pytest
+
+# Run a specific test file
+pytest agent_orchestrator/test_alas_mcp.py
+
+# Run MCP server
+cd agent_orchestrator && uv run alas_mcp_server.py --config alas
+
+# Analyze ALAS logs
+python agent_orchestrator/log_parser.py alas_baseline/log/2026-02-01_alas.txt
+
+# Update upstream submodule
+git submodule update --remote -- upstream_alas
+
+# Launch ALAS bot (requires MEmu running)
+cd alas_wrapped && alas.bat
+```
+
 ## Cross-References
 
 - Tool extraction plan: [docs/archive/legacy/tooling-architecture.md](./docs/archive/legacy/tooling-architecture.md)
-- MCP server (7 tools): [agent_orchestrator/alas_mcp_server.py](./agent_orchestrator/alas_mcp_server.py)
+- MCP server (8 tools): [agent_orchestrator/alas_mcp_server.py](./agent_orchestrator/alas_mcp_server.py)
 - Sync workflow: [docs/monorepo/README.md](./docs/monorepo/README.md)
 - Log parser docs: [docs/dev/log_parser.md](./docs/dev/log_parser.md)
+- Changelog: [CHANGELOG.md](./CHANGELOG.md)
