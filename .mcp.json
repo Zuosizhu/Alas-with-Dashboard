@@ -6,7 +6,7 @@
       "args": [
         "run",
         "--directory",
-        "./agent_orchestrator",
+        "agent_orchestrator",
         "alas_mcp_server.py",
         "--config",
         "alas"

@@ -1,10 +1,14 @@
 {
   "mcpServers": {
     "alas-mcp": {
-      "command": "",
+      "command": "uv",
       "args": [
-        "uv",
-        "--directory,C:\\_projects\\ALAS\\ALAS\\agent_orchestrator,run,alas_mcp_server.py,--config,PatrickCustom"
+        "run",
+        "--directory",
+        "agent_orchestrator",
+        "alas_mcp_server.py",
+        "--config",
+        "alas"
       ]
     }
   }
