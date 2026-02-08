@@ -73,6 +73,7 @@
 
 ## Development Resources
 
+- [dev/environment_setup.md](./dev/environment_setup.md) - Python 3.9+ setup and launchers
 - [dev/testing.md](./dev/testing.md) - Testing philosophy
 - [dev/logging.md](./dev/logging.md) - Logging philosophy
 - [dev/log_parser.md](./dev/log_parser.md) - Log parser architecture
