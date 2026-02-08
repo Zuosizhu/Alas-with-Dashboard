@@ -34,7 +34,6 @@ Claude Code is the **development-time orchestrator**. You call Python functions 
 ```
 ALAS/                          [GIT REPO - public, the ONLY repo]
 ├── upstream_alas/             [GIT SUBMODULE - points to Zuosizhu/Alas-with-Dashboard]
-├── alas_baseline/             [folder - NOT a submodule]
 ├── alas_wrapped/              [folder]
 │   └── tools/                 [folder]
 ├── agent_orchestrator/        [folder]
@@ -54,47 +53,40 @@ When Zuosizhu releases updates (new events, bug fixes, etc.):
 ```
 upstream_alas/          (1) git submodule update --remote
       ↓
-  MANUAL MERGE          (2) Compare changes, apply to alas_baseline
+  MANUAL MERGE          (2) Compare changes, apply to alas_wrapped preserving our customizations
       ↓
-alas_baseline/          (3) Test that it actually runs (upstream often doesn't work out-of-box)
-      ↓
-  MANUAL MERGE          (4) Apply relevant changes to alas_wrapped, preserving our customizations
-      ↓
-alas_wrapped/           (5) Test with MCP tools, commit
+alas_wrapped/           (3) Test with MCP tools, commit
 ```
 
-**Why two manual merges?**
-- `upstream_alas/` → `alas_baseline/`: Upstream ALAS often requires config fixes, path corrections, or patches to run on our setup. These fixes live in `alas_baseline/`.
-- `alas_baseline/` → `alas_wrapped/`: We preserve our MCP hooks, tool integrations, and customizations while bringing in the verified-working upstream changes.
+Upstream ALAS often requires config fixes, path corrections, or patches to run on our setup. These fixes are applied directly in `alas_wrapped/` alongside our MCP hooks, tool integrations, and other customizations.
 
 ## Key Directories
 
 | Folder | Purpose | Python Version |
 |--------|---------|----------------|
 | `upstream_alas/` | Read-only submodule - raw pull from Zuosizhu, never modify directly | - |
-| `alas_baseline/` | **Verified working ALAS** - upstream + manual fixes to make it run | 3.8 (.venv) |
-| `alas_wrapped/` | Modified ALAS with MCP hooks, tools, our customizations | 3.8 (.venv) |
-| `alas_wrapped/tools/` | **Only** tools that import ALAS internals (navigation.py, vision.py) | 3.8 |
+| `alas_wrapped/` | **Single source of truth** - ALAS with MCP hooks, tools, our customizations | 3.9 (.venv) |
+| `alas_wrapped/tools/` | **Only** tools that import ALAS internals (navigation.py, vision.py) | 3.9 |
 | `agent_orchestrator/` | Agent code, MCP server, modern tools (log_parser.py) | 3.10+ |
 | `scripts/` | Dev tooling (if any) | 3.10+ |
 
-> **Tool placement rule:** If a tool imports from `module.*` or other ALAS internals, it goes in `alas_wrapped/tools/`. If it's standalone (no ALAS dependencies), it goes in `agent_orchestrator/` to escape the Python 3.7 constraint.
+> **Tool placement rule:** If a tool imports from `module.*` or other ALAS internals, it goes in `alas_wrapped/tools/`. If it's standalone (no ALAS dependencies), it goes in `agent_orchestrator/` to escape the Python 3.9 constraint.
 
 ## ALAS Setup Requirements
 
-To get ALAS running in `alas_baseline/` or `alas_wrapped/`:
+To get ALAS running in `alas_wrapped/`:
 
 ### 1. Python Environment (.venv)
 
-ALAS requires a Python 3.8 virtual environment with all dependencies installed.
+ALAS requires a Python 3.9 virtual environment managed by **UV**:
 
 ```bash
-# The venv must exist at:
-alas_baseline/.venv/
-alas_wrapped/.venv/
+cd alas_wrapped
+uv venv --python=3.9 .venv
+uv pip install --python .venv/Scripts/python.exe -r requirements.txt --overrides overrides.txt
 ```
 
-**Note:** Creating a fresh venv with `pip install -r requirements.txt` may fail due to packages like `av` requiring compilation. Copy from a working environment instead.
+Dependencies are locked via `uv pip compile`. See [docs/dev/environment_setup.md](./docs/dev/environment_setup.md) for the full workflow.
 
 ### 2. Configuration Files
 
@@ -104,12 +96,15 @@ alas_wrapped/.venv/
 
 ```yaml
 Python:
-  # MUST use .venv, not ./toolkit/python.exe (which doesn't exist)
   PythonExecutable: ./.venv/Scripts/python.exe
+  InstallDependencies: false   # UV manages deps, not ALAS
 
 Git:
-  # Use system git, not ./toolkit/Git/... (which doesn't exist)
   GitExecutable: git
+  AutoUpdate: false
+
+Adb:
+  AdbExecutable: adb
 ```
 
 **`config/alas.json`** - Bot configuration (emulator, tasks, etc.):
@@ -134,15 +129,15 @@ MEmu emulator must be started manually (requires admin privileges). The script c
 
 **1. Upstream Sync (normal):** When upstream ALAS gets game updates:
 ```
-upstream_alas → alas_baseline → alas_wrapped
+upstream_alas → alas_wrapped
 ```
-Pull updates, verify in baseline, merge into wrapped.
+Pull updates, compare changes, merge into wrapped with our customizations preserved.
 
 **2. Experimental Work (when things get complicated):** Work in a separate folder, get it functional, bring back:
 ```
-[scratch workspace] → alas_baseline → alas_wrapped
+[scratch workspace] → alas_wrapped
 ```
-Once verified working, that state becomes the new baseline.
+Once verified working, merge into `alas_wrapped/`.
 
 ## Development Workflow
 
@@ -248,10 +243,10 @@ A comprehensive log analysis tool lives at `agent_orchestrator/log_parser.py`.
 ```bash
 # Basic usage - analyze a log file
 cd agent_orchestrator
-python log_parser.py ../alas_baseline/log/2026-02-01_alas.txt
+python log_parser.py ../alas_wrapped/log/2026-02-01_alas.txt
 
 # Multi-file aggregation
-python log_parser.py ../alas_baseline/log/2026-01-*.txt
+python log_parser.py ../alas_wrapped/log/2026-01-*.txt
 ```
 
 **Output includes:**
@@ -275,13 +270,19 @@ pytest agent_orchestrator/test_alas_mcp.py
 cd agent_orchestrator && uv run alas_mcp_server.py --config alas
 
 # Analyze ALAS logs
-python agent_orchestrator/log_parser.py alas_baseline/log/2026-02-01_alas.txt
+python agent_orchestrator/log_parser.py alas_wrapped/log/2026-02-01_alas.txt
 
 # Update upstream submodule
 git submodule update --remote -- upstream_alas
 
 # Launch ALAS bot (requires MEmu running)
 cd alas_wrapped && alas.bat
+
+# Recreate alas_wrapped venv
+cd alas_wrapped && uv venv --python=3.9 .venv && uv pip install --python .venv/Scripts/python.exe -r requirements.txt --overrides overrides.txt
+
+# Regenerate alas_wrapped lockfile after editing requirements-in.txt
+cd alas_wrapped && uv pip compile requirements-in.txt --python-version=3.9 --overrides=overrides.txt --output-file=requirements.txt --annotation-style=line --only-binary av
 ```
 
 ## Cross-References
