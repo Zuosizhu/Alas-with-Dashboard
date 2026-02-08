@@ -11,7 +11,9 @@
         "--config",
         "alas"
       ],
-      "env": {}
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
     }
   }
 }

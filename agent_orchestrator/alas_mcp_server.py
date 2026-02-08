@@ -1,6 +1,7 @@
 import argparse
 import base64
 import io
+import logging
 import os
 import sys
 import inspect
@@ -51,11 +52,29 @@ mcp = FastMCP("alas-mcp", version="1.0.0")
 
 class ALASContext:
     def __init__(self, config_name: str):
-        # We import here to avoid issues if the environment isn't fully set up during discovery
-        from alas import AzurLaneAutoScript
+        # ALAS's Rich logger writes to stdout at import time (module/logger.py),
+        # which corrupts the MCP stdio JSON-RPC transport. Redirect stdout to
+        # stderr during import, then patch the handler permanently.
+        _real_stdout = sys.stdout
+        sys.stdout = sys.stderr
+        try:
+            from alas import AzurLaneAutoScript
+        finally:
+            sys.stdout = _real_stdout
+
         self.config_name = config_name
         self.script = AzurLaneAutoScript(config_name=config_name)
         self._state_machine = self.script.state_machine
+
+        # Patch any Rich console handlers on the ALAS logger to use stderr
+        # so ongoing log output never hits stdout.
+        try:
+            from rich.console import Console
+            for h in logging.getLogger('alas').handlers:
+                if hasattr(h, 'console'):
+                    h.console = Console(file=sys.stderr)
+        except ImportError:
+            pass  # Rich not available; no handler to patch
 
     def encode_screenshot_png_base64(self) -> str:
         """Preserve existing PNG encoding logic."""
