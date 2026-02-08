@@ -77,6 +77,12 @@ Gemini acts as a supervisor over deterministic tools via MCP.
 
 ---
 
+## Future Enhancements
+
+- [ ] **Tactical Training Scheduling**: Refactor the skill training system to support scheduling different ships for training (e.g., rotate girls through the classroom rather than always training whoever is currently assigned).
+
+---
+
 ## Non-Goals (Explicitly Out of Scope)
 
 - **GUI Overhauls**: We do not touch the legacy ALAS web dashboard.
