@@ -1284,7 +1284,7 @@
   "Commission": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:22:57",
+      "NextRun": "2026-02-07 23:40:11",
       "Command": "Commission",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1302,7 +1302,7 @@
   "Tactical": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 00:55:07",
+      "NextRun": "2026-02-08 01:32:46",
       "Command": "Tactical",
       "SuccessInterval": "30-60",
       "FailureInterval": "120-240",
@@ -1330,7 +1330,7 @@
   "Research": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:20:00",
+      "NextRun": "2026-02-07 22:17:10",
       "Command": "Research",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1351,7 +1351,7 @@
   "Dorm": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 05:23:45",
+      "NextRun": "2026-02-08 02:01:28",
       "Command": "Dorm",
       "SuccessInterval": 278,
       "FailureInterval": 278,
@@ -1374,7 +1374,7 @@
   "Meowfficer": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 00:32:07",
       "Command": "Meowfficer",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1399,7 +1399,7 @@
   "Guild": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Guild",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1425,7 +1425,7 @@
   "Reward": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:38:44",
+      "NextRun": "2026-02-08 00:41:34",
       "Command": "Reward",
       "SuccessInterval": "120-240",
       "FailureInterval": "120-240",
@@ -1445,7 +1445,7 @@
   "Awaken": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Awaken",
       "SuccessInterval": 0,
       "FailureInterval": 120,
@@ -1462,7 +1462,7 @@
   "Daily": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Daily",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1491,7 +1491,7 @@
   "Hard": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Hard",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1508,7 +1508,7 @@
   "Exercise": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Exercise",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1521,7 +1521,7 @@
       "LowHpThreshold": 0.25,
       "LowHpConfirmWait": 1,
       "OpponentRefreshValue": 0,
-      "OpponentRefreshRecord": "2026-02-04 19:04:22"
+      "OpponentRefreshRecord": "2026-02-07 21:22:56"
     },
     "Storage": {
       "Storage": {}
@@ -1639,7 +1639,7 @@
   "Freebies": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Freebies",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1682,7 +1682,7 @@
   "PrivateQuarters": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "PrivateQuarters",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1714,7 +1714,7 @@
   "OpsiAshBeacon": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-07 22:28:00",
       "Command": "OpsiAshBeacon",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1734,7 +1734,7 @@
   "OpsiAshAssist": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "OpsiAshAssist",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1750,7 +1750,7 @@
   "OpsiExplore": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiExplore",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -1759,7 +1759,7 @@
     "OpsiExplore": {
       "SpecialRadar": true,
       "ForceRun": false,
-      "LastZone": 113
+      "LastZone": 91
     },
     "OpsiFleet": {
       "Fleet": 1,
@@ -1772,7 +1772,7 @@
   "OpsiShop": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiShop",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1805,7 +1805,7 @@
   "OpsiDaily": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "OpsiDaily",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1826,7 +1826,7 @@
   "OpsiObscure": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiObscure",
       "SuccessInterval": 60,
       "FailureInterval": 60,
@@ -1846,7 +1846,7 @@
   "OpsiAbyssal": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiAbyssal",
       "SuccessInterval": 60,
       "FailureInterval": 60,
@@ -1865,7 +1865,7 @@
   "OpsiArchive": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiArchive",
       "SuccessInterval": 60,
       "FailureInterval": 60,
@@ -1882,7 +1882,7 @@
   "OpsiStronghold": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiStronghold",
       "SuccessInterval": 60,
       "FailureInterval": 60,
@@ -1901,7 +1901,7 @@
   "OpsiMonthBoss": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiMonthBoss",
       "SuccessInterval": 0,
       "FailureInterval": 120,
@@ -1922,7 +1922,7 @@
   "OpsiMeowfficerFarming": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiMeowfficerFarming",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1944,7 +1944,7 @@
   "OpsiHazard1Leveling": {
     "Scheduler": {
       "Enable": false,
-      "NextRun": "2026-02-05 01:36:59",
+      "NextRun": "2026-02-07 22:26:32",
       "Command": "OpsiHazard1Leveling",
       "SuccessInterval": 30,
       "FailureInterval": 60,
