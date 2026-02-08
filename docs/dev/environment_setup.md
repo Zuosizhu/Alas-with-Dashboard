@@ -33,7 +33,7 @@ uv pip install --python .venv/Scripts/python.exe -r requirements.txt --overrides
 cd alas_wrapped
 uv pip compile requirements-in.txt \
   --python-version=3.9 \
-  --override=overrides.txt \
+  --overrides=overrides.txt \
   --output-file=requirements.txt \
   --annotation-style=line \
   --only-binary av
@@ -71,7 +71,8 @@ A healthy environment must pass these checks:
 .venv/Scripts/python.exe -c "import torch"  # Should raise ImportError
 
 # Package count should be ~90, not 159+
-uv pip list --python .venv/Scripts/python.exe | wc -l
+uv pip list --python .venv/Scripts/python.exe
+# (count lines manually, or in PowerShell: uv pip list --python .venv/Scripts/python.exe | Measure-Object -Line)
 ```
 
 ## Configuration

@@ -6,20 +6,18 @@ All notable changes to the ALAS AI Agent project.
 
 ### Fixed
 - **Dependency Bloat**: Reverted damage from `1421d004d` which unpinned `cnocr`, pulling in PyTorch/torchvision/wandb (159 packages / 1.85 GB). Restored `cnocr==1.2.2`, `mxnet==1.6.0`; adjusted `numpy==1.19.5`, `scipy==1.7.3`, `av==12.0.0` for Python 3.9 wheel availability.
-- **deploy.yaml**: Fixed executable paths pointing to non-existent `./toolkit/` directory; disabled `AutoUpdate` and `InstallDependencies` to prevent ALAS from fighting UV.
+- **deploy.yaml**: Updated deploy templates (`deploy/Windows/template.yaml`, `config/deploy.template.yaml`) to default to UV-managed paths (`.venv/Scripts/python.exe`, `adb` from PATH) with `InstallDependencies: false` and `AutoUpdate: false`.
 
 ### Changed
 - **Dependency Management**: Migrated `alas_wrapped` from `pip-compile` to `uv pip compile` with `overrides.txt` for resolver compatibility.
-
-### Removed
-- Junk files from `1421d004d`: `NEWTODO.txt`, `restore_lean_requirements.py`, cached numpy wheel.
-
-### Changed
 - **Repository Consolidation**: Removed `alas_baseline/` directory.
-  - *Reasoning*: Having three parallel versions (`baseline`, `wrapped`, `upstream`) was causing developer confusion and patch fragmentation. 
+  - *Reasoning*: Having three parallel versions (`baseline`, `wrapped`, `upstream`) was causing developer confusion and patch fragmentation.
   - *Outcome*: `alas_wrapped/` is now the single source of truth for custom logic, while `upstream_alas/` remains as the submodule link for game updates.
 - **Log Parser Upgrade**: Enhanced `agent_orchestrator/log_parser.py` with `AkashiAnalyzer`.
   - Now tracks merchant discoveries, successful purchases, and summarizes recognition "noise" (mismatch Sim scores).
+
+### Removed
+- Junk files from `1421d004d`: `NEWTODO.txt`, `restore_lean_requirements.py`, cached numpy wheel.
 
 ### Added
 - **Akashi Merchant Recognition Fix**: Implemented targeted threshold override in `alas_wrapped/module/base/template.py`.

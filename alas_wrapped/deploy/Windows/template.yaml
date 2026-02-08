@@ -21,21 +21,24 @@ Deploy:
     # [Other] Use false to when connected to an untrusted network
     SSLVerify: true
     # Update Alas at startup
-    # [In most cases] Use true
-    AutoUpdate: true
+    # [UV-managed] Use false — we manage updates via git, not ALAS
+    # [Original] Use true
+    AutoUpdate: false
 
   Python:
     # Filepath of python executable `python.exe`
+    # [UV-managed] Use './.venv/Scripts/python.exe'
     # [Easy installer] Use './toolkit/python.exe'
-    # [Other] Use you own python, and its version should be 3.7.6 64bit
-    PythonExecutable: './toolkit/python.exe'
+    # [Other] Use your own python
+    PythonExecutable: './.venv/Scripts/python.exe'
     # URL of pypi mirror
     # [CN user] Use 'https://pypi.tuna.tsinghua.edu.cn/simple' for faster and more stable download
     # [Other] Use null
     PypiMirror: null
     # Install dependencies at startup
-    # [In most cases] Use true
-    InstallDependencies: true
+    # [UV-managed] Use false — UV manages deps outside of ALAS
+    # [Original] Use true
+    InstallDependencies: false
     # Path to requirements.txt
     # [In most cases] Use 'requirements.txt'
     # [In AidLux] Use './deploy/AidLux/{version}/requirements.txt', version is default to 0.92
@@ -43,9 +46,9 @@ Deploy:
 
   Adb:
     # Filepath of ADB executable `adb.exe`
+    # [UV-managed] Use 'adb' (system PATH) or './.venv/Lib/site-packages/adbutils/binaries/adb.exe'
     # [Easy installer] Use './toolkit/Lib/site-packages/adbutils/binaries/adb.exe'
-    # [Other] Use you own latest ADB, but not the ADB in your emulator
-    AdbExecutable: './toolkit/Lib/site-packages/adbutils/binaries/adb.exe'
+    AdbExecutable: 'adb'
     # Whether to replace ADB
     # Chinese emulators (NoxPlayer, LDPlayer, MemuPlayer, MuMuPlayer) use their own ADB, instead of the latest.
     # Different ADB servers will terminate each other at startup, resulting in disconnection.
