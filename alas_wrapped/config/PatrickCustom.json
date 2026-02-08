@@ -135,7 +135,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-05 01:00:00",
+      "NextRun": "2026-02-08 01:00:00",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,

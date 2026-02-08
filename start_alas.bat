@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 :: ==========================================
 :: ALAS Launcher (Root Wrapper)
@@ -10,15 +10,26 @@ setlocal
 :: Behavior:
 ::   - If ALAS is running: opens browser (attach mode)
 ::   - If ALAS is not running: starts it, opens browser
-::   - MEmu must be started manually (requires admin)
+::   - Supports optional config name as first argument
 :: ==========================================
 
 title ALAS Launcher
 set ALAS_URL=http://127.0.0.1:22267
-set ALAS_DIR=%~dp0alas_wrapped
+set "ROOT_DIR=%~dp0"
+set "ALAS_DIR=%~dp0alas_wrapped"
+
+:: 1. Handle Arguments (Config Name)
+set "CONFIG_NAME=%~1"
+if "%CONFIG_NAME%"=="" (
+    if exist "%ALAS_DIR%\config\PatrickCustom.json" (
+        set "CONFIG_NAME=PatrickCustom"
+    ) else (
+        set "CONFIG_NAME=alas"
+    )
+)
 
 :: ==========================================
-:: 1. Check MEmu (warn only, don't start)
+:: 2. Check MEmu (warn only, don't start)
 :: ==========================================
 echo Checking for MEmu emulator...
 
@@ -33,19 +44,18 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 :: ==========================================
-:: 2. Check if ALAS Web UI is already running
+:: 3. Check if ALAS Web UI is already running
 :: ==========================================
 echo.
 echo Checking for existing ALAS Web UI...
 
-:: Reset ERRORLEVEL and check for gui.py process
-cmd /c "exit /b 1"
-powershell -NoProfile -Command "if (Get-Process python -ErrorAction SilentlyContinue | ForEach-Object { try { (Get-CimInstance Win32_Process -Filter \"ProcessId = $($_.Id)\").CommandLine } catch {} } | Select-String -Pattern 'gui\.py' -Quiet) { exit 0 } else { exit 1 }" >nul 2>&1
+:: Use PowerShell to check for gui.py process (Windows 11 compatible)
+powershell -NoProfile -Command "Get-Process python -ErrorAction SilentlyContinue | ForEach-Object { try { (Get-CimInstance Win32_Process -Filter \"ProcessId = $($_.Id)\").CommandLine } catch {} } | Select-String -Pattern 'gui\.py' -Quiet" >nul 2>&1
 if %ERRORLEVEL%==0 (
     echo.
     echo [ATTACH] ALAS Web UI is already running.
     echo          Opening browser...
-    start "" %ALAS_URL%
+    start "" "%ALAS_URL%"
     echo.
     echo Web UI: %ALAS_URL%
     echo.
@@ -55,10 +65,36 @@ if %ERRORLEVEL%==0 (
 )
 
 :: ==========================================
-:: 3. Start ALAS Web UI
+:: 4. Detect Python Environment
 :: ==========================================
 echo.
-echo [START] Starting ALAS Web UI from %ALAS_DIR%
+echo Detecting Python environment...
+
+set "PYTHON_EXE=python"
+if exist "%ALAS_DIR%\.venv\Scripts\python.exe" (
+    set "PYTHON_EXE=%ALAS_DIR%\.venv\Scripts\python.exe"
+    echo [INFO] Using virtual environment: !PYTHON_EXE!
+) else (
+    if exist "%ALAS_DIR%\venv\Scripts\python.exe" (
+        set "PYTHON_EXE=%ALAS_DIR%\venv\Scripts\python.exe"
+        echo [INFO] Using virtual environment: !PYTHON_EXE!
+    ) else (
+        echo [WARNING] Virtual environment not found in %ALAS_DIR%
+        echo           Falling back to system 'python'...
+        where python >nul 2>&1
+        if !ERRORLEVEL! NEQ 0 (
+            echo [ERROR] Python not found in PATH. Please install Python or create a virtual environment.
+            pause
+            exit /b 1
+        )
+    )
+)
+
+:: ==========================================
+:: 5. Start ALAS Web UI
+:: ==========================================
+echo.
+echo [START] Starting ALAS (Config: %CONFIG_NAME%)
 echo.
 
 :: Set UTF-8 encoding for Python and Windows console
@@ -68,15 +104,20 @@ set PYTHONUTF8=1
 
 cd /d "%ALAS_DIR%"
 
-:: Launch browser after delay (in background)
-start "" /b cmd /c "timeout /t 4 >nul && start %ALAS_URL%"
+if not exist "gui.py" (
+    echo [ERROR] Could not find gui.py in %ALAS_DIR%
+    pause
+    exit /b 1
+)
 
-:: Run gui.py in this window (logs visible here)
-:: --run PatrickCustom: automatically starts your config on launch
-call .venv\Scripts\python.exe gui.py --run PatrickCustom
+:: Launch browser after delay (in background)
+start "" /b cmd /c "timeout /t 5 >nul && start %ALAS_URL%"
+
+:: Run gui.py in this window
+"!PYTHON_EXE!" gui.py --run "%CONFIG_NAME%"
 
 :: ==========================================
-:: 4. Handle exit
+:: 6. Handle exit
 :: ==========================================
 echo.
 echo ======================================
