@@ -4,6 +4,16 @@ All notable changes to the ALAS AI Agent project.
 
 ## [Unreleased] - 2026-02-04
 
+### Fixed
+- **Dependency Bloat**: Reverted damage from `1421d004d` which unpinned `cnocr`, pulling in PyTorch/torchvision/wandb (159 packages / 1.85 GB). Restored `cnocr==1.2.2`, `mxnet==1.6.0`; adjusted `numpy==1.19.5`, `scipy==1.7.3`, `av==12.0.0` for Python 3.9 wheel availability.
+- **deploy.yaml**: Fixed executable paths pointing to non-existent `./toolkit/` directory; disabled `AutoUpdate` and `InstallDependencies` to prevent ALAS from fighting UV.
+
+### Changed
+- **Dependency Management**: Migrated `alas_wrapped` from `pip-compile` to `uv pip compile` with `overrides.txt` for resolver compatibility.
+
+### Removed
+- Junk files from `1421d004d`: `NEWTODO.txt`, `restore_lean_requirements.py`, cached numpy wheel.
+
 ### Changed
 - **Repository Consolidation**: Removed `alas_baseline/` directory.
   - *Reasoning*: Having three parallel versions (`baseline`, `wrapped`, `upstream`) was causing developer confusion and patch fragmentation. 

@@ -1,0 +1,4 @@
+# UV dependency override for Python 3.9 compatibility
+# mxnet==1.6.0 declares numpy<1.17.0 but no numpy in that range
+# has cp39 wheels. numpy 1.19.5 works at runtime.
+numpy==1.19.5

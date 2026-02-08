@@ -72,13 +72,13 @@ alas_wrapped/           (5) Test with MCP tools, commit
 | Folder | Purpose | Python Version |
 |--------|---------|----------------|
 | `upstream_alas/` | Read-only submodule - raw pull from Zuosizhu, never modify directly | - |
-| `alas_baseline/` | **Verified working ALAS** - upstream + manual fixes to make it run | 3.8 (.venv) |
-| `alas_wrapped/` | Modified ALAS with MCP hooks, tools, our customizations | 3.8 (.venv) |
-| `alas_wrapped/tools/` | **Only** tools that import ALAS internals (navigation.py, vision.py) | 3.8 |
+| `alas_baseline/` | **Verified working ALAS** - upstream + manual fixes to make it run | 3.9 (.venv) |
+| `alas_wrapped/` | Modified ALAS with MCP hooks, tools, our customizations | 3.9 (.venv) |
+| `alas_wrapped/tools/` | **Only** tools that import ALAS internals (navigation.py, vision.py) | 3.9 |
 | `agent_orchestrator/` | Agent code, MCP server, modern tools (log_parser.py) | 3.10+ |
 | `scripts/` | Dev tooling (if any) | 3.10+ |
 
-> **Tool placement rule:** If a tool imports from `module.*` or other ALAS internals, it goes in `alas_wrapped/tools/`. If it's standalone (no ALAS dependencies), it goes in `agent_orchestrator/` to escape the Python 3.7 constraint.
+> **Tool placement rule:** If a tool imports from `module.*` or other ALAS internals, it goes in `alas_wrapped/tools/`. If it's standalone (no ALAS dependencies), it goes in `agent_orchestrator/` to escape the Python 3.9 constraint.
 
 ## ALAS Setup Requirements
 
@@ -86,15 +86,15 @@ To get ALAS running in `alas_baseline/` or `alas_wrapped/`:
 
 ### 1. Python Environment (.venv)
 
-ALAS requires a Python 3.8 virtual environment with all dependencies installed.
+ALAS requires a Python 3.9 virtual environment managed by **UV**:
 
 ```bash
-# The venv must exist at:
-alas_baseline/.venv/
-alas_wrapped/.venv/
+cd alas_wrapped
+uv venv --python=3.9 .venv
+uv pip install --python .venv/Scripts/python.exe -r requirements.txt --overrides overrides.txt
 ```
 
-**Note:** Creating a fresh venv with `pip install -r requirements.txt` may fail due to packages like `av` requiring compilation. Copy from a working environment instead.
+Dependencies are locked via `uv pip compile`. See [docs/dev/environment_setup.md](./docs/dev/environment_setup.md) for the full workflow.
 
 ### 2. Configuration Files
 
@@ -104,12 +104,15 @@ alas_wrapped/.venv/
 
 ```yaml
 Python:
-  # MUST use .venv, not ./toolkit/python.exe (which doesn't exist)
   PythonExecutable: ./.venv/Scripts/python.exe
+  InstallDependencies: false   # UV manages deps, not ALAS
 
 Git:
-  # Use system git, not ./toolkit/Git/... (which doesn't exist)
   GitExecutable: git
+  AutoUpdate: false
+
+Adb:
+  AdbExecutable: adb
 ```
 
 **`config/alas.json`** - Bot configuration (emulator, tasks, etc.):
@@ -282,6 +285,12 @@ git submodule update --remote -- upstream_alas
 
 # Launch ALAS bot (requires MEmu running)
 cd alas_wrapped && alas.bat
+
+# Recreate alas_wrapped venv
+cd alas_wrapped && uv venv --python=3.9 .venv && uv pip install --python .venv/Scripts/python.exe -r requirements.txt --overrides overrides.txt
+
+# Regenerate alas_wrapped lockfile after editing requirements-in.txt
+cd alas_wrapped && uv pip compile requirements-in.txt --python-version=3.9 --override=overrides.txt --output-file=requirements.txt --annotation-style=line --only-binary av
 ```
 
 ## Cross-References
