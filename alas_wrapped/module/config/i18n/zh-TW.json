@@ -731,6 +731,10 @@
     "ScreenshotLength": {
       "name": "出錯時，保留最後 X 張截圖",
       "help": ""
+    },
+    "RestartOnUnknownPage": {
+      "name": "遇到未知頁面時重啟",
+      "help": "當遇到未知頁面且伺服器在線時，重啟遊戲而不是停止（此功能需搭配啟用「啟用異常處理」）。連續3次任務失敗後，ALAS仍會請求人工接管。"
     }
   },
   "Optimization": {

@@ -125,6 +125,18 @@ MEmu emulator must be started manually (requires admin privileges). The script c
 
 > **Long-term consideration:** LDPlayer is the only Android emulator that supports launching without UAC prompts (after initial install). MEmu and BlueStacks both require admin on every launch. Consider migration to LDPlayer if automated startup is needed.
 
+### 5. Live Testing Environment
+
+**MEmu is typically running on this machine.** When testing ALAS changes, use the live environment:
+
+- MEmu ADB: `127.0.0.1:21503` (check with MEmu's `adb.exe devices`)
+- Launch ALAS: `cd alas_wrapped && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe gui.py --run PatrickCustom`
+- Kill existing ALAS: `taskkill.exe /F /IM python.exe`
+- Logs: `alas_wrapped/log/YYYY-MM-DD_PatrickCustom.txt`
+- Web UI: `http://127.0.0.1:22267`
+
+Always test behavior changes against the live bot rather than assuming correctness from code review alone.
+
 ## Two Workflows
 
 **1. Upstream Sync (normal):** When upstream ALAS gets game updates:

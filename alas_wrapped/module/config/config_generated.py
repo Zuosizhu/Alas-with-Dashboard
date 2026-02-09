@@ -99,6 +99,7 @@ class GeneratedConfig:
     Error_SaveError = True
     Error_OnePushConfig = 'provider: null'
     Error_ScreenshotLength = 1
+    Error_RestartOnUnknownPage = True
 
     # Group `Optimization`
     Optimization_ScreenshotInterval = 0.3

@@ -731,6 +731,10 @@
     "ScreenshotLength": {
       "name": "Record Screenshot(s)",
       "help": "Number of screenshots saved when exception occurs"
+    },
+    "RestartOnUnknownPage": {
+      "name": "Restart on Unknown Page",
+      "help": "When an unknown page is encountered and the server is online, restart the game instead of stopping (only applies when Enable Exception Handling is turned on). After 3 consecutive task failures, ALAS will still request human takeover."
     }
   },
   "Optimization": {

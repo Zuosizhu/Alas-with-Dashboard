@@ -731,6 +731,10 @@
     "ScreenshotLength": {
       "name": "Error.ScreenshotLength.name",
       "help": "Error.ScreenshotLength.help"
+    },
+    "RestartOnUnknownPage": {
+      "name": "Error.RestartOnUnknownPage.name",
+      "help": "Error.RestartOnUnknownPage.help"
     }
   },
   "Optimization": {

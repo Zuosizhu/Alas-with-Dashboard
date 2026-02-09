@@ -127,17 +127,24 @@ class AzurLaneAutoScript:
             self.device.sleep(10)
             return False
         except GamePageUnknownError:
-            logger.info('Game server may be under maintenance or network may be broken, check server status now')        
+            logger.info('Game server may be under maintenance or network may be broken, check server status now')
             self.checker.check_now()
             if self.checker.is_available():
-                logger.critical('Game page unknown')
-                self.save_error_log()
-                handle_notify(
-                    self.config.Error_OnePushConfig,
-                    title=f"Alas <{self.config_name}> crashed",
-                    content=f"<{self.config_name}> GamePageUnknownError",
-                )
-                raise RequestHumanTakeover('GamePageUnknownError')
+                if self.config.Error_RestartOnUnknownPage:
+                    logger.warning('Game page unknown, server is available. Attempting restart.')
+                    self.save_error_log()
+                    self.config.task_call('Restart')
+                    self.device.sleep(10)
+                    return False
+                else:
+                    logger.critical('Game page unknown')
+                    self.save_error_log()
+                    handle_notify(
+                        self.config.Error_OnePushConfig,
+                        title=f"Alas <{self.config_name}> crashed",
+                        content=f"<{self.config_name}> GamePageUnknownError",
+                    )
+                    raise RequestHumanTakeover('GamePageUnknownError')
             else:
                 logger.warning('Game server is under maintenance or network is broken, Alas will wait for it')
                 self.checker.wait_until_available()

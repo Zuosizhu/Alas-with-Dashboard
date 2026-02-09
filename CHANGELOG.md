@@ -4,6 +4,9 @@ All notable changes to the ALAS AI Agent project.
 
 ## [Unreleased] - 2026-02-08
 
+### Changed
+- **Restart on Unknown Page**: When ALAS encounters `GamePageUnknownError` and the server is online, it now schedules a Restart instead of immediately requesting human takeover. New config flag `Error.RestartOnUnknownPage` (default: true) — set to false to restore old behavior. After 3 consecutive task failures, ALAS still escalates to human takeover with notification.
+
 ### Fixed
 - **MCP Server Startup**: ALAS's Rich logger was writing to stdout at import and init time, corrupting the MCP stdio JSON-RPC transport. Redirected stdout to stderr during ALAS initialization and patched the console handler to permanently use stderr (file log handler left intact).
 - **MCP Windows Encoding**: Added `PYTHONIOENCODING=utf-8` to `.mcp.json` env block so Rich's Unicode box-drawing characters don't crash on Windows cp1252.
