@@ -228,8 +228,8 @@ All 7 MCP tools refactored from hand-rolled JSON-RPC to **FastMCP 3.0** framewor
 | Tool | Category | Status | Notes |
 |------|----------|--------|-------|
 | `adb.screenshot` | ADB | Working | Returns base64 PNG. |
-| `adb.tap` | ADB | Working | Type-safe coordinates (`x: int, y: int`). |
-| `adb.swipe` | ADB | Working | Default duration 100ms. |
+| `adb.tap` | ADB | Working | Uses configured control method (MaaTouch/minitouch/etc.), falls back to raw ADB. |
+| `adb.swipe` | ADB | Working | Uses configured control method; daemon methods ignore duration. Falls back to raw ADB. |
 | `alas.get_current_state` | State | Working | Returns current page via StateMachine. |
 | `alas.goto` | State | Working | Raises `ValueError` if page unknown. |
 | `alas.list_tools` | Tool | Working | Returns structured list. |

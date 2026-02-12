@@ -73,6 +73,16 @@ class ALASContext:
             if hasattr(h, 'console') and not isinstance(h, RichFileHandler):
                 h.console = Console(file=sys.stderr)
 
+        # Pre-warm the touch daemon so the first tool call doesn't pay init cost.
+        # ALAS only calls early_*_init() when is_actual_task is True, which is
+        # False for MCP server sessions, so we trigger it explicitly.
+        device = self.script.device
+        control_method = self.script.config.Emulator_ControlMethod
+        if control_method == 'MaaTouch':
+            device.early_maatouch_init()
+        elif control_method == 'minitouch':
+            device.early_minitouch_init()
+
     def encode_screenshot_png_base64(self) -> str:
         """Preserve existing PNG encoding logic."""
         from PIL import Image
@@ -105,32 +115,83 @@ def adb_screenshot() -> Dict[str, Any]:
 
 @mcp.tool()
 def adb_tap(x: int, y: int) -> str:
-    """Tap a coordinate using ADB input tap.
-    
+    """Tap a coordinate on the device.
+
+    Uses the configured Emulator_ControlMethod (MaaTouch, minitouch, etc.)
+    for low-latency daemon-based input. Falls back to raw ADB on failure.
+
     Args:
         x: X coordinate (integer)
         y: Y coordinate (integer)
     """
     if ctx is None:
         raise RuntimeError("ALAS context not initialized")
-    ctx.script.device.click_adb(x, y)
+    from module.exception import RequestHumanTakeover
+    device = ctx.script.device
+    method_name = ctx.script.config.Emulator_ControlMethod
+    method = device.click_methods.get(method_name, device.click_adb)
+    try:
+        method(x, y)
+    except RequestHumanTakeover as e:
+        # Only fallback if we weren't already using ADB
+        if method != device.click_adb:
+            logging.getLogger('alas').warning(
+                f'Control method {method_name} failed ({e}), falling back to ADB'
+            )
+            device.click_adb(x, y)
+        else:
+            # Already using ADB and it failed; re-raise
+            raise
     return f"tapped {x},{y}"
 
 @mcp.tool()
 def adb_swipe(x1: int, y1: int, x2: int, y2: int, duration_ms: int = 100) -> str:
-    """Swipe between coordinates using ADB input swipe.
-    
+    """Swipe between coordinates on the device.
+
+    Uses the configured Emulator_ControlMethod (MaaTouch, minitouch, etc.)
+    for low-latency daemon-based input. Falls back to raw ADB on failure.
+    Note: daemon methods (minitouch/MaaTouch/scrcpy) ignore duration and use their
+    own bezier-curve timing.
+
     Args:
         x1: Starting X coordinate
         y1: Starting Y coordinate
         x2: Ending X coordinate
         y2: Ending Y coordinate
-        duration_ms: Duration in milliseconds (default: 100)
+        duration_ms: Duration in milliseconds (default: 100, used by ADB/uiautomator2 only)
     """
     if ctx is None:
         raise RuntimeError("ALAS context not initialized")
+    from module.exception import RequestHumanTakeover
+    device = ctx.script.device
+    method_name = ctx.script.config.Emulator_ControlMethod
+    p1, p2 = (x1, y1), (x2, y2)
     duration = duration_ms / 1000.0
-    ctx.script.device.swipe_adb((x1, y1), (x2, y2), duration=duration)
+    is_adb_method = False
+    try:
+        if method_name == 'minitouch':
+            device.swipe_minitouch(p1, p2)
+        elif method_name == 'MaaTouch':
+            device.swipe_maatouch(p1, p2)
+        elif method_name == 'uiautomator2':
+            device.swipe_uiautomator2(p1, p2, duration=duration)
+        elif method_name == 'nemu_ipc':
+            device.swipe_nemu_ipc(p1, p2)
+        elif method_name == 'scrcpy':
+            device.swipe_scrcpy(p1, p2)
+        else:
+            is_adb_method = True
+            device.swipe_adb(p1, p2, duration=duration)
+    except RequestHumanTakeover as e:
+        # Only fallback if we weren't already using ADB
+        if not is_adb_method:
+            logging.getLogger('alas').warning(
+                f'Control method {method_name} failed ({e}), falling back to ADB'
+            )
+            device.swipe_adb(p1, p2, duration=duration)
+        else:
+            # Already using ADB and it failed; re-raise
+            raise
     return f"swiped {x1},{y1}->{x2},{y2}"
 
 @mcp.tool()
