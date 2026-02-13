@@ -7,6 +7,7 @@ from module.base.decorator import cached_property
 from module.base.resource import Resource
 from module.base.utils import *
 from module.config.server import VALID_SERVER
+from module.logger import logger
 from module.map_detection.utils import Points
 
 
@@ -114,6 +115,53 @@ class Template(Resource):
         else:
             return self.image.shape[0:2][::-1]
 
+    def _safe_match_template(self, image, template):
+        """
+        Args:
+            image (np.ndarray): Image to search in.
+            template (np.ndarray): Template to search for.
+
+        Returns:
+            np.ndarray: Result of cv2.matchTemplate
+        """
+        # 2026-01-25 Fix: Added safety check for channel mismatch (Gray vs RGB) to prevent crashes.
+        image_channels = 1 if len(image.shape) == 2 else 3
+        template_channels = 1 if len(template.shape) == 2 else 3
+
+        coerced = False
+        if image_channels != template_channels:
+            coerced = True
+            if image_channels == 1:
+                template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+            else:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
+
+        if coerced:
+            _, sim, _, point = cv2.minMaxLoc(res)
+            if not hasattr(self, '_mismatch_count'):
+                self._mismatch_count = 0
+            self._mismatch_count += 1
+            should_log = (self._mismatch_count % 100 == 1) or (sim > 0.8)
+            if should_log:
+                logger.warning(f'Channel mismatch fixed in {self.name}. Sim: {sim:.3f} (Count: {self._mismatch_count})')
+            if 0.70 < sim < 0.85 and 'AKASHI' in self.name:
+                from datetime import datetime
+                now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S-%f')
+                debug_path = f'./log/debug_mismatch_{self.name}_{now}.png'
+                try:
+                    h, w = template.shape[:2]
+                    x, y = point
+                    crop = image[y:y+h, x:x+w]
+                    cv2.imwrite(debug_path, crop)
+                    if should_log:
+                        logger.info(f'Saved debug mismatch image to {debug_path}')
+                except Exception:
+                    pass
+
+        return res
+
     def match(self, image, scaling=1.0, similarity=0.85):
         """
         Args:
@@ -124,24 +172,25 @@ class Template(Resource):
         Returns:
             bool: If matches.
         """
+        if 'AKASHI' in self.name:
+            similarity = 0.75
+
         scaling = 1 / scaling
         if scaling != 1.0:
             image = cv2.resize(image, None, fx=scaling, fy=scaling)
 
         if self.is_gif:
             for template in self.image:
-                res = cv2.matchTemplate(image, template, cv2.TM_CCOEFF_NORMED)
+                res = self._safe_match_template(image, template)
                 _, sim, _, _ = cv2.minMaxLoc(res)
-                # print(self.file, sim)
                 if sim > similarity:
                     return True
 
             return False
 
         else:
-            res = cv2.matchTemplate(image, self.image, cv2.TM_CCOEFF_NORMED)
+            res = self._safe_match_template(image, self.image)
             _, sim, _, _ = cv2.minMaxLoc(res)
-            # print(self.file, sim)
             return sim > similarity
 
     def match_binary(self, image, similarity=0.85):
