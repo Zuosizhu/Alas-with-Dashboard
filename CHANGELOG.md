@@ -2,9 +2,10 @@
 
 All notable changes to the ALAS AI Agent project.
 
-## [Unreleased] - 2026-02-08
+## [Unreleased] - 2026-02-13
 
 ### Changed
+- **Upstream sync**: Merged Zuosizhu/Alas-with-Dashboard (cda8619c) into `alas_wrapped`. Brought in latest module/, assets/, campaign/, config templates, deploy/, doc/, webapp/. Preserved 6 local customizations (logger, webui patch, device/utils, minitouch, connection).
 - **MCP Touch Input**: `adb.tap` and `adb.swipe` now use the configured `Emulator_ControlMethod` (MaaTouch, minitouch, etc.) instead of hardcoded raw ADB. Daemon is pre-warmed at server startup for zero-latency first call. Falls back to raw ADB if the daemon fails.
 - **Restart on Unknown Page**: When ALAS encounters `GamePageUnknownError` and the server is online, it now schedules a Restart instead of immediately requesting human takeover. New config flag `Error.RestartOnUnknownPage` (default: true) — set to false to restore old behavior. After 3 consecutive task failures, ALAS still escalates to human takeover with notification.
 
