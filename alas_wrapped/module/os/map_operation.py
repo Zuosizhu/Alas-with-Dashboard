@@ -158,7 +158,7 @@ class OSMapOperation(MapOrderHandler, MissionHandler, PortHandler, StorageHandle
             self.config.HOMO_EDGE_COLOR_RANGE = (0, 33)
             self.config.MAP_ENSURE_EDGE_INSIGHT_CORNER = ''
 
-    def zone_init(self, fallback_init=True):
+    def zone_init(self, fallback_init=True, skip_first_screenshot=True):
         """
         Wrap get_current_zone(), set self.zone to the current zone.
         This method must be called after entering a new zone.
@@ -166,6 +166,7 @@ class OSMapOperation(MapOrderHandler, MissionHandler, PortHandler, StorageHandle
 
         Args:
             fallback_init (bool): Whether to get zone from globe map when unable to parse zone name.
+            skip_first_screenshot (bool):
 
         Returns:
             Zone: Current zone.
@@ -177,7 +178,12 @@ class OSMapOperation(MapOrderHandler, MissionHandler, PortHandler, StorageHandle
         self.wait_os_map_buttons()
         logger.info('Get zone name')
         timeout = Timer(1.5, count=5).start()
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # Handle popups
             if self.handle_map_event():
                 timeout.reset()
@@ -230,9 +236,12 @@ class OSMapOperation(MapOrderHandler, MissionHandler, PortHandler, StorageHandle
         """
         return self.appear(MAP_EXIT, offset=(20, 20))
 
-    def map_exit(self):
+    def map_exit(self, skip_first_screenshot=True):
         """
         Exit from an obscure zone, abyssal zone, or stronghold.
+
+        Args:
+            skip_first_screenshot:
 
         Pages:
             in: is_in_map
@@ -241,7 +250,12 @@ class OSMapOperation(MapOrderHandler, MissionHandler, PortHandler, StorageHandle
         logger.hr('Map exit')
         confirm_timer = Timer(1, count=2)
         changed = False
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # End
             if changed and self.is_in_map():
                 if confirm_timer.reached():

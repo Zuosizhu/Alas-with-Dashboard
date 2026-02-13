@@ -99,7 +99,6 @@ class GeneratedConfig:
     Error_SaveError = True
     Error_OnePushConfig = 'provider: null'
     Error_ScreenshotLength = 1
-    Error_RestartOnUnknownPage = True
 
     # Group `Optimization`
     Optimization_ScreenshotInterval = 0.3
@@ -244,7 +243,7 @@ class GeneratedConfig:
     MaritimeEscort_Enable = True
 
     # Group `Coalition`
-    Coalition_Mode = 'hard'  # easy, normal, hard, sp
+    Coalition_Mode = 'area1-normal'  # area1-normal, area1-hard, area2-normal, area2-hard, area3-normal, area3-hard, area4-normal, area4-hard, area5-normal, area5-hard, area6-normal, area6-hard
     Coalition_Fleet = 'single'  # single, multi
 
     # Group `Commission`

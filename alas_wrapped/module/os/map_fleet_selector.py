@@ -91,13 +91,18 @@ class FleetSelector:
         index = 5 - index
         return Button(area=(), color=(), button=area, name='%s_INDEX_%s' % (str(self._bar), str(index)))
 
-    def open(self):
+    def open(self, skip_first_screenshot=True):
         """
         Activate dropdown menu for fleet selection.
         """
         main = self.main
         click_timer = Timer(3, count=6)
-        for _ in main.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                main.device.screenshot()
+
             if main.handle_map_event():
                 click_timer.reset()
                 continue
@@ -111,13 +116,18 @@ class FleetSelector:
                 main.device.click(self._choose)
                 click_timer.reset()
 
-    def close(self):
+    def close(self, skip_first_screenshot=True):
         """
         Deactivate dropdown menu for fleet selection.
         """
         main = self.main
         click_timer = Timer(3, count=6)
-        for _ in main.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                main.device.screenshot()
+
             # End
             if not self.bar_opened():
                 break
@@ -127,17 +137,23 @@ class FleetSelector:
                 main.device.click(self._choose)
                 click_timer.reset()
 
-    def click(self, index):
+    def click(self, index, skip_first_screenshot=True):
         """
         Choose a fleet on dropdown menu, and dropdown deactivated.
 
         Args:
             index (int): Fleet index, 1-6.
+            skip_first_screenshot (bool):
         """
         main = self.main
         button = self.get_button(index)
         click_timer = Timer(3, count=6)
-        for _ in main.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                main.device.screenshot()
+
             if main.handle_map_event():
                 click_timer.reset()
                 continue
@@ -155,19 +171,25 @@ class FleetSelector:
                 main.device.click(button)
                 click_timer.reset()
 
-    def ensure_to_be(self, index):
+    def ensure_to_be(self, index, skip_first_screenshot=True):
         """
         Set to a specific fleet.
 
         Args:
             index (int): Fleet index, 1-4.
+            skip_first_screenshot (bool):
 
         Returns:
             bool: If fleet switched.
         """
         confirm_timer = Timer(1.5, count=5).start()
         main = self.main
-        for _ in main.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                main.device.screenshot()
+
             if confirm_timer.reached():
                 break
 

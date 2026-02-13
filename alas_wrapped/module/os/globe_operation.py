@@ -89,9 +89,14 @@ class GlobeOperation(ActionPointHandler):
 
         return False
 
-    def ensure_no_zone_pinned(self):
+    def ensure_no_zone_pinned(self, skip_first_screenshot=True):
         confirm_timer = Timer(1, count=2).start()
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             if self.handle_zone_pinned():
                 confirm_timer.reset()
             else:
@@ -184,14 +189,12 @@ class GlobeOperation(ActionPointHandler):
             in: is_in_zone_select
             out: is_zone_pinned
         """
-        logger.info(f'Zone select: {button}')
-        for _ in self.loop():
-            # End
-            if self.is_zone_pinned():
-                break
-            if self.appear_then_click(
-                    button, offset=self._zone_select_offset, threshold=self._zone_select_similarity, interval=5):
-                continue
+
+        def appear():
+            return self.appear(button, offset=self._zone_select_offset, threshold=self._zone_select_similarity)
+
+        self.ui_click(button, appear_button=appear, check_button=self.is_zone_pinned,
+                      skip_first_screenshot=True)
 
     def zone_type_select(self, types=('SAFE', 'DANGEROUS')):
         """
@@ -279,17 +282,23 @@ class GlobeOperation(ActionPointHandler):
         return self.ui_click(GLOBE_GOTO_MAP, check_button=self.is_in_map, offset=(20, 20),
                              retry_wait=3, skip_first_screenshot=skip_first_screenshot)
 
-    def os_map_goto_globe(self, unpin=True):
+    def os_map_goto_globe(self, unpin=True, skip_first_screenshot=True):
         """
         Args:
             unpin (bool):
+            skip_first_screenshot (bool):
 
         Pages:
             in: is_in_map
             out: is_in_globe
         """
         click_count = 0
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # End
             if self.is_in_globe():
                 break
@@ -326,9 +335,15 @@ class GlobeOperation(ActionPointHandler):
             if self.handle_popup_confirm('GOTO_GLOBE'):
                 continue
 
+        skip_first_screenshot = True
         confirm_timer = Timer(1, count=2).start()
         unpinned = 0
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             if unpin:
                 if self.handle_zone_pinned():
                     unpinned += 1
@@ -340,10 +355,11 @@ class GlobeOperation(ActionPointHandler):
                 if self.is_zone_pinned():
                     break
 
-    def globe_enter(self, zone):
+    def globe_enter(self, zone, skip_first_screenshot=True):
         """
         Args:
             zone (Zone): Zone to enter.
+            skip_first_screenshot (bool):
 
         Raises:
             OSExploreError: If zone locked.
@@ -355,7 +371,11 @@ class GlobeOperation(ActionPointHandler):
         click_timer = Timer(10)
         click_count = 0
         pinned = None
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
             if pinned is None:
                 pinned = self.get_zone_pinned_name()
 

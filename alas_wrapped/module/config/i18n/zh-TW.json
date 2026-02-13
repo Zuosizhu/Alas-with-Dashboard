@@ -66,10 +66,6 @@
       "name": "活動通用",
       "help": ""
     },
-    "Coalition": {
-      "name": "光影風尚-拍攝進行時",
-      "help": ""
-    },
     "Event": {
       "name": "活動圖",
       "help": ""
@@ -86,6 +82,10 @@
       "name": "深谷来信",
       "help": ""
     },
+    "Coalition": {
+      "name": "極地風暴",
+      "help": ""
+    },
     "MaritimeEscort": {
       "name": "商船護航",
       "help": ""
@@ -93,10 +93,6 @@
     "WarArchives": {
       "name": "作戰檔案",
       "help": "由於作戰檔案缺少維護，開荒功能不一定能正常使用，如果發現Alas運行異常，請手動完成開荒後使用自律尋敵功能"
-    },
-    "CoalitionSp": {
-      "name": "光影風尚-拍攝進行時SP",
-      "help": ""
     },
     "EventA": {
       "name": "活動每日A圖",
@@ -120,6 +116,10 @@
     },
     "RaidDaily": {
       "name": "共鬥活動每日",
+      "help": ""
+    },
+    "CoalitionSp": {
+      "name": "極地風暴每日SP",
       "help": ""
     },
     "Commission": {
@@ -731,10 +731,6 @@
     "ScreenshotLength": {
       "name": "出錯時，保留最後 X 張截圖",
       "help": ""
-    },
-    "RestartOnUnknownPage": {
-      "name": "遇到未知頁面時重啟",
-      "help": "當遇到未知頁面且伺服器在線時，重啟遊戲而不是停止（此功能需搭配啟用「啟用異常處理」）。連續3次任務失敗後，ALAS仍會請求人工接管。"
     }
   },
   "Optimization": {
@@ -916,7 +912,6 @@
       "coalition_20240627": "歡迎來到童心學院",
       "coalition_20250626": "迷彩都市的尋蹤者",
       "coalition_20251120": "DATE A LANE",
-      "coalition_20260122": "Light & Shadow Fashion Shoot!",
       "event_20200227_cn": "Northern Overture",
       "event_20200312_cn": "斯圖爾特的硝煙",
       "event_20200326_cn": "Microlayer Medley",
@@ -1549,10 +1544,18 @@
     "Mode": {
       "name": "難度",
       "help": "SP圖需要使用活動每日SP運行",
-      "easy": "easy",
-      "normal": "normal",
-      "hard": "hard",
-      "sp": "sp"
+      "area1-normal": "area1-normal",
+      "area1-hard": "area1-hard",
+      "area2-normal": "area2-normal",
+      "area2-hard": "area2-hard",
+      "area3-normal": "area3-normal",
+      "area3-hard": "area3-hard",
+      "area4-normal": "area4-normal",
+      "area4-hard": "area4-hard",
+      "area5-normal": "area5-normal",
+      "area5-hard": "area5-hard",
+      "area6-normal": "area6-normal",
+      "area6-hard": "area6-hard"
     },
     "Fleet": {
       "name": "出擊隊伍",

@@ -559,14 +559,13 @@ class UI(InfoHandler):
         # if self.appear_then_click(HOSPITAL_BATTLE_EXIT, offset=(20, 20), interval=2):
         #     return True
         # Neon city (coalition_20250626)
-        # FASHION (coalition_20260122) reuse NEONCITY
-        if self.appear(NEONCITY_FLEET_PREPARATION, offset=(20, 20), interval=3):
-            logger.info(f'{NEONCITY_FLEET_PREPARATION} -> {NEONCITY_PREPARATION_EXIT}')
-            self.device.click(NEONCITY_PREPARATION_EXIT)
-            return True
-        # DATE A LANE (coalition_20251120)
-        # if self.appear_then_click(DAL_DIFFICULTY_EXIT, offset=(20, 20), interval=3):
+        # if self.appear(NEONCITY_FLEET_PREPARATION, offset=(20, 20), interval=3):
+        #     logger.info(f'{NEONCITY_FLEET_PREPARATION} -> {NEONCITY_PREPARATION_EXIT}')
+        #     self.device.click(NEONCITY_PREPARATION_EXIT)
         #     return True
+        # DATE A LANE (coalition_20251120)
+        if self.appear_then_click(DAL_DIFFICULTY_EXIT, offset=(20, 20), interval=3):
+            return True
 
         # Idle page
         if self.handle_idle_page():

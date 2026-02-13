@@ -16,14 +16,19 @@ class StorageHandler(GlobeOperation, ZoneManager):
     def is_in_storage(self):
         return self.appear(STORAGE_CHECK, offset=(20, 20))
 
-    def storage_enter(self):
+    def storage_enter(self, skip_first_screenshot=True):
         """
         Pages:
             in: is_in_map, STORAGE_ENTER
             out: STORAGE_CHECK
         """
         logger.info('Storage enter')
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # End
             if self.is_in_storage():
                 break
@@ -47,10 +52,11 @@ class StorageHandler(GlobeOperation, ZoneManager):
         logger.info('Storage quit')
         self.ui_back(STORAGE_ENTER, offset=(200, 5), skip_first_screenshot=True)
 
-    def _storage_item_use(self, button):
+    def _storage_item_use(self, button, skip_first_screenshot=True):
         """
         Args:
             button (Button): Item
+            skip_first_screenshot (bool):
 
         Pages:
             in: STORAGE_CHECK
@@ -65,7 +71,12 @@ class StorageHandler(GlobeOperation, ZoneManager):
         self.interval_clear(GET_ADAPTABILITY)
         self.interval_clear(GET_MISSION)
 
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # Accidentally clicked on an item, having popups for its info
             if self.appear(GET_MISSION, offset=True, interval=2):
                 logger.info(f'_storage_item_use item info -> {GET_MISSION}')
@@ -101,14 +112,22 @@ class StorageHandler(GlobeOperation, ZoneManager):
             if success and self.appear(STORAGE_CHECK, offset=(20, 20)):
                 break
 
-    def storage_logger_use_all(self):
+    def storage_logger_use_all(self, skip_first_screenshot=True):
         """
+        Args:
+            skip_first_screenshot:
+
         Pages:
             in: STORAGE_CHECK
             out: STORAGE_CHECK, scroll to bottom
         """
         logger.hr('Storage logger use all')
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             if SCROLL_STORAGE.appear(main=self):
                 SCROLL_STORAGE.set_bottom(main=self, skip_first_screenshot=True)
 
@@ -123,8 +142,11 @@ class StorageHandler(GlobeOperation, ZoneManager):
                 logger.info('All loggers in storage have been used')
                 break
 
-    def storage_sample_use_all(self):
+    def storage_sample_use_all(self, skip_first_screenshot=True):
         """
+        Args:
+            skip_first_screenshot:
+
         Pages:
             in: STORAGE_CHECK
             out: STORAGE_CHECK, scroll to bottom
@@ -134,7 +156,12 @@ class StorageHandler(GlobeOperation, ZoneManager):
             TEMPLATE_STORAGE_QUALITY_OFFENSE, TEMPLATE_STORAGE_QUALITY_SURVIVAL, TEMPLATE_STORAGE_QUALITY_COMBAT
         ]
         for sample_type in sample_types:
-            for _ in self.loop():
+            while 1:
+                if skip_first_screenshot:
+                    skip_first_screenshot = False
+                else:
+                    self.device.screenshot()
+
                 image = rgb2gray(self.device.image)
                 items = sample_type.match_multi(image, similarity=0.75)
                 logger.attr('Storage_sample', len(items))
@@ -151,11 +178,12 @@ class StorageHandler(GlobeOperation, ZoneManager):
         self.storage_sample_use_all()
         self.storage_quit()
 
-    def _storage_coordinate_checkout(self, button, types=('OBSCURE',)):
+    def _storage_coordinate_checkout(self, button, types=('OBSCURE',), skip_first_screenshot=True):
         """
         Args:
             button (Button): Item
             types (tuple[str]):
+            skip_first_screenshot (bool):
 
         Pages:
             in: STORAGE_CHECK
@@ -166,7 +194,12 @@ class StorageHandler(GlobeOperation, ZoneManager):
             STORAGE_COORDINATE_CHECKOUT
         ])
         self.popup_interval_clear()
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             if self.appear(STORAGE_CHECK, offset=(30, 30), interval=5):
                 self.device.click(button)
                 continue
@@ -200,10 +233,11 @@ class StorageHandler(GlobeOperation, ZoneManager):
         else:
             raise ScriptError(f'Unknown storage item: {item}')
 
-    def storage_checkout_item(self, item):
+    def storage_checkout_item(self, item, skip_first_screenshot=True):
         """
         Args:
             item (str): 'OBSCURE' or 'ABYSSAL'.
+            skip_first_screenshot:
 
         Returns:
             bool: If checkout
@@ -215,10 +249,15 @@ class StorageHandler(GlobeOperation, ZoneManager):
         """
         logger.hr(f'Storage checkout item {item}')
         if SCROLL_STORAGE.appear(main=self):
-            SCROLL_STORAGE.set_top(main=self)
+            SCROLL_STORAGE.set_top(main=self, skip_first_screenshot=skip_first_screenshot)
 
         confirm_timer = Timer(0.6, count=2).start()
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             image = rgb2gray(self.device.image)
             items = self._storage_item_to_template(item).match_multi(image, similarity=0.75)
             logger.attr(f'Storage_{item}', len(items))

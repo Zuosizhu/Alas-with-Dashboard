@@ -15,14 +15,19 @@ class MapOrderHandler(MapOperation, ActionPointHandler, MapEventHandler, ZoneMan
     def is_in_map_order(self):
         return self.appear(ORDER_CHECK, offset=(20, 20))
 
-    def order_enter(self):
+    def order_enter(self, skip_first_screenshot=True):
         """
         Pages:
             in: is_in_map
             out: is_in_map_order
         """
         logger.info('Order enter')
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # End
             if self.is_in_map_order():
                 break
@@ -47,10 +52,11 @@ class MapOrderHandler(MapOperation, ActionPointHandler, MapEventHandler, ZoneMan
         self.ui_click(ORDER_CHECK, appear_button=self.is_in_map_order, check_button=self.is_in_map,
                       skip_first_screenshot=True)
 
-    def order_execute(self, button):
+    def order_execute(self, button, skip_first_screenshot=True):
         """
         Args:
             button (Button): A button in navigational order page.
+            skip_first_screenshot (bool):
 
         Returns:
             bool: If success
@@ -63,10 +69,15 @@ class MapOrderHandler(MapOperation, ActionPointHandler, MapEventHandler, ZoneMan
         self.order_enter()
 
         missing_timer = Timer(1, count=3).start()
-        confirm_timer = Timer(1.2, count=4).start()
+        confirm_timer = Timer(1.2, count=4)
         assume_zone = self.name_to_zone(11)
 
-        for _ in self.loop():
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             # End
             if self.is_in_map():
                 if confirm_timer.reached():
@@ -98,9 +109,13 @@ class MapOrderHandler(MapOperation, ActionPointHandler, MapEventHandler, ZoneMan
                 missing_timer.reset()
                 continue
 
-    def wait_until_order_finished(self):
-        for _ in self.loop():
-            # End
+    def wait_until_order_finished(self, skip_first_screenshot=True):
+        while 1:
+            if skip_first_screenshot:
+                skip_first_screenshot = False
+            else:
+                self.device.screenshot()
+
             if self.is_in_map() and self.appear(ORDER_ENTER, offset=(20, 20)):
                 break
 

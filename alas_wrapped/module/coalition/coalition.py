@@ -6,8 +6,7 @@ from module.coalition.combat import CoalitionCombat
 from module.exception import ScriptEnd, ScriptError
 from module.logger import logger
 from module.ocr.ocr import Digit
-from module.log_res.log_res import LogRes
-from module.ui.page import page_campaign_menu
+from  module.log_res.log_res import LogRes
 
 
 class AcademyPtOcr(Digit):
@@ -23,7 +22,6 @@ class AcademyPtOcr(Digit):
         except IndexError:
             pass
         return super().after_process(result)
-
 
 class DALPtOcr(Digit):
     def __init__(self, *args, **kwargs):
@@ -58,9 +56,7 @@ class Coalition(CoalitionCombat, CampaignEvent):
             # use generic ocr model
             ocr = Digit(NEONCITY_PT_OCR, name='OCR_PT', lang='cnocr', letter=(208, 208, 208), threshold=128)
         elif event == 'coalition_20251120':
-            ocr = DALPtOcr(DAL_PT_OCR, name='OCR_PT', letter=(255, 213, 69), threshold=128)
-        elif event == 'coalition_20260122':
-            ocr = Digit(FASHION_PT_OCR, name='OCR_PT', letter=(41, 40, 40), threshold=128)
+            ocr = DALPtOcr(DAL_PT_OCR, name='OCR_PT' ,letter=(255, 213, 69), threshold=128)
         else:
             logger.error(f'ocr object is not defined in event {event}')
             raise ScriptError
@@ -78,16 +74,6 @@ class Coalition(CoalitionCombat, CampaignEvent):
 
         return pt
 
-    @property
-    def _coalition_has_oil_icon(self):
-        """
-        Game devs are too asshole to drop oil display for UI design
-        https://github.com/LmeSzinc/AzurLaneAutoScript/issues/5214
-        """
-        if self.config.Campaign_Event == 'coalition_20260122':
-            return False
-        return True
-
     def triggered_stop_condition(self, oil_check=False, pt_check=False):
         """
         Returns:
@@ -99,7 +85,7 @@ class Coalition(CoalitionCombat, CampaignEvent):
             self.config.StopCondition_RunCount = 0
             self.config.Scheduler_Enable = False
             return True
-        # Oil limit in current page
+        # Oil limit
         if oil_check:
             if self.get_oil() < max(500, self.config.StopCondition_OilLimit):
                 logger.hr('Triggered stop condition: Oil limit')
@@ -150,7 +136,7 @@ class Coalition(CoalitionCombat, CampaignEvent):
             self.coalition_map_exit(event)
             raise
 
-        if self._coalition_has_oil_icon and self.triggered_stop_condition(oil_check=True):
+        if self.triggered_stop_condition(oil_check=True):
             self.coalition_map_exit(event)
             raise ScriptEnd
 
@@ -190,14 +176,13 @@ class Coalition(CoalitionCombat, CampaignEvent):
                 logger.info(f'Count: {self.run_count}')
 
             # UI switches
-            if not self._coalition_has_oil_icon:
-                self.ui_goto(page_campaign_menu)
-                if self.triggered_stop_condition(oil_check=True):
-                    break
+            # if self.config.SERVER in ['tw']:
+	        #     self.ui_goto(page_campaign_menu)
+	        #     if self.triggered_stop_condition(oil_check=True):
+		    #         break
             self.device.stuck_record_clear()
             self.device.click_record_clear()
             self.ui_goto_coalition()
-            self.disable_event_on_raid()
             self.coalition_ensure_mode(event, 'battle')
 
             # End
@@ -224,9 +209,3 @@ class Coalition(CoalitionCombat, CampaignEvent):
             # Scheduler
             if self.config.task_switched():
                 self.config.task_stop()
-
-
-if __name__ == '__main__':
-    self = Coalition('alas5', task='Coalition')
-    self.device.screenshot()
-    self.get_event_pt()

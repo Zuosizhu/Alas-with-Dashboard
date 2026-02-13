@@ -66,10 +66,6 @@
       "name": "Event General",
       "help": ""
     },
-    "Coalition": {
-      "name": "Light & Shadow Fashion Shoot",
-      "help": ""
-    },
     "Event": {
       "name": "Event",
       "help": ""
@@ -86,6 +82,10 @@
       "name": "Valley Hospital",
       "help": ""
     },
+    "Coalition": {
+      "name": "DATE A LANE",
+      "help": ""
+    },
     "MaritimeEscort": {
       "name": "Maritime Escort",
       "help": ""
@@ -93,10 +93,6 @@
     "WarArchives": {
       "name": "War Archives",
       "help": "Due to the lack of maintenance of war archives, continuous clear may not work normally, if Alas runs abnormally, Please manually finish clearing and use auto search"
-    },
-    "CoalitionSp": {
-      "name": "Light & Shadow Fashion Shoot SP",
-      "help": ""
     },
     "EventA": {
       "name": "Event Daily A",
@@ -120,6 +116,10 @@
     },
     "RaidDaily": {
       "name": "Raid Daily",
+      "help": ""
+    },
+    "CoalitionSp": {
+      "name": "Neon City Investigator SP",
       "help": ""
     },
     "Commission": {
@@ -731,10 +731,6 @@
     "ScreenshotLength": {
       "name": "Record Screenshot(s)",
       "help": "Number of screenshots saved when exception occurs"
-    },
-    "RestartOnUnknownPage": {
-      "name": "Restart on Unknown Page",
-      "help": "When an unknown page is encountered and the server is online, restart the game instead of stopping (only applies when Enable Exception Handling is turned on). After 3 consecutive task failures, ALAS will still request human takeover."
     }
   },
   "Optimization": {
@@ -916,7 +912,6 @@
       "coalition_20240627": "Welcome to Little Academy",
       "coalition_20250626": "The Neon City Investigator",
       "coalition_20251120": "DATE A LANE",
-      "coalition_20260122": "Light & Shadow Fashion Shoot!",
       "event_20200227_cn": "Northern Overture",
       "event_20200312_cn": "The Solomon Ranger Rerun",
       "event_20200326_cn": "Microlayer Medley",
@@ -1549,10 +1544,18 @@
     "Mode": {
       "name": "Mode",
       "help": "SP needs to use event daily SP to run",
-      "easy": "easy",
-      "normal": "normal",
-      "hard": "hard",
-      "sp": "sp"
+      "area1-normal": "area1-normal",
+      "area1-hard": "area1-hard",
+      "area2-normal": "area2-normal",
+      "area2-hard": "area2-hard",
+      "area3-normal": "area3-normal",
+      "area3-hard": "area3-hard",
+      "area4-normal": "area4-normal",
+      "area4-hard": "area4-hard",
+      "area5-normal": "area5-normal",
+      "area5-hard": "area5-hard",
+      "area6-normal": "area6-normal",
+      "area6-hard": "area6-hard"
     },
     "Fleet": {
       "name": "Fleet",
@@ -2462,7 +2465,7 @@
     },
     "OpponentChooseMode": {
       "name": "Opponent Choose Mode",
-      "help": "IMPORTANT: In Exercise, opponents are ALWAYS sorted by rank (left = highest, right = lowest).\n• leftmost = Fight highest rank player (MAXIMUM merit points/rewards) - RECOMMENDED\n• max_exp = Calculate and fight highest level opponent\n• easiest = Fight lowest level opponent\n• easiest_else_exp = Try easiest first, switch to max_exp if failed",
+      "help": "",
       "max_exp": "Most Exp.",
       "easiest": "Easiest",
       "leftmost": "Highest ranking",
@@ -2470,7 +2473,7 @@
     },
     "OpponentTrial": {
       "name": "Each Opponent Try X Time(s)",
-      "help": "Number of times to retry the SAME opponent before moving to the next one.\nIf you quit battles due to low HP, increase this value (e.g., 10) to retry the same opponent multiple times instead of switching.\nRecommended: 10 for consistent targeting of the best opponent.\n1 ~ Positive Infinity"
+      "help": "1 ~ Positive Infinity"
     },
     "ExerciseStrategy": {
       "name": "Exercise Strategy (Keep X number remains)",

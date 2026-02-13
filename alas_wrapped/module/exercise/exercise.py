@@ -93,21 +93,11 @@ class Exercise(ExerciseCombat):
             super()._opponent_fleet_check_all()
 
     def _opponent_sort(self, method=None):
-        """
-        Sort opponents by selection strategy.
-
-        Important: In Azur Lane's Exercise mode, opponents are ALWAYS sorted by rank from left to right.
-        - Opponent 0 (leftmost) = Highest rank player = Maximum merit points/rewards
-        - Opponent 3 (rightmost) = Lowest rank player = Minimum merit points/rewards
-
-        Using 'leftmost' mode ensures you always fight the best opponent for maximum rewards.
-        """
         if method is None:
             method = self.config.Exercise_OpponentChooseMode
         if method != 'leftmost':
             return super()._opponent_sort(method=method)
         else:
-            # Fight opponents left-to-right: highest rank first
             return [0, 1, 2, 3]
 
     def _exercise_once(self):
