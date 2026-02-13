@@ -4,6 +4,7 @@ import subprocess
 
 import psutil
 
+from module.alas_admin_client import AlasAdminClient
 from deploy.Windows.utils import DataProcessInfo
 from module.base.decorator import run_once
 from module.base.timer import Timer
@@ -43,6 +44,8 @@ def flash_window(hwnd, flash=True):
 
 
 class PlatformWindows(PlatformBase, EmulatorManager):
+    admin_client = AlasAdminClient()
+
     @classmethod
     def execute(cls, command):
         """
@@ -54,6 +57,13 @@ class PlatformWindows(PlatformBase, EmulatorManager):
         """
         command = command.replace(r"\\", "/").replace("\\", "/").replace('"', '"')
         logger.info(f'Execute: {command}')
+        
+        # Try Admin Service first
+        if cls.admin_client.is_available():
+            logger.info("Delegating execution to Admin Service")
+            if cls.admin_client.start_process(command):
+                return None # Detached
+
         # `close_fds` only work on Windows
         # `start_new_session` to avoid emulator getting tree-killed when Alas gets killed
         return subprocess.Popen(command, close_fds=True, start_new_session=True)
@@ -69,14 +79,23 @@ class PlatformWindows(PlatformBase, EmulatorManager):
         Returns:
             int: Number of processes killed
         """
+        # Try Admin Service first
+        if cls.admin_client.is_available():
+            logger.info(f"Delegating kill ({regex}) to Admin Service")
+            if cls.admin_client.kill_process(regex):
+                return 1
+
         count = 0
 
         for proc in psutil.process_iter():
             cmdline = DataProcessInfo(proc=proc, pid=proc.pid).cmdline
             if re.search(regex, cmdline):
                 logger.info(f'Kill emulator: {cmdline}')
-                proc.kill()
-                count += 1
+                try:
+                    proc.kill()
+                    count += 1
+                except psutil.AccessDenied:
+                    logger.error(f"Access Denied killing {cmdline}. Ensure Admin Service is running.")
 
         return count
 
@@ -173,7 +192,8 @@ class PlatformWindows(PlatformBase, EmulatorManager):
             self.execute(f'"{Emulator.single_to_console(exe)}" quit --name {instance.name}')
         elif instance == Emulator.MEmuPlayer:
             # F:\Program Files\Microvirt\MEmu\memuc.exe stop -n MEmu_0
-            self.execute(f'"{Emulator.single_to_console(exe)}" stop -n {instance.name}')
+            # memuc.exe requires Admin privileges, so we kill the process directly
+            self.kill_process_by_regex(r'MEmu\.exe|MEmuHeadless\.exe')
         else:
             raise EmulatorUnknown(f'Cannot stop an unknown emulator instance: {instance}')
 

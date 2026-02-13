@@ -4,12 +4,18 @@ All notable changes to the ALAS AI Agent project.
 
 ## [Unreleased] - 2026-02-13
 
+### Added
+- **Admin Service (MEmu self-heal without admin)**: Optional elevated HTTP service runs via Windows Task Scheduler so ALAS can start/kill the MEmu emulator without the bot process needing Administrator privileges. Token auth, localhost-only. See `docs/plans/admin_service_architecture.md`. Install once as Admin: `alas_wrapped/install_admin_service.bat`.
+
 ### Changed
 - **Upstream sync**: Merged Zuosizhu/Alas-with-Dashboard (cda8619c) into `alas_wrapped`. Brought in latest module/, assets/, campaign/, config templates, deploy/, doc/, webapp/. Preserved 6 local customizations (logger, webui patch, device/utils, minitouch, connection).
+- **Recovery behavior**: On unknown game page when server is available, ALAS always attempts Restart (no config toggle). On 3 consecutive task failures, ALAS now triggers Restart and continues instead of requesting human takeover.
 - **MCP Touch Input**: `adb.tap` and `adb.swipe` now use the configured `Emulator_ControlMethod` (MaaTouch, minitouch, etc.) instead of hardcoded raw ADB. Daemon is pre-warmed at server startup for zero-latency first call. Falls back to raw ADB if the daemon fails.
-- **Restart on Unknown Page**: When ALAS encounters `GamePageUnknownError` and the server is online, it now schedules a Restart instead of immediately requesting human takeover. New config flag `Error.RestartOnUnknownPage` (default: true) — set to false to restore old behavior. After 3 consecutive task failures, ALAS still escalates to human takeover with notification.
+- **Restart on Unknown Page**: When ALAS encounters `GamePageUnknownError` and the server is online, it now schedules a Restart instead of immediately requesting human takeover. After 3 consecutive task failures, ALAS triggers Restart and continues (no human takeover).
 
 ### Fixed
+- **uiautomator2 compatibility**: Commented out `set_new_command_timeout` in `connection_attr.py` (method not in current uiautomator2); logger now uses `serial=` for u2 device.
+- **zh-CN i18n**: Escaped double quote in `RestartOnUnknownPage` help string.
 - **MCP Server Startup**: ALAS's Rich logger was writing to stdout at import and init time, corrupting the MCP stdio JSON-RPC transport. Redirected stdout to stderr during ALAS initialization and patched the console handler to permanently use stderr (file log handler left intact).
 - **MCP Windows Encoding**: Added `PYTHONIOENCODING=utf-8` to `.mcp.json` env block so Rich's Unicode box-drawing characters don't crash on Windows cp1252.
 
