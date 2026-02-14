@@ -6,7 +6,8 @@ import logging
 logger = logging.getLogger("AlasAdminClient")
 
 SERVICE_URL = "http://127.0.0.1:22269"
-TOKEN_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "alas_admin_token")
+# module/alas_admin_client.py -> alas_wrapped/alas_admin_token
+TOKEN_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "alas_admin_token")
 
 class AlasAdminClient:
     def __init__(self):
