@@ -264,6 +264,9 @@ alas_wrapped/config/PatrickCustom.json
 alas_baseline/config/PatrickCustom.json
 alas_wrapped/config/*.bak
 alas_baseline/config/*.bak
+alas_wrapped/alas_admin_token
+alas_wrapped/current_view.png
+alas_wrapped/test_vision.png
 *.exe
 !popup.exe
 *.zip
