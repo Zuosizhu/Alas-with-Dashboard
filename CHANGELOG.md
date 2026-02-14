@@ -4,6 +4,13 @@ All notable changes to the ALAS AI Agent project.
 
 ## [Unreleased] - 2026-02-08
 
+### Fixed
+- **Windows Subprocess Crash (`Errno 22`)**: Removed debug stdout `print()` calls from config file helpers that were crashing ALAS when run under webui/Electron subprocess handling.
+- **Wrapped Electron Path Resolution**: Updated wrapped Electron config path resolution to match upstream behavior so `deploy.yaml` and Python path resolve correctly from webapp context.
+
+### Added
+- **Recovery Runbook**: Added `docs/dev/recovery_workflow.md` with a repeatable upstream-to-wrapped incident recovery workflow, branch strategy, and release checklist.
+
 ### Changed
 - **MCP Touch Input**: `adb.tap` and `adb.swipe` now use the configured `Emulator_ControlMethod` (MaaTouch, minitouch, etc.) instead of hardcoded raw ADB. Daemon is pre-warmed at server startup for zero-latency first call. Falls back to raw ADB if the daemon fails.
 - **Restart on Unknown Page**: When ALAS encounters `GamePageUnknownError` and the server is online, it now schedules a Restart instead of immediately requesting human takeover. New config flag `Error.RestartOnUnknownPage` (default: true) — set to false to restore old behavior. After 3 consecutive task failures, ALAS still escalates to human takeover with notification.
