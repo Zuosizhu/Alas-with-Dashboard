@@ -3,6 +3,11 @@
 ## Objective
 Enable ALAS to restart the MEmu emulator (process kill/start) for self-healing purposes without requiring the main ALAS bot process to run with Administrator privileges.
 
+## Scope (What this is / is not)
+
+*   **This is not MCP**: `AlasAdminService` is a local Windows helper daemon for privileged process control (start/kill). It is called by ALAS runtime code (`PlatformWindows`), not by `agent_orchestrator/alas_mcp_server.py`.
+*   **MCP is separate**: MCP tools (`adb.*`, `alas.*`) run in `agent_orchestrator/` and expose automation interfaces to external orchestrators. Admin Service is an internal OS-privilege bridge for Windows bot stability.
+
 ## Problem
 *   **MEmu Requirement**: The MEmu command-line tool (`memuc.exe`) and sometimes stopping the `MEmu.exe` process requires Administrator privileges, especially when installed in `C:\Program Files`.
 *   **User Constraint**: Running the main ALAS bot console as Administrator is inconvenient and a security risk.
@@ -61,6 +66,32 @@ The Windows platform handler in ALAS (`alas_wrapped/module/device/platform/platf
 2.  **Run the Bot**:
     *   Run the project launcher as a **Standard User** (e.g. `alas_wrapped/alas.bat` or repo-root `start_alas.bat`).
     *   The bot will automatically detect the service and use it for MEmu operations.
+
+## Verification checklist (Windows)
+
+After installation, verify all of the following:
+
+1.  **Scheduled task exists**
+    *   `schtasks /Query /TN "AlasAdminService"`
+2.  **Service health endpoint responds**
+    *   `powershell -NoProfile -Command "(Invoke-WebRequest 'http://127.0.0.1:22269' -UseBasicParsing).StatusCode"`
+    *   Expected: `200`
+3.  **Token file exists in expected location**
+    *   `alas_wrapped/alas_admin_token`
+4.  **Runtime detection works**
+    *   Start ALAS as standard user and confirm logs show admin delegation:
+    *   `Delegating execution to Admin Service`
+    *   `Delegating kill (...) to Admin Service`
+
+## Troubleshooting
+
+*   **Installer says "must be run as Administrator"**:
+    *   Re-run installer from an elevated terminal.
+*   **Task not found / endpoint DOWN**:
+    *   Re-run `install_admin_service.bat` as Administrator and check Windows Task Scheduler history.
+*   **Service reachable but admin calls fail**:
+    *   Confirm token file exists and is readable at `alas_wrapped/alas_admin_token`.
+    *   Restart task: `schtasks /Run /TN "AlasAdminService"` to rotate/rewrite token.
 
 ## Caveats and limitations
 

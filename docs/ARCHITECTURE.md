@@ -47,6 +47,12 @@
 - **Key Doc**: [agent_tooling/README.md](./agent_tooling/README.md)
 - **Implementation**: `agent_orchestrator/alas_mcp_server.py`.
 
+### Windows Admin Service (Privilege Bridge)
+- **Status**: ✅ Implemented (Windows only)
+- **Summary**: Local elevated daemon for privileged emulator process control (start/kill) used by ALAS runtime.
+- **Key Doc**: [plans/admin_service_architecture.md](./plans/admin_service_architecture.md)
+- **Important**: This is **not** part of MCP and does not run through `alas_mcp_server`.
+
 ### Agent Orchestration
 - **Status**: ⏳ Planned (Phase II)
 - **Summary**: Gemini-based orchestrator for tool execution and recovery.
