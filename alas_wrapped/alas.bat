@@ -31,7 +31,7 @@ if "%CONFIG_NAME%"=="" (
 :: ==========================================
 echo Checking for MEmu emulator...
 
-powershell -NoProfile -Command "Get-Process MEmu -ErrorAction SilentlyContinue" >nul 2>&1
+powershell -NoProfile -Command "if (Get-Process MEmu -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [WARNING] MEmu does not appear to be running.
@@ -48,7 +48,7 @@ echo.
 echo Checking for existing ALAS Web UI...
 
 :: Use PowerShell to check for gui.py process (Windows 11 compatible)
-powershell -NoProfile -Command "Get-Process python -ErrorAction SilentlyContinue | ForEach-Object { try { (Get-CimInstance Win32_Process -Filter \"ProcessId = $($_.Id)\").CommandLine } catch {} } | Select-String -Pattern 'gui\.py' -Quiet" >nul 2>&1
+powershell -NoProfile -Command "$found = Get-Process python -ErrorAction SilentlyContinue | ForEach-Object { try { (Get-CimInstance Win32_Process -Filter \"ProcessId = $($_.Id)\").CommandLine } catch {} } | Select-String -Pattern 'gui\.py' -Quiet; if ($found) { exit 0 } else { exit 1 }" >nul 2>&1
 if %ERRORLEVEL%==0 (
     echo.
     echo [ATTACH] ALAS Web UI is already running.

@@ -14,6 +14,23 @@ from module.exception import *
 from module.logger import logger
 from module.notify import handle_notify
 
+# Command whitelist for security (frozenset for O(1) lookup)
+_ALLOWED_COMMANDS = frozenset([
+    'restart', 'start', 'goto_main', 'research', 'commission', 'tactical',
+    'dorm', 'meowfficer', 'guild', 'reward', 'awaken', 'shop_frequent',
+    'shop_once', 'shipyard', 'gacha', 'freebies', 'minigame', 'private_quarters',
+    'daily', 'hard', 'exercise', 'sos', 'war_archives', 'raid_daily',
+    'event_a', 'event_b', 'event_c', 'event_d', 'event_sp', 'maritime_escort',
+    'opsi_ash_assist', 'opsi_ash_beacon', 'opsi_explore', 'opsi_shop',
+    'opsi_voucher', 'opsi_daily', 'opsi_obscure', 'opsi_month_boss',
+    'opsi_abyssal', 'opsi_archive', 'opsi_stronghold', 'opsi_meowfficer_farming',
+    'opsi_hazard1_leveling', 'opsi_cross_month', 'main', 'main2', 'main3',
+    'event', 'event2', 'raid', 'hospital', 'coalition', 'coalition_sp',
+    'c72_mystery_farming', 'c122_medium_leveling', 'c124_large_leveling',
+    'gems_farming', 'daemon', 'opsi_daemon', 'event_story',
+    'azur_lane_uncensored', 'benchmark', 'game_manager'
+])
+
 
 class AzurLaneAutoScript:
     stop_event: threading.Event = None
@@ -37,7 +54,7 @@ class AzurLaneAutoScript:
             raise
         except Exception as e:
             logger.exception(e)
-            raise RequestHumanTakeover(str(e))
+            raise RequestHumanTakeover(str(e)) from e
 
     @cached_property
     def device(self):
@@ -50,7 +67,7 @@ class AzurLaneAutoScript:
             raise
         except Exception as e:
             logger.exception(e)
-            raise RequestHumanTakeover(str(e))
+            raise RequestHumanTakeover(str(e)) from e
 
     @cached_property
     def checker(self):
@@ -60,7 +77,7 @@ class AzurLaneAutoScript:
             return checker
         except Exception as e:
             logger.exception(e)
-            raise RequestHumanTakeover(str(e))
+            raise RequestHumanTakeover(str(e)) from e
 
     @cached_property
     def state_machine(self):
@@ -71,7 +88,7 @@ class AzurLaneAutoScript:
             return StateMachine(ui=ui)
         except Exception as e:
             logger.exception(e)
-            raise RequestHumanTakeover(str(e))
+            raise RequestHumanTakeover(str(e)) from e
 
     def run(self, command, skip_first_screenshot=False):
         """
@@ -79,23 +96,7 @@ class AzurLaneAutoScript:
             command (str): Task name to run.
             skip_first_screenshot (bool):
         """
-        # Command whitelist for security
-        allowed_commands = [
-            'restart', 'start', 'goto_main', 'research', 'commission', 'tactical',
-            'dorm', 'meowfficer', 'guild', 'reward', 'awaken', 'shop_frequent',
-            'shop_once', 'shipyard', 'gacha', 'freebies', 'minigame', 'private_quarters',
-            'daily', 'hard', 'exercise', 'sos', 'war_archives', 'raid_daily',
-            'event_a', 'event_b', 'event_c', 'event_d', 'event_sp', 'maritime_escort',
-            'opsi_ash_assist', 'opsi_ash_beacon', 'opsi_explore', 'opsi_shop',
-            'opsi_voucher', 'opsi_daily', 'opsi_obscure', 'opsi_month_boss',
-            'opsi_abyssal', 'opsi_archive', 'opsi_stronghold', 'opsi_meowfficer_farming',
-            'opsi_hazard1_leveling', 'opsi_cross_month', 'main', 'main2', 'main3',
-            'event', 'event2', 'raid', 'hospital', 'coalition', 'coalition_sp',
-            'c72_mystery_farming', 'c122_medium_leveling', 'c124_large_leveling',
-            'gems_farming', 'daemon', 'opsi_daemon', 'event_story',
-            'azur_lane_uncensored', 'benchmark', 'game_manager'
-        ]
-        if command not in allowed_commands:
+        if command not in _ALLOWED_COMMANDS:
             logger.error(f'Command "{command}" is not in the whitelist.')
             return False
 
@@ -157,7 +158,7 @@ class AzurLaneAutoScript:
                 title=f"Alas <{self.config_name}> crashed",
                 content=f"<{self.config_name}> ScriptError",
             )
-            raise RequestHumanTakeover(str(e))
+            raise RequestHumanTakeover(str(e)) from e
         except RequestHumanTakeover:
             logger.critical('Request human takeover')
             handle_notify(
@@ -174,7 +175,7 @@ class AzurLaneAutoScript:
                 title=f"Alas <{self.config_name}> crashed",
                 content=f"<{self.config_name}> Exception occured",
             )
-            raise RequestHumanTakeover(str(e))
+            raise RequestHumanTakeover(str(e)) from e
     def save_error_log(self):
         """
         Save last 60 screenshots in ./log/error/<timestamp>

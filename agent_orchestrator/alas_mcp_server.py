@@ -39,13 +39,13 @@ except ModuleNotFoundError:  # pragma: no cover
 
 FastMCP = _FastMCP
 
-# Ensure project root is in path for ALAS imports
+# Ensure project root is in path for ALAS imports (insert at front so local wrapped sources win)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 alas_wrapped = os.path.join(project_root, "alas_wrapped")
-if project_root not in sys.path:
-    sys.path.append(project_root)
 if alas_wrapped not in sys.path:
-    sys.path.append(alas_wrapped)
+    sys.path.insert(0, alas_wrapped)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # Initialize FastMCP server
 mcp = FastMCP("alas-mcp", version="1.0.0")

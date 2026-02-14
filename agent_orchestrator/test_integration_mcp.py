@@ -28,10 +28,14 @@ async def test_server_startup_and_list_tools():
     """
     Test the actual MCP server startup and tool listing.
     """
-    # Create a real mock hierarchy
+    # Create a real mock hierarchy with config and click_methods for adb_tap dispatch
     mock_ctx = mock.Mock()
     mock_ctx.script = mock.Mock()
+    mock_ctx.script.config.Emulator_ControlMethod = 'MaaTouch'
     mock_ctx.script.device = mock.Mock()
+    mock_ctx.script.device.click_methods = {
+        'MaaTouch': mock_ctx.script.device.click_maatouch,
+    }
     mock_ctx.encode_screenshot_png_base64.return_value = "fake_base64"
     server.ctx = mock_ctx
     
@@ -45,18 +49,18 @@ async def test_server_startup_and_list_tools():
         text = str(result)
         
     assert "tapped 10,20" in text
-    mock_ctx.script.device.click_adb.assert_called_with(10, 20)
+    mock_ctx.script.device.click_maatouch.assert_called_with(10, 20)
 
 @pytest.mark.asyncio
-async def test_alas_goto_integration():
+async def test_alas_goto_integration(monkeypatch):
     mock_ctx = mock.Mock()
     mock_ctx._state_machine = mock.Mock()
     server.ctx = mock_ctx
     
-    # Mock Page.all_pages
+    # Mock Page.all_pages (monkeypatch restores original after test)
     mock_page = mock.Mock()
     from module.ui.page import Page
-    Page.all_pages = {"page_main": mock_page}
+    monkeypatch.setattr(Page, "all_pages", {"page_main": mock_page})
     
     result = await _call_tool("alas_goto", {"page": "page_main"})
     
@@ -69,11 +73,11 @@ async def test_alas_goto_integration():
     mock_ctx._state_machine.transition.assert_called_with(mock_page)
 
 @pytest.mark.asyncio
-async def test_alas_goto_invalid_integration():
+async def test_alas_goto_invalid_integration(monkeypatch):
     mock_ctx = mock.Mock()
     server.ctx = mock_ctx
     from module.ui.page import Page
-    Page.all_pages = {}
+    monkeypatch.setattr(Page, "all_pages", {})
     
     # FastMCP might raise a specific Error or the original ValueError
     try:

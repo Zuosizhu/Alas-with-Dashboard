@@ -38,14 +38,13 @@ You (Decision Logic)
 
 ## Tool Interface (MCP)
 
-Tools are exposed via MCP (JSON-RPC). All tools return structured results:
-```json
-{
-  "success": true|false,
-  "data": { ... },
-  "error": "message if failed"
-}
-```
+Tools are exposed via MCP (JSON-RPC). Return shapes vary by tool:
+
+- **adb.screenshot**: Returns `{content: [{type: "image", data: "<base64>"}]}` for display.
+- **adb.tap**, **adb.swipe**, **alas.goto**, **alas.get_current_state**: Return plain strings (e.g. `"tapped x,y"`, `"navigated to page_main"`).
+- **alas.list_tools**: Returns a list of tool descriptors.
+- **alas.call_tool**: Returns the underlying tool's result (varies).
+- **Failures**: Tools raise `ValueError` or other exceptions; MCP wraps these as JSON-RPC errors.
 
 ### Tool Categories
 

@@ -5,6 +5,13 @@ All notable changes to the ALAS AI Agent project.
 ## [Unreleased] - 2026-02-08
 
 ### Fixed
+- **PR #26 review feedback**: Addressed Copilot PR review comments:
+  - `alas.bat`: PowerShell MEmu/ALAS checks now explicitly set exit codes for reliable `%ERRORLEVEL%` branching.
+  - `alas_mcp_server.py`: Use `sys.path.insert(0, ...)` so local wrapped sources win over other `alas` modules.
+  - `pyproject.toml`: Added explicit `rich` dependency (used by MCP server).
+  - `test_alas_mcp.py`, `test_integration_mcp.py`: Use `monkeypatch` for `Page.all_pages` to avoid cross-test contamination; fix `adb_tap` mock config/click_methods; call tools directly (FastMCP 3.0 uses plain functions).
+  - `alas.py`: Exception chaining (`from e`) for better debugging; move `allowed_commands` to module-level `frozenset` for O(1) lookup.
+  - `GEMINI.md`: Document actual tool return shapes (strings, dicts) instead of generic envelope.
 - **Windows Subprocess Crash (`Errno 22`)**: Removed debug stdout `print()` calls from config file helpers that were crashing ALAS when run under webui/Electron subprocess handling.
 - **Wrapped Electron Path Resolution**: Updated wrapped Electron config path resolution to match upstream behavior so `deploy.yaml` and Python path resolve correctly from webapp context.
 
