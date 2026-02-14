@@ -24,11 +24,36 @@ class Benchmark(DaemonBase, CampaignUI):
     TEST_TOTAL = 15
     TEST_BEST = int(TEST_TOTAL * 0.8)
 
-    def benchmark_test(self, func, *args, **kwargs):
+    @staticmethod
+    def validate_screenshot(image) -> bool:
+        """
+        Validate benchmark screenshot output so a fast-but-broken method
+        doesn't get recommended.
+        """
+        if not isinstance(image, np.ndarray):
+            logger.warning(f'Benchmark screenshot has invalid type: {type(image)}')
+            return False
+        if image.size == 0:
+            logger.warning('Benchmark screenshot is empty')
+            return False
+
+        color = np.mean(image, axis=(0, 1))
+        if np.isscalar(color):
+            color_value = (float(color),)
+        else:
+            color_value = tuple(float(v) for v in np.ravel(color))
+        if float(np.sum(color)) < 1:
+            logger.warning(f'Benchmark screenshot is pure black, color: {color_value}')
+            return False
+
+        return True
+
+    def benchmark_test(self, func, *args, validator=None, **kwargs):
         """
         Args:
             func: Function to test.
             *args: Passes to func.
+            validator: Optional validation callable for function output.
             **kwargs: Passes to func.
 
         Returns:
@@ -42,7 +67,10 @@ class Benchmark(DaemonBase, CampaignUI):
             start = time.time()
 
             try:
-                func(*args, **kwargs)
+                result = func(*args, **kwargs)
+                if callable(validator) and not validator(result):
+                    logger.warning(f'Benchmark tests failed on func: {func.__name__}')
+                    return 'Failed'
             except RequestHumanTakeover:
                 logger.critical('RequestHumanTakeover')
                 logger.warning(f'Benchmark tests failed on func: {func.__name__}')
@@ -137,7 +165,10 @@ class Benchmark(DaemonBase, CampaignUI):
 
         screenshot_result = []
         for method in screenshot:
-            result = self.benchmark_test(self.device.screenshot_methods[method])
+            result = self.benchmark_test(
+                self.device.screenshot_methods[method],
+                validator=self.validate_screenshot
+            )
             screenshot_result.append([method, result])
 
         area = (124, 4, 649, 106)  # Somewhere safe to click.
@@ -159,9 +190,14 @@ class Benchmark(DaemonBase, CampaignUI):
         fastest_click = 'minitouch'
         if screenshot_result:
             self.show(test='Screenshot', data=screenshot_result, evaluate_func=self.evaluate_screenshot)
-            fastest = sorted(screenshot_result, key=lambda item: compare(item))[0]
-            logger.info(f'Recommend screenshot method: {fastest[0]} ({float2str(fastest[1])})')
-            fastest_screenshot = fastest[0]
+            valid_screenshot = [item for item in screenshot_result if isinstance(item[1], (int, float))]
+            if valid_screenshot:
+                fastest = sorted(valid_screenshot, key=lambda item: compare(item))[0]
+                logger.info(f'Recommend screenshot method: {fastest[0]} ({float2str(fastest[1])})')
+                fastest_screenshot = fastest[0]
+            else:
+                logger.warning('No valid screenshot method in benchmark results, fallback to ADB')
+                fastest_screenshot = 'ADB'
         if click_result:
             self.show(test='Control', data=click_result, evaluate_func=self.evaluate_click)
             fastest = sorted(click_result, key=lambda item: compare(item))[0]
