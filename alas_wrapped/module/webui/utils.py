@@ -499,7 +499,7 @@ def on_task_exception(self):
     traceback_msg = "".join(lines)
 
     traceback_console = Console(
-        color_system="truecolor", tab_size=2, record=True, width=90
+        color_system="truecolor", tab_size=2, record=True, width=90, safe_box=True
     )
     with traceback_console.capture():  # prevent logging to stdout again
         traceback_console.print_exception(

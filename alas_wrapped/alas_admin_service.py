@@ -19,11 +19,30 @@ PORT = 22269
 _SERVICE_DIR = os.path.dirname(os.path.abspath(__file__))
 TOKEN_FILE = os.path.join(_SERVICE_DIR, "alas_admin_token")
 
-# Generate and save a secure token (path must match AlasAdminClient expectation)
-AUTH_TOKEN = secrets.token_hex(32)
-with open(TOKEN_FILE, "w") as f:
-    f.write(AUTH_TOKEN)
-logger.info(f"Admin service started. Token saved to {TOKEN_FILE}")
+def _load_or_create_token():
+    """
+    Keep a stable token across service restarts.
+    Create one only when missing or invalid.
+    """
+    try:
+        if os.path.exists(TOKEN_FILE):
+            with open(TOKEN_FILE, "r") as f:
+                token = f.read().strip()
+            # token_hex(32) -> 64 hex chars
+            if len(token) == 64 and all(c in "0123456789abcdef" for c in token.lower()):
+                return token
+            logger.warning("Existing admin token is invalid; regenerating.")
+    except Exception as e:
+        logger.warning(f"Failed to read existing token, regenerating: {e}")
+
+    token = secrets.token_hex(32)
+    with open(TOKEN_FILE, "w") as f:
+        f.write(token)
+    logger.info(f"Admin service token created at {TOKEN_FILE}")
+    return token
+
+AUTH_TOKEN = _load_or_create_token()
+logger.info("Admin service started.")
 
 async def check_auth(request):
     token = request.headers.get("Authorization")

@@ -111,17 +111,23 @@ Adb:
 - `Alas.Emulator.Serial`: `127.0.0.1:21503` (MEmu default)
 - `Alas.EmulatorInfo.Emulator`: `MEmuPlayer`
 
-### 3. Launcher Script
+### 3. Canonical Launcher
 
-Use `alas.bat` (unified launcher):
-- Checks if MEmu is running (warns if not)
-- Checks if ALAS is already running (attaches if so)
-- Starts `gui.py --run alas` to auto-start the bot
-- Sets `PYTHONIOENCODING=utf-8` to avoid Windows console Unicode errors
+Use `start_alas.bat` from repository root (single canonical entry point):
+- Attaches to existing ALAS Web UI if already running
+- Launches Electron app by default when available
+- Falls back to Python Web UI mode when Electron build is unavailable
+- Supports `--no-electron` to force Python Web UI mode
+- Supports `--silent` for non-interactive/background startup
+- Supports optional config argument (defaults to `PatrickCustom` when present)
+
+Compatibility shims:
+- `alas_wrapped/alas.bat` forwards to `..\start_alas.bat`
+- `start_alas_silent.vbs` runs `start_alas.bat --silent`
 
 ### 4. Manual Prerequisites
 
-MEmu emulator must be started manually (requires admin privileges). The script cannot auto-start it.
+MEmu emulator is started via the local admin sidecar service when available (`AlasAdminService` scheduled task). If the sidecar is not installed/running, startup may require manual intervention/admin privileges.
 
 > **Long-term consideration:** LDPlayer is the only Android emulator that supports launching without UAC prompts (after initial install). MEmu and BlueStacks both require admin on every launch. Consider migration to LDPlayer if automated startup is needed.
 
@@ -130,7 +136,8 @@ MEmu emulator must be started manually (requires admin privileges). The script c
 **MEmu is typically running on this machine.** When testing ALAS changes, use the live environment:
 
 - MEmu ADB: `127.0.0.1:21503` (check with MEmu's `adb.exe devices`)
-- Launch ALAS: `cd alas_wrapped && PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe gui.py --run PatrickCustom`
+- Launch ALAS (canonical): `start_alas.bat`
+- Force Python Web UI mode: `start_alas.bat --no-electron`
 - Kill existing ALAS: `taskkill.exe /F /IM python.exe`
 - Logs: `alas_wrapped/log/YYYY-MM-DD_PatrickCustom.txt`
 - Web UI: `http://127.0.0.1:22267`
@@ -287,8 +294,11 @@ python agent_orchestrator/log_parser.py alas_wrapped/log/2026-02-01_alas.txt
 # Update upstream submodule
 git submodule update --remote -- upstream_alas
 
-# Launch ALAS bot (requires MEmu running)
-cd alas_wrapped && alas.bat
+# Launch ALAS bot (canonical launcher)
+start_alas.bat
+
+# Force Python Web UI mode
+start_alas.bat --no-electron
 
 # Recreate alas_wrapped venv
 cd alas_wrapped && uv venv --python=3.9 .venv && uv pip install --python .venv/Scripts/python.exe -r requirements.txt --overrides overrides.txt

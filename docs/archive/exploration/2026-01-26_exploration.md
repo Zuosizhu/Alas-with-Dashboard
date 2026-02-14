@@ -23,3 +23,20 @@
 - [ ] Fix `interval_timer` attribute in `ToolContext`.
 - [ ] Implement `alas.diagnose_state()` tool to dump all matched templates when in an "Unknown" state.
 - [ ] Begin Phase I: Wrap these Python tools in the `agent_orchestrator/alas_mcp_server.py`.
+
+## 2026-02-13: Emulator Benchmark Run (MEmu)
+
+### Actions Taken
+1. Ran ALAS device benchmark for screenshot and control backends on MEmu (`127.0.0.1:21503`).
+2. Captured warm-up behavior where startup briefly hit `Unknown ui page` with repeated black-frame warnings.
+3. Completed full benchmark matrix and recorded method timings.
+
+### Findings
+- Fastest screenshot method in this run: `DroidCast (0.071s)`.
+- Recommended control method in this run: `MaaTouch` (with minitouch nearly identical in raw speed).
+- `aScreenCap` and `aScreenCap_nc` are strong fallback screenshot options.
+- `ADB_nc` and `DroidCast_raw` were slower than primary options in this environment.
+- Speed-only ranking was misleading for reliability: black-frame behavior must disqualify a screenshot method even if it benchmarks fastest.
+
+### Detailed Report
+- `docs/archive/exploration/2026-02-13_benchmark_results.md`

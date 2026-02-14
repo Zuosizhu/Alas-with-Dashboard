@@ -87,7 +87,7 @@ class RichLog:
             color_system="truecolor",
             markup=False,
             record=True,
-            safe_box=False,
+            safe_box=True,
             highlighter=Highlighter(),
             theme=WEB_THEME,
         )

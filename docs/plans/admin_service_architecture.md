@@ -64,7 +64,8 @@ The Windows platform handler in ALAS (`alas_wrapped/module/device/platform/platf
     *   This registers the task `AlasAdminService` to start on logon and starts it immediately.
 
 2.  **Run the Bot**:
-    *   Run the project launcher as a **Standard User** (e.g. `alas_wrapped/alas.bat` or repo-root `start_alas.bat`).
+    *   Run the canonical launcher as a **Standard User**: `start_alas.bat` (repo root).
+    *   Electron mode is the default; use `start_alas.bat --no-electron` to force Python Web UI mode.
     *   The bot will automatically detect the service and use it for MEmu operations.
 
 ## Verification checklist (Windows)

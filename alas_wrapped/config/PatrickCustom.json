@@ -72,7 +72,7 @@
       "Serial": "127.0.0.1:21503",
       "PackageName": "com.YoStarEN.AzurLane",
       "ServerName": "disabled",
-      "ScreenshotMethod": "DroidCast",
+      "ScreenshotMethod": "uiautomator2",
       "ControlMethod": "MaaTouch",
       "ScreenshotDedithering": false,
       "AdbRestart": true
@@ -86,8 +86,7 @@
       "HandleError": true,
       "SaveError": true,
       "OnePushConfig": "provider: null",
-      "ScreenshotLength": 6,
-      "RestartOnUnknownPage": true
+      "ScreenshotLength": 6
     },
     "Optimization": {
       "ScreenshotInterval": 0.3,
@@ -136,7 +135,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-14 01:00:00",
+      "NextRun": "2026-02-15 01:00:00",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -674,7 +673,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "coalition_20260122",
+      "Event": "coalition_20251120",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -683,7 +682,7 @@
       "AmbushEvade": true
     },
     "Coalition": {
-      "Mode": "hard",
+      "Mode": "area1-normal",
       "Fleet": "multi"
     },
     "StopCondition": {
@@ -1245,7 +1244,7 @@
     },
     "Campaign": {
       "Name": "sp",
-      "Event": "coalition_20260122",
+      "Event": "coalition_20251120",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -1254,7 +1253,7 @@
       "AmbushEvade": true
     },
     "Coalition": {
-      "Mode": "sp",
+      "Mode": "area1-normal",
       "Fleet": "multi"
     },
     "StopCondition": {
@@ -1285,7 +1284,7 @@
   "Commission": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-12 14:48:37",
+      "NextRun": "2026-02-13 22:22:11",
       "Command": "Commission",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1331,7 +1330,7 @@
   "Research": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-12 16:31:29",
+      "NextRun": "2026-02-14 01:27:35",
       "Command": "Research",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1352,7 +1351,7 @@
   "Dorm": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-12 13:12:31",
+      "NextRun": "2026-02-14 02:18:57",
       "Command": "Dorm",
       "SuccessInterval": 278,
       "FailureInterval": 278,
@@ -1375,7 +1374,7 @@
   "Meowfficer": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-12 13:12:31",
+      "NextRun": "2026-02-14 00:57:56",
       "Command": "Meowfficer",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1509,7 +1508,7 @@
   "Exercise": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-12 13:12:31",
+      "NextRun": "2026-02-14 01:00:00",
       "Command": "Exercise",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1522,7 +1521,7 @@
       "LowHpThreshold": 0.25,
       "LowHpConfirmWait": 1,
       "OpponentRefreshValue": 0,
-      "OpponentRefreshRecord": "2026-02-12 14:08:46"
+      "OpponentRefreshRecord": "2026-02-13 21:40:33"
     },
     "Storage": {
       "Storage": {}

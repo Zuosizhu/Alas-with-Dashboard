@@ -241,12 +241,14 @@ class Screenshot(Adb, WSA, DroidCast, AScreenCap, Scrcpy, NemuIpc, LDOpenGL):
                 raise RequestHumanTakeover
 
     def check_screen_black(self):
-        if self._screen_black_checked:
-            return True
         # Check screen color
         # May get a pure black screenshot on some emulators.
+        # Always verify color, because some methods (e.g. DroidCast) can
+        # become black after initially working.
         color = get_color(self.image, area=(0, 0, 1280, 720))
         if sum(color) < 1:
+            # Force re-check path until a non-black frame is observed again.
+            self._screen_black_checked = False
             if self.config.Emulator_Serial == 'wsa-0':
                 for _ in range(2):
                     display = self.get_display_id()

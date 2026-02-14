@@ -150,13 +150,14 @@ web_formatter = logging.Formatter(
 # logger.addHandler(console)
 
 # Add rich console logger
-stdout_console = console = Console()
+stdout_console = console = Console(safe_box=True)
 console_hdlr = RichHandler(
     show_path=False,
     show_time=False,
     rich_tracebacks=True,
     tracebacks_show_locals=True,
     tracebacks_extra_lines=3,
+    console=Console(safe_box=True)
 )
 console_hdlr.setFormatter(console_formatter)
 logger.addHandler(console_hdlr)
@@ -200,6 +201,7 @@ def set_file_logger(name=pyw_name):
         no_color=True,
         highlight=False,
         width=119,
+        safe_box=True,
     )
 
     hdlr = RichFileHandler(
@@ -227,7 +229,7 @@ def set_func_logger(func):
         width=80,
         color_system='truecolor',
         markup=False,
-        safe_box=False,
+        safe_box=True,
         highlighter=Highlighter(),
         theme=WEB_THEME
     )

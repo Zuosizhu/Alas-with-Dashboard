@@ -108,7 +108,7 @@ class ProcessManager:
         elif len(self.renderables) == 0:
             return 2
         else:
-            console = Console(no_color=True)
+            console = Console(no_color=True, safe_box=True)
             with console.capture() as capture:
                 console.print(self.renderables[-1])
             s = capture.get().strip()
