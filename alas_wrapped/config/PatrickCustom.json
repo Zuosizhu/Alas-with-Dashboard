@@ -72,7 +72,7 @@
       "Serial": "127.0.0.1:21503",
       "PackageName": "com.YoStarEN.AzurLane",
       "ServerName": "disabled",
-      "ScreenshotMethod": "aScreenCap_nc",
+      "ScreenshotMethod": "uiautomator2",
       "ControlMethod": "MaaTouch",
       "ScreenshotDedithering": false,
       "AdbRestart": true
@@ -92,7 +92,7 @@
     "Optimization": {
       "ScreenshotInterval": 0.3,
       "CombatScreenshotInterval": 1.0,
-      "TaskHoardingDuration": 10,
+      "TaskHoardingDuration": 0,
       "WhenTaskQueueEmpty": "goto_main"
     },
     "DropRecord": {
@@ -136,7 +136,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-09 01:00:00",
+      "NextRun": "2026-02-17 01:00:00",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -1285,7 +1285,7 @@
   "Commission": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 21:46:23",
+      "NextRun": "2026-02-16 01:46:11",
       "Command": "Commission",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1303,7 +1303,7 @@
   "Tactical": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-09 02:11:31",
+      "NextRun": "2026-02-16 03:15:41",
       "Command": "Tactical",
       "SuccessInterval": "30-60",
       "FailureInterval": "120-240",
@@ -1331,7 +1331,7 @@
   "Research": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 21:16:47",
+      "NextRun": "2026-02-17 01:00:00",
       "Command": "Research",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1352,7 +1352,7 @@
   "Dorm": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 17:28:19",
+      "NextRun": "2026-02-16 02:39:38",
       "Command": "Dorm",
       "SuccessInterval": 278,
       "FailureInterval": 278,
@@ -1364,7 +1364,7 @@
       "FeedFilter": "20000 > 10000 > 5000 > 3000 > 2000 > 1000"
     },
     "BuyFurniture": {
-      "Enable": false,
+      "Enable": true,
       "BuyOption": "all",
       "LastRun": "2020-01-01 00:00:00"
     },
@@ -1375,7 +1375,7 @@
   "Meowfficer": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 15:47:52",
+      "NextRun": "2026-02-16 04:14:49",
       "Command": "Meowfficer",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1399,7 +1399,7 @@
   },
   "Guild": {
     "Scheduler": {
-      "Enable": true,
+      "Enable": false,
       "NextRun": "2026-02-08 19:00:00",
       "Command": "Guild",
       "SuccessInterval": 30,
@@ -1415,7 +1415,7 @@
       "Enable": true,
       "SelectNewOperation": false,
       "NewOperationMaxDate": 15,
-      "JoinThreshold": 1,
+      "JoinThreshold": 0.5,
       "AttackBoss": true,
       "BossFleetRecommend": false
     },
@@ -1426,7 +1426,7 @@
   "Reward": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 16:27:39",
+      "NextRun": "2026-02-16 01:38:29",
       "Command": "Reward",
       "SuccessInterval": "120-240",
       "FailureInterval": "120-240",
@@ -1477,9 +1477,9 @@
       "AdvanceMissionFleet": 1,
       "FierceAssault": "first",
       "FierceAssaultFleet": 1,
-      "TacticalTraining": "second",
+      "TacticalTraining": "first",
       "TacticalTrainingFleet": 1,
-      "SupplyLineDisruption": "second",
+      "SupplyLineDisruption": "first",
       "ModuleDevelopment": "first",
       "ModuleDevelopmentFleet": 1,
       "EmergencyModuleDevelopment": "first",
@@ -1509,7 +1509,7 @@
   "Exercise": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 19:00:00",
+      "NextRun": "2026-02-16 13:00:00",
       "Command": "Exercise",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1522,7 +1522,7 @@
       "LowHpThreshold": 0.25,
       "LowHpConfirmWait": 1,
       "OpponentRefreshValue": 0,
-      "OpponentRefreshRecord": "2026-02-08 13:08:14"
+      "OpponentRefreshRecord": "2026-02-16 01:19:31"
     },
     "Storage": {
       "Storage": {}
@@ -1530,7 +1530,7 @@
   },
   "ShopFrequent": {
     "Scheduler": {
-      "Enable": false,
+      "Enable": true,
       "NextRun": "2020-01-01 00:00:00",
       "Command": "ShopFrequent",
       "SuccessInterval": 30,
@@ -1542,7 +1542,7 @@
       "Refresh": false,
       "BuySkinBox": false,
       "ConsumeCoins": false,
-      "Filter": "BookRedT3 > BookYellowT3 > BookBlueT3 > BookRedT2\n> Cube\n> FoodT6 > FoodT5"
+      "Filter": "BookRedT3 > BookYellowT3\n> Cube\n> FoodT6 > FoodT5"
     },
     "Storage": {
       "Storage": {}
@@ -1559,7 +1559,7 @@
     },
     "GuildShop": {
       "Refresh": true,
-      "Filter": "PlateT4 > BookT3 > PR > CatT3 > Chip > BookT2 > Retrofit > FoodT6 > FoodT5 > CatT2 > BoxT4",
+      "Filter": "PlateT4 > BookT3 > PR > CatT3 > Chip > BookT2 > Retrofit > FoodT6 > FoodT5",
       "BOX_T3": "ironblood",
       "BOX_T4": "ironblood",
       "BOOK_T2": "red",
@@ -1568,7 +1568,7 @@
       "RETROFIT_T3": "cl",
       "PLATE_T2": "general",
       "PLATE_T3": "general",
-      "PLATE_T4": "gun",
+      "PLATE_T4": "general",
       "PR1": "neptune",
       "PR2": "seattle",
       "PR3": "cheshire"
@@ -1631,7 +1631,7 @@
       "Pool": "light",
       "Amount": 1,
       "UseTicket": true,
-      "UseDrill": false
+      "UseDrill": true
     },
     "Storage": {
       "Storage": {}
@@ -1655,13 +1655,13 @@
     },
     "Mail": {
       "ClaimMerit": true,
-      "ClaimMaintenance": false,
+      "ClaimMaintenance": true,
       "ClaimTradeLicense": false,
       "DeleteCollected": true
     },
     "SupplyPack": {
       "Collect": true,
-      "DayOfWeek": 0
+      "DayOfWeek": 2
     },
     "Storage": {
       "Storage": {}
@@ -2003,7 +2003,7 @@
   "Benchmark": {
     "Benchmark": {
       "DeviceType": "emulator",
-      "TestScene": "screenshot_click"
+      "TestScene": "screenshot"
     },
     "Storage": {
       "Storage": {}
