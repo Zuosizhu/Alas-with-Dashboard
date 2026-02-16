@@ -1,4 +1,4 @@
-# ALAS Agent Entrypoint
+# ALAS Copilot Entrypoint
 
 Canonical instructions live in `CLAUDE.md`.
 
@@ -10,12 +10,4 @@ Critical rules (duplicated here on purpose):
 - Do not commit runtime artifacts or local secrets.
 - For non-trivial changes, end with a commit and PR (or provide exact git commands if runtime cannot execute git).
 
-Required-start docs:
-1. `CLAUDE.md`
-2. `docs/NORTH_STAR.md`
-3. `docs/ROADMAP.md`
-
-Task-triggered reads (mandatory):
-- Upstream sync: follow the `Upstream Sync Workflow` section in `CLAUDE.md`
-- MCP/tools: `docs/agent_tooling/README.md`, `agent_orchestrator/alas_mcp_server.py`
-- State machine behavior: `docs/state_machine/README.md`
+When task scope changes, follow task-triggered required reads in `CLAUDE.md`.

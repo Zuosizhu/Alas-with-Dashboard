@@ -39,7 +39,7 @@
 ### Monorepo Organization
 - **Status**: ✅ Complete
 - **Summary**: Vendor branch pattern for safe upstream sync and parallel development.
-- **Key Doc**: [monorepo/README.md](./monorepo/README.md)
+- **Key Doc**: [monorepo/MONOREPO_SYNC_NOTES.md](./monorepo/MONOREPO_SYNC_NOTES.md)
 
 ### Agent Tooling
 - **Status**: ✅ Working (verified 2026-01-26)
