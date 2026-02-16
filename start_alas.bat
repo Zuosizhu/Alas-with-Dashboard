@@ -191,35 +191,52 @@ if not "%GUI_PID%"=="" if %PORT_OPEN% EQU 1 set "ALAS_RUNNING=1"
 :: 4. Handle --force (kill and restart)
 :: ==========================================
 if "%FORCE%"=="1" (
-    if %ALAS_RUNNING% EQU 1 (
-        echo.
-        echo [FORCE] Stopping existing ALAS...
-        if not "%GUI_PID%"=="" (
-            taskkill /PID %GUI_PID% /F >nul 2>&1
-            echo          Stopped GUI (PID %GUI_PID%)
-        )
-        if not "%BOT_PID%"=="" (
-            taskkill /PID %BOT_PID% /F >nul 2>&1
-            echo          Stopped Bot (PID %BOT_PID%)
-        )
-        :: Kill any remaining ALAS python processes
-        powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { $_.ExecutablePath -like '*alas_wrapped*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
-        timeout /t 2 >nul
-        set "ALAS_RUNNING=0"
+    echo.
+    echo [FORCE] Stopping existing ALAS...
+    set "KILLED=0"
+    if not "%GUI_PID%"=="" (
+        taskkill /PID %GUI_PID% /F >nul 2>&1
+        echo          Stopped GUI (PID %GUI_PID%)
+        set "KILLED=1"
+        set "GUI_PID="
     )
+    if not "%BOT_PID%"=="" (
+        taskkill /PID %BOT_PID% /F >nul 2>&1
+        echo          Stopped Bot (PID %BOT_PID%)
+        set "KILLED=1"
+        set "BOT_PID="
+    )
+    :: Kill any remaining ALAS python processes
+    powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { $_.ExecutablePath -like '*alas_wrapped*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }" >nul 2>&1
+    if %KILLED% EQU 0 if %ERRORLEVEL% EQU 0 (
+        set "KILLED=1"
+    )
+    if %KILLED% EQU 1 (
+        echo          Stopped additional ALAS processes.
+    ) else (
+        echo          No running ALAS process detected.
+    )
+    timeout /t 2 >nul
+    set "ALAS_RUNNING=0"
 )
 
 :: ==========================================
 :: 5. Handle attach mode or already running
 :: ==========================================
-if %ALAS_RUNNING% EQU 1 (
-    if "%ATTACH_ONLY%"=="1" (
+if "%ATTACH_ONLY%"=="1" (
+    if %ALAS_RUNNING% EQU 1 (
         echo.
         echo [ATTACH] Opening browser to existing ALAS...
         start "" "%ALAS_URL%"
         exit /b 0
     )
-    
+
+    echo.
+    echo [ATTACH] No ALAS instance detected; attach-only mode prevents startup.
+    exit /b 1
+)
+
+if %ALAS_RUNNING% EQU 1 (
     echo.
     echo [INFO] ALAS is already running.
     echo.
@@ -315,6 +332,12 @@ exit /b 1
 
 :python_ready
 
+:: Ensure Python always uses UTF-8 encoding, and pass run config to Electron backend
+chcp 65001 >nul 2>&1
+set "PYTHONIOENCODING=utf-8"
+set "PYTHONUTF8=1"
+set "ALAS_RUN_CONFIG=%CONFIG_NAME%"
+
 :: ==========================================
 :: 8. Launch ALAS (Electron or browser UI)
 :: ==========================================
@@ -323,10 +346,6 @@ if "%USE_ELECTRON%"=="1" goto launch_electron
 
 echo [LAUNCH] Starting ALAS browser UI (Config: %CONFIG_NAME%)
 echo.
-
-chcp 65001 >nul 2>&1
-set "PYTHONIOENCODING=utf-8"
-set "PYTHONUTF8=1"
 
 cd /d "%ALAS_DIR%"
 

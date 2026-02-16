@@ -28,6 +28,7 @@ test/
 .ruff_cache/
 python-3.7.9-embed-amd64/
 PatrickConfig_export.json
+*.log.err
 nul
 -p/
 
