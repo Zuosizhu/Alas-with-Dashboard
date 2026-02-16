@@ -1,0 +1,147 @@
+================================================================================
+DEAD/ORPHANED CODE ANALYSIS REPORT
+alas_wrapped/module directory
+================================================================================
+
+SUMMARY
+-------
+Analyzed 339 Python files in alas_wrapped/module
+Found 12 files with NO detected imports
+
+================================================================================
+
+LIKELY DEAD FILES (No Imports Found)
+------------------------------------
+
+1. config/redirect_utils/os_handler.py
+   - Size: 249 bytes, 14 lines
+   - Contains: action_point_redirect() function
+   - Status: COMMENTED OUT REFERENCE in config_updater.py line 584
+   - Verdict: LIKELY DEAD - function is referenced in a commented line only
+   - Note: Can be removed if the commented code in config_updater.py is removed
+
+2. game_setting/setting_generated.py
+   - Size: 35,642 bytes, 738 lines
+   - Contains: GameSettingsGenerated class (auto-generated)
+   - Status: ONLY imported by its own generator (setting_extractor.py)
+   - Usage: Generated file that is never imported elsewhere
+   - Verdict: PSEUDO-DEAD - Generated code that may be used dynamically
+   - Note: Check if GameSettingsGenerated is accessed dynamically
+
+3. device/method/scrcpy/__init__.py
+   - Size: 40 bytes
+   - Contains: Just imports from .scrcpy
+   - Status: Standard Python package init file
+   - Verdict: KEEP - Required for scrcpy package imports
+
+4. device/method/scrcpy/scrcpy.py
+   - Size: 5,537 bytes, 167 lines
+   - Contains: Scrcpy class with retry decorator
+   - Status: Imported by __init__.py (which is used by control.py, screenshot.py)
+   - Verdict: FALSE POSITIVE - Used indirectly via __init__.py
+
+5. device/pkg_resources/__init__.py
+   - Size: 3,132 bytes, 110 lines
+   - Contains: FakeDistributionObject, PackageCache classes
+   - Status: No imports found
+   - Verdict: LIKELY DEAD - Purpose unclear, may be a compatibility shim
+
+6. device/platform/__init__.py
+   - Size: 225 bytes, 7 lines
+   - Contains: Package init with imports
+   - Status: Standard Python package init file
+   - Verdict: KEEP - Required for platform package imports
+
+7. map_detection/detector_example.py
+   - Size: 1,034 bytes, 48 lines
+   - Contains: DetectionBackendExample class
+   - Status: Example/demo file
+   - Verdict: LIKELY DEAD - Example code, not production code
+   - Note: Can be moved to examples/ or deleted
+
+8. notify/__init__.py
+   - Size: 155 bytes, 6 lines
+   - Contains: handle_notify() function
+   - Status: Standard Python package init file
+   - Verdict: KEEP - Required for notify package imports
+
+9. research/preset_generator.py
+   - Size: 8,873 bytes, 202 lines
+   - Contains: split_filter, join_filter, beautify_filter, translate functions
+   - Status: No imports found
+   - Verdict: LIKELY DEAD - Utility script, not imported anywhere
+   - Note: May be a standalone utility, check if run directly
+
+10. statistics/drop_statistics.py
+    - Size: 6,593 bytes, 190 lines
+    - Contains: DropStatistics class
+    - Status: No imports found
+    - Verdict: LIKELY DEAD - Statistics module never used
+    - Note: May have been replaced by other statistics tracking
+
+11. webui/__init__.py
+    - Size: 137 bytes, 6 lines
+    - Contains: Package init
+    - Status: Standard Python package init file
+    - Verdict: KEEP - Required for webui package imports
+
+12. webui/translate.py
+    - Size: 8,014 bytes, 232 lines
+    - Contains: translate() function
+    - Status: No imports found from webui/, but "translate" is common word
+    - Verdict: LIKELY DEAD - Translation utility not used
+    - Note: May have been replaced by module/webui/lang.py
+
+================================================================================
+
+CUSTOM FILES (Not in upstream_alas) - ALL IN USE
+-------------------------------------------------
+
+The following 14 files are custom additions in alas_wrapped (not in upstream):
+
+os/tasks/abyssal.py         - USED by module/os/operation_siren.py
+os/tasks/archive.py         - USED by module/os/operation_siren.py
+os/tasks/cross_month.py     - USED by module/os/operation_siren.py
+os/tasks/daily.py           - USED by module/os/operation_siren.py
+os/tasks/explore.py         - USED by module/os/operation_siren.py
+os/tasks/hazard_leveling.py - USED by module/os/operation_siren.py
+os/tasks/meowfficer_farming.py - USED by module/os/operation_siren.py
+os/tasks/month_boss.py      - USED by module/os/operation_siren.py
+os/tasks/obscure.py         - USED by module/os/operation_siren.py
+os/tasks/shop.py            - USED by module/os/operation_siren.py
+os/tasks/stronghold.py      - USED by module/os/operation_siren.py
+os/tasks/voucher.py         - USED by module/os/operation_siren.py
+state_machine.py            - USED by alas.py
+                            - USED by module/state_machine.py
+tool.py                     - USED by module/state_machine.py
+
+All custom files are actively used. None are dead code.
+
+================================================================================
+
+RECOMMENDATIONS
+---------------
+
+SAFE TO DELETE (High Confidence):
+1. map_detection/detector_example.py - Just an example file
+2. research/preset_generator.py - Standalone utility, not imported
+
+LIKELY SAFE TO DELETE (Verify First):
+1. config/redirect_utils/os_handler.py - Only referenced in commented code
+2. statistics/drop_statistics.py - No references found
+3. webui/translate.py - No references found, likely replaced by lang.py
+
+KEEP (Required for Package Structure):
+1. device/method/scrcpy/__init__.py
+2. device/platform/__init__.py
+3. notify/__init__.py
+4. webui/__init__.py
+
+KEEP (Actually Used):
+1. device/method/scrcpy/scrcpy.py - Used via __init__.py
+
+INVESTIGATE FURTHER:
+1. game_setting/setting_generated.py - Check for dynamic access
+2. device/pkg_resources/__init__.py - Unclear purpose
+
+================================================================================
