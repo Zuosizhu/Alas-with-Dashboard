@@ -136,7 +136,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:00:00",
+      "NextRun": "2026-02-17 01:00:00",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -1285,7 +1285,7 @@
   "Commission": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:03:56",
+      "NextRun": "2026-02-16 01:46:11",
       "Command": "Commission",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1331,7 +1331,7 @@
   "Research": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:00:00",
+      "NextRun": "2026-02-17 01:00:00",
       "Command": "Research",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1375,7 +1375,7 @@
   "Meowfficer": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:00:00",
+      "NextRun": "2026-02-16 04:14:49",
       "Command": "Meowfficer",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1509,7 +1509,7 @@
   "Exercise": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:00:00",
+      "NextRun": "2026-02-16 13:00:00",
       "Command": "Exercise",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1522,7 +1522,7 @@
       "LowHpThreshold": 0.25,
       "LowHpConfirmWait": 1,
       "OpponentRefreshValue": 0,
-      "OpponentRefreshRecord": "2026-02-15 21:56:35"
+      "OpponentRefreshRecord": "2026-02-16 01:19:31"
     },
     "Storage": {
       "Storage": {}
@@ -1620,7 +1620,7 @@
   },
   "Gacha": {
     "Scheduler": {
-      "Enable": true,
+      "Enable": false,
       "NextRun": "2020-01-01 00:00:00",
       "Command": "Gacha",
       "SuccessInterval": 30,
