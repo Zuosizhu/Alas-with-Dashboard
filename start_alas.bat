@@ -108,7 +108,7 @@ if "%CONFIG_NAME%"=="" (
 )
 
 echo ==========================================
-echo  ALAS Launcher v2 (wrapped mode)
+echo  ALAS Launcher (Single Root Entry)
 echo ==========================================
 echo Config: %CONFIG_NAME%
 
@@ -122,7 +122,6 @@ if %ERRORLEVEL% EQU 0 (
     echo          Status: Running
 ) else (
     echo          Status: Not responding
-    echo          (Install with: alas_wrapped\install_admin_service.bat)
 )
 
 :: ==========================================
@@ -154,9 +153,9 @@ for /f "delims=" %%a in ('powershell -NoProfile -Command "Get-CimInstance Win32_
     set "GUI_PID=%%a"
 )
 
-:: Check for bot process (alas.py or scheduler)
+:: Check for bot process (gui.py / alas.py / AzurLaneAutoScript)
 set "BOT_PID="
-for /f "delims=" %%a in ('powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { $_.CommandLine -match 'alas\.py|scheduler|AzurLaneAutoScript' } | Select-Object -First 1 -ExpandProperty ProcessId" 2^>nul') do (
+for /f "delims=" %%a in ('powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { $_.CommandLine -match 'gui\.py|alas\.py|AzurLaneAutoScript' } | Select-Object -First 1 -ExpandProperty ProcessId" 2^>nul') do (
     set "BOT_PID=%%a"
 )
 
@@ -185,7 +184,9 @@ if %PORT_OPEN% EQU 1 (
 
 :: Determine overall status
 set "ALAS_RUNNING=0"
-if not "%GUI_PID%"=="" if %PORT_OPEN% EQU 1 set "ALAS_RUNNING=1"
+if not "%GUI_PID%"=="" set "ALAS_RUNNING=1"
+if not "%BOT_PID%"=="" set "ALAS_RUNNING=1"
+if %ALAS_RUNNING% EQU 0 if %PORT_OPEN% EQU 1 set "ALAS_RUNNING=1"
 
 :: ==========================================
 :: 4. Handle --force (kill and restart)
@@ -252,22 +253,25 @@ if %ALAS_RUNNING% EQU 1 (
     echo   2. Restart (stop and start fresh)
     echo   3. Exit
     echo.
-    
+
+:choice_prompt
     set /p CHOICE="Enter choice (1-3): "
-    
+
     if "%CHOICE%"=="1" (
         start "" "%ALAS_URL%"
         exit /b 0
-    )
-    if "%CHOICE%"=="2" (
+    ) else if "%CHOICE%"=="2" (
         echo.
         echo [RESTART] Stopping existing ALAS...
         if not "%GUI_PID%"=="" taskkill /PID %GUI_PID% /F >nul 2>&1
         timeout /t 3 >nul
         set "ALAS_RUNNING=0"
-    )
-    if "%CHOICE%"=="3" (
+        ) else if "%CHOICE%"=="3" (
         exit /b 0
+    ) else (
+        echo.
+        echo [ERROR] Invalid choice. Please enter 1, 2, or 3.
+        goto :choice_prompt
     )
 )
 

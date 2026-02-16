@@ -42,7 +42,8 @@ for py_file in py_files:
     try:
         with open(py_file, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-    except:
+    except Exception as exc:
+        print(f'[WARN] Failed to read {py_file}: {exc}')
         continue
     
     rel_file = str(py_file.relative_to(alas_wrapped_path)).replace('\\', '/')

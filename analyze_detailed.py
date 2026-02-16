@@ -68,8 +68,8 @@ for df in dead_files:
                         fc = f.read()
                     if re.search(pattern, fc):
                         refs.append(str(py_file.relative_to(alas_wrapped_path)).replace('\\', '/'))
-                except:
-                    continue
+                except Exception as exc:
+                    print(f'[WARN] Failed to scan {py_file}: {exc}')
             if refs:
                 print(f'Possible references (by name): {len(refs)} files')
                 for r in refs[:3]:
