@@ -2,7 +2,29 @@
 
 All notable changes to the ALAS AI Agent project.
 
-## [Unreleased] - 2026-02-08
+## [Unreleased] - 2026-02-18
+
+### Changed
+- **Emulator Debloat Guide** (`docs/dev/emulator_depbloat.md`): Expanded and
+  corrected based on source-code appraisal of three community tools.
+  - **MEmu §1.3**: Added ADB health recovery pattern — cycle `adb kill-server`
+    / `adb start-server` when device state is `offline` or `unauthorized`.
+  - **MEmu §1.4 Option C**: Added coverage note; the current domain list is
+    minimal. Extended list available from 1broccoli's `memu_block.example.txt`
+    (see §5).
+  - **LDPlayer §2.2**: Added optional startup ad suppression technique via
+    `%AppData%\XuanZhi9\cache\` (source: Red0Hood community report).
+  - **LDPlayer §2.3 Option C**: Expanded from 4 domains to 20 — added 5
+    additional `ldmnq.com` subdomains, 3 `ldplayer.net` endpoints, 7
+    LDPlayer-specific CloudFront distributions, and `android.bugly.qq.com`
+    (Tencent crash-reporting SDK). New entries sourced from Red0Hood host list,
+    malformed URL-format entries discarded.
+  - **§5 References**: Added appraisal verdicts. HideCM tool flagged as broken
+    (outbound firewall rule is commented out in source — does not block ads).
+    1broccoli tool flagged as reference-only (uses `pm disable-user` not
+    `pm uninstall --user 0`, no Android 12 guard, surprise-reboot in hosts
+    fallback). Red0Hood flagged as data-only (opaque binaries should not be
+    run; valid domain entries incorporated above).
 
 ### Fixed
 - **PR #26 review feedback**: Addressed Copilot PR review comments:
