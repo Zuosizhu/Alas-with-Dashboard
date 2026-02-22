@@ -91,7 +91,7 @@ The supervisor relies on `expected_state` / `observed_state` to decide whether t
 ## Next Steps
 
 - [ ] Extract more ALAS task handlers as individual tools
-- [ ] Start with login as the first complete workflow tool (`alas_login_ensure_main`)
+- [x] Start with login as the first complete workflow tool (`alas_login_ensure_main`)
 - [ ] Add tool metadata (expected states, produced states)
 - [ ] Keep MCP transport stable; expand the tool surface area first
 - [ ] Add tool result validation
