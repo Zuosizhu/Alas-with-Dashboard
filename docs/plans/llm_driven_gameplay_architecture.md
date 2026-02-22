@@ -168,8 +168,10 @@ graph = builder.compile(checkpointer=checkpointer)
   "mcpServers": {
     "alas": {
       "command": "uv",
-      "args": ["run", "alas_mcp_server.py", "--config", "alas"],
-      "cwd": "agent_orchestrator"
+      "args": ["run", "--directory", "agent_orchestrator", "alas_mcp_server.py", "--config", "alas"],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
     },
     "maamcp": {
       "command": "maa-mcp",

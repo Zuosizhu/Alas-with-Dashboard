@@ -41,26 +41,9 @@ All notable changes to the ALAS AI Agent project.
 ### Fixed
 - **Restart task resilience**: Changed `device.sleep(60)` to `time.sleep(60)` in auto-recovery fallback when Restart task fails — defensive improvement when ADB may be in unknown state.
 
-### Added
-- **Entrypoint Sync Tooling**: Added `scripts/sync_entrypoint_docs.py` to enforce AGENTS-canonical entrypoint docs and keep `CLAUDE.md` + `GEMINI.md` in sync.
-- **Repo-Tracked Pre-Push Hook**: Added `.githooks/pre-push` plus `scripts/install_hooks.sh`.
-  - Always checks entrypoint doc sync before push.
-  - Runs `npm run typecheck` only when pushed commits include `alas_wrapped/webapp/**`.
-  - Supports `SKIP_WEBAPP_TYPECHECK=1` bypass for exceptional pushes.
-- **Optional Symlink Helper**: Added `scripts/entrypoint_symlink_setup.py` to attempt local symlink mode for `CLAUDE.md` and `GEMINI.md` with copy fallback.
-- **PatrickCustom commit enforcement**: Added `scripts/sync_patrick_custom.py`, a `.githooks/pre-commit` that always stages `PatrickCustom.json` into the current commit, and a `.githooks/pre-push` guard that blocks pushes with uncommitted PatrickCustom drift.
-
 ### Changed
 - **Documentation Governance**: Switched canonical instruction source to `AGENTS.md`; `CLAUDE.md`/`GEMINI.md` are now derived.
-- **MCP Configuration**: Removed personal MCP servers (`github`, `context7`, `supermemory`) from project `.mcp.json` - these belong in user-global settings.
-- **Automatic Hook Installation**: Modified startup scripts (`start_alas.bat`, `start_wrapped_electron.ps1`, `start_wrapped_electron_admin.ps1`) to automatically install git hooks on first run - manual `scripts/install_hooks.sh` execution no longer required.
-- **Launcher Canonicalization**: Consolidated Windows launcher logic into repository-root `start_alas.bat`.
-  - `alas_wrapped/alas.bat` and `alas_wrapped/deploy/launcher/Alas.bat` now delegate to the canonical launcher.
-  - Removed legacy `alas_wrapped/dev_tools/alas2.bat` to reduce competing entrypoints.
-- **Launcher Documentation Cleanup**: Normalized launcher docs to match canonical flow.
-  - Renamed `start_alas_v2_README.md` to `start_alas_README.md`.
-  - Removed versioned (`v2`) naming from launcher documentation.
-  - Updated `docs/dev/environment_setup.md` to document canonical launcher and wrapper behavior.
+- **MCP Configuration**: Removed deprecated `"type": "stdio"` from project `.mcp.json` for the `alas` server entry.
 
 ### Fixed
 - **PR #26 review feedback**: Addressed Copilot PR review comments:

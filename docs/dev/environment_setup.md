@@ -22,7 +22,7 @@ cd alas_wrapped
 PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe gui.py --run PatrickCustom
 ```
 
-Compatibility wrappers (`alas_wrapped/alas.bat`, `alas_wrapped/deploy/launcher/Alas.bat`) delegate to `start_alas.bat` and are not separate launcher implementations.
+`start_alas.bat` is the recommended entrypoint for operator use. In this branch, `alas_wrapped/alas.bat` and `alas_wrapped/deploy/launcher/Alas.bat` are still standalone launcher scripts with their own logic.
 
 ## File Layout
 
