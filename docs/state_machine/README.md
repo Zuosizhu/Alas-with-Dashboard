@@ -42,6 +42,10 @@ Rather than reverse-engineering ALAS's implicit state machine into a formal FSM,
 
 This pragmatic approach lets us use ALAS's battle-tested logic while gradually making it more explicit.
 
+## Reference
+
+- [STATE_MACHINE_VISUALIZATION.md](./STATE_MACHINE_VISUALIZATION.md) — Complete documentation of all 43 pages and 98 transitions, with Mermaid diagrams, transition tables, hub architecture, and failure mode analysis.
+
 ## Next Steps
 
 - [ ] Document key Page states and their visual signatures
