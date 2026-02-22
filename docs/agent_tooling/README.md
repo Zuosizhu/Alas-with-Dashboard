@@ -29,6 +29,25 @@ A JSON-RPC server that exposes ALAS capabilities as MCP tools:
 | `alas_list_tools` | List all registered deterministic tools |
 | `alas_call_tool` | Invoke a tool by name with arguments |
 
+## Repo Tooling Hooks
+
+This repository also enforces tooling checks via repo-tracked git hooks in `.githooks/`:
+
+- `pre-commit`: stages `alas_wrapped/config/PatrickCustom.json` through `agent_orchestrator/sync_patrick_custom.py`.
+- `pre-push`: validates PatrickCustom cleanliness, verifies `AGENTS.md` -> `CLAUDE.md`/`GEMINI.md` sync, and conditionally runs `npm run typecheck` for `alas_wrapped/webapp/**` changes.
+
+Manual install path:
+
+```bash
+scripts/install_hooks.sh
+```
+
+Bypass flag for exceptional pushes with webapp changes:
+
+```bash
+SKIP_WEBAPP_TYPECHECK=1 git push
+```
+
 ### Architecture
 
 ```
