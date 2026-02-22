@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+PATRICK_CUSTOM_SYNC_MODE=stage python3 scripts/sync_patrick_custom.py

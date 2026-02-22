@@ -19,6 +19,21 @@ setlocal enabledelayedexpansion
 
 title ALAS Launcher
 
+:: Auto-install git hooks if not configured
+where git >nul 2>&1
+if !ERRORLEVEL! EQU 0 (
+    for /f "delims=" %%i in ('git config --get core.hooksPath 2^>nul') do set "CURRENT_HOOKS_PATH=%%i"
+    if not "!CURRENT_HOOKS_PATH!"==".githooks" (
+        echo Installing repository git hooks...
+        git config core.hooksPath .githooks
+        echo Git hooks configured successfully.
+        echo.
+    )
+) else (
+    echo Git not found; skipping hook installation.
+    echo.
+)
+
 set "LAUNCH_TARGET=wrapped"
 if /I "%~1"=="--upstream" (
     set "LAUNCH_TARGET=upstream"
