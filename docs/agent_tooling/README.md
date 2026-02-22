@@ -13,21 +13,21 @@ A JSON-RPC server that exposes ALAS capabilities as MCP tools:
 **ADB Tools** (low-level device interaction):
 | Tool | Description |
 |------|-------------|
-| `adb.screenshot` | Capture screen, returns base64 PNG |
-| `adb.tap` | Tap coordinate (x, y) |
-| `adb.swipe` | Swipe between coordinates |
+| `adb_screenshot` | Capture screen, returns base64 PNG |
+| `adb_tap` | Tap coordinate (x, y) |
+| `adb_swipe` | Swipe between coordinates |
 
 **State Tools** (ALAS state machine integration):
 | Tool | Description |
 |------|-------------|
-| `alas.get_current_state` | Return current UI page name |
-| `alas.goto` | Navigate to target page (e.g., `page_main`) |
+| `alas_get_current_state` | Return current UI page name |
+| `alas_goto` | Navigate to target page (e.g., `page_main`) |
 
 **Tool Tools** (dynamic tool discovery):
 | Tool | Description |
 |------|-------------|
-| `alas.list_tools` | List all registered deterministic tools |
-| `alas.call_tool` | Invoke a tool by name with arguments |
+| `alas_list_tools` | List all registered deterministic tools |
+| `alas_call_tool` | Invoke a tool by name with arguments |
 
 ### Architecture
 
@@ -72,7 +72,7 @@ The supervisor relies on `expected_state` / `observed_state` to decide whether t
 ## Next Steps
 
 - [ ] Extract more ALAS task handlers as individual tools
-- [ ] Start with login as the first complete workflow tool (`alas.login.ensure_main`)
+- [x] Start with login as the first complete workflow tool (`alas_login_ensure_main`)
 - [ ] Add tool metadata (expected states, produced states)
 - [ ] Keep MCP transport stable; expand the tool surface area first
 - [ ] Add tool result validation
