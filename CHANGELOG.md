@@ -33,6 +33,14 @@ All notable changes to the ALAS AI Agent project.
 - **Recovery Agent Architecture**: Added `docs/plans/recovery_agent_architecture.md` - comprehensive recovery agent design with layered recovery strategy, health monitoring, and error classification.
 - **Recovery Agent Implementation Plan**: Added `docs/plans/recovery_agent_implementation_plan.md` - actionable phased implementation plan for the recovery agent system.
 
+### Added
+- **Scheduler sidecar telemetry**: Added `alas_wrapped/log/schedule_status.jsonl` emission from scheduler loop with `current_task`, `next_task`, and queue snapshots for machine-parsable monitoring.
+- **Login sidecar telemetry**: Added `alas_wrapped/log/login_trace.jsonl` login phase events with timeout guard traces for post-mortem analysis.
+
+### Fixed
+- **Transport recovery hardening**: Added one-shot ADB reconnect probe before restart escalation for transient transport failures.
+- **Device init retry bug**: `Device.__init__` no longer reads `self.config` before `super().__init__()` initializes it; retry policy now derives from constructor config input.
+
 ### Changed
 - **NORTH_STAR.md**: Expanded vision to cover three-stage CV migration (wrap → annotate → replace), orchestrator as tool/state provider, vision for building deterministic pipelines (not just recovery), and local VLM deployment option (GeForce 5090 via llama.cpp/Ollama).
 - **ARCHITECTURE.md**: Added Local VLM (cloud + local) to system diagram, new Dashboard/State Tools subdomain, new CV Migration subdomain with three stages, updated Vision Integration to cover both Gemini Flash and local VLM options.

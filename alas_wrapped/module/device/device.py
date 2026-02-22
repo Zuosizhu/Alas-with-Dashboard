@@ -70,26 +70,30 @@ class Device(Screenshot, Control, AppControl):
     stuck_long_wait_list = ['BATTLE_STATUS_S', 'PAUSE', 'LOGIN_CHECK']
 
     def __init__(self, *args, **kwargs):
-        max_retry = 4 if not self.config.Error_HandleError else 30
+        # ConnectionAttr.__init__ (inside super()) initializes self.config.
+        # Read retry policy from constructor kwargs first to avoid pre-init access.
+        cfg = kwargs.get('config')
+        handle_error = bool(getattr(cfg, 'Error_HandleError', False))
+        max_retry = 30 if handle_error else 4
         for trial in range(1, max_retry + 1):
             try:
                 super().__init__(*args, **kwargs)
                 break
             except EmulatorNotRunningError:
-                if self.emulator_instance is None:
+                if getattr(self, 'emulator_instance', None) is None:
                     logger.critical(
-                        f'No emulator with serial "{self.config.Emulator_Serial}" found, '
+                        f'No emulator with serial "{getattr(cfg, "Emulator_Serial", "unknown")}" found, '
                         f'please set a correct serial'
                     )
                     raise RequestHumanTakeover
                 if trial >= max_retry:
                     logger.critical(f'Failed to start emulator after {trial} trial')
                     raise RequestHumanTakeover
-                if self.config.Error_HandleError and trial >= 4:
+                if handle_error and trial >= 4:
                     logger.warning(f'Failed to start emulator after {trial} trial, keep retrying')
                 # Try to start emulator
                 self.emulator_start()
-                if self.config.Error_HandleError:
+                if handle_error:
                     self.sleep(5)
 
         # Auto-fill emulator info
