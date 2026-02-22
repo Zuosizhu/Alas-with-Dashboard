@@ -4,8 +4,26 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
-PATRICK_CUSTOM_SYNC_MODE=check python3 scripts/sync_patrick_custom.py
-python3 scripts/sync_entrypoint_docs.py --check
+resolve_python() {
+  if command -v python3 >/dev/null 2>&1; then
+    echo "python3"
+    return
+  fi
+  if command -v python >/dev/null 2>&1; then
+    echo "python"
+    return
+  fi
+  if command -v py >/dev/null 2>&1; then
+    echo "py -3"
+    return
+  fi
+  echo "No python interpreter found for git hooks." >&2
+  exit 1
+}
+
+PYTHON_BIN="$(resolve_python)"
+PATRICK_CUSTOM_SYNC_MODE=check $PYTHON_BIN scripts/sync_patrick_custom.py
+$PYTHON_BIN scripts/sync_entrypoint_docs.py --check
 
 tmp_changed="$(mktemp)"
 trap 'rm -f "$tmp_changed"' EXIT
@@ -18,7 +36,8 @@ collect_commit_files() {
 
 while read -r local_ref local_sha remote_ref remote_sha; do
   [[ -z "${local_ref:-}" ]] && continue
-  local_ref_sha="$(git rev-parse "$local_ref")"
+  [[ "${local_sha:-}" == "$zero_sha" ]] && continue
+  local_ref_sha="$local_sha"
   [[ "$local_ref_sha" == "$zero_sha" ]] && continue
 
   if [[ "$remote_sha" == "$zero_sha" ]]; then
@@ -57,7 +76,7 @@ fi
 if [[ -n "$is_webapp_change" ]]; then
   if ! command -v npm >/dev/null 2>&1; then
     echo "npm not found; cannot run webapp typecheck for push. Install npm or set SKIP_WEBAPP_TYPECHECK=1."
-    exit 0
+    exit 1
   fi
   echo "Detected changes under alas_wrapped/webapp; running npm typecheck..."
   (

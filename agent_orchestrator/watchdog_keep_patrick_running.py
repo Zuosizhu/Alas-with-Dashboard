@@ -38,7 +38,8 @@ def utc_now() -> str:
 
 
 def write_log(event: str, log_path: Path, **data) -> None:
-    payload = {"ts": utc_now(), "event": event}
+    actor = os.environ.get("USERNAME") or os.environ.get("USER") or "unknown"
+    payload = {"ts": utc_now(), "event": event, "actor": actor}
     payload.update(data)
     line = json.dumps(payload, ensure_ascii=True)
     print(line, flush=True)
@@ -49,12 +50,17 @@ def write_log(event: str, log_path: Path, **data) -> None:
 def find_alas_log(alas_wrapped_dir: Path, config_name: str) -> Optional[Path]:
     """Find the most recent ALAS log file for this config (today's date first)."""
     log_dir = alas_wrapped_dir / "log"
+    # ALAS logger uses only the first token before "_" in the config name.
+    logger_name = config_name.split("_", 1)[0]
     today = dt.date.today().strftime("%Y-%m-%d")
-    candidate = log_dir / f"{today}_{config_name}.txt"
+    candidate = log_dir / f"{today}_{logger_name}.txt"
     if candidate.exists():
         return candidate
-    # Fall back to most recent matching file
-    matches = sorted(log_dir.glob(f"*_{config_name}.txt"), reverse=True)
+    # Fall back to most recent matching file (allow both logger token and full config name).
+    matches = sorted(
+        list(log_dir.glob(f"*_{logger_name}.txt")) + list(log_dir.glob(f"*_{config_name}.txt")),
+        reverse=True,
+    )
     return matches[0] if matches else None
 
 
@@ -63,11 +69,10 @@ def get_log_stale_seconds(log_path: Path) -> float:
     return time.time() - log_path.stat().st_mtime
 
 
-def kill_gui_processes(alas_wrapped_dir: Path, config_name: str) -> List[int]:
+def kill_gui_processes(alas_wrapped_dir: Path) -> List[int]:
     """Kill all ALAS gui.py processes running from this alas_wrapped directory."""
     killed = []
     target_dir = str(alas_wrapped_dir).replace("\\", "/").lower()
-    config_name = config_name.lower()
     for proc in psutil.process_iter(["pid", "cmdline"]):
         try:
             cmdline = proc.info.get("cmdline") or []
@@ -86,8 +91,6 @@ def kill_gui_processes(alas_wrapped_dir: Path, config_name: str) -> List[int]:
                     is_target = proc_cwd == target_dir
                 except (psutil.NoSuchProcess, psutil.AccessDenied, FileNotFoundError):
                     is_target = False
-            if not is_target and config_name in joined:
-                is_target = True
 
             if is_target:
                 proc.kill()
@@ -128,8 +131,6 @@ def start_gui(alas_wrapped_dir: Path, config_name: str) -> None:
         cwd=str(alas_wrapped_dir),
         env=env,
         creationflags=creationflags,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
     )
 
 
@@ -191,6 +192,19 @@ def main() -> int:
                     log_path,
                     config=args.config,
                 )
+                write_log(
+                    "action_relaunch_missing_log",
+                    log_path,
+                    detail="no matching ALAS log file found; forcing relaunch",
+                )
+                killed = kill_gui_processes(alas_wrapped_dir)
+                if killed:
+                    write_log("killed_gui_processes", log_path, pids=killed)
+                else:
+                    write_log("no_gui_processes_found", log_path)
+                time.sleep(3)
+                start_gui(alas_wrapped_dir, args.config)
+                write_log("launched_gui", log_path, config=args.config)
             else:
                 stale_ago = get_log_stale_seconds(alas_log)
                 stale_ago_min = stale_ago / 60.0
@@ -214,7 +228,7 @@ def main() -> int:
                     )
                     write_log("action_relaunch", log_path, detail="killing gui.py and relaunching")
 
-                    killed = kill_gui_processes(alas_wrapped_dir, args.config)
+                    killed = kill_gui_processes(alas_wrapped_dir)
                     if killed:
                         write_log("killed_gui_processes", log_path, pids=killed)
                     else:

@@ -4,4 +4,22 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
-PATRICK_CUSTOM_SYNC_MODE=stage python3 scripts/sync_patrick_custom.py
+resolve_python() {
+  if command -v python3 >/dev/null 2>&1; then
+    echo "python3"
+    return
+  fi
+  if command -v python >/dev/null 2>&1; then
+    echo "python"
+    return
+  fi
+  if command -v py >/dev/null 2>&1; then
+    echo "py -3"
+    return
+  fi
+  echo "No python interpreter found for git hooks." >&2
+  exit 1
+}
+
+PYTHON_BIN="$(resolve_python)"
+PATRICK_CUSTOM_SYNC_MODE=stage $PYTHON_BIN scripts/sync_patrick_custom.py
