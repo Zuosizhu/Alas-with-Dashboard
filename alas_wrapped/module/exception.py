@@ -41,6 +41,12 @@ class GameBugError(Exception):
     pass
 
 
+class GameTransportError(Exception):
+    # Explicitly separate transport pipeline failures (ADB/uiautomator/screenshot path)
+    # from in-game state/logic errors so restart/recovery policy can be different.
+    pass
+
+
 class GameTooManyClickError(Exception):
     pass
 

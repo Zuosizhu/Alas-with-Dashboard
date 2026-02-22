@@ -495,7 +495,7 @@ class RewardTacticalClass(Dock):
             if self.appear(MISSION_POPUP_GO, offset=self._popup_offset, interval=2):
                 self.device.click(MISSION_POPUP_ACK)
                 continue
-            if self.appear(TACTICAL_CLASS_CANCEL, offset=(30, 30), interval=2) \
+            if not study_finished and self.appear(TACTICAL_CLASS_CANCEL, offset=(30, 30), interval=2) \
                     and self.appear(TACTICAL_CLASS_START, offset=(30, 30)):
                 if self._tactical_books_choose():
                     self.dock_select_index = 0

@@ -1,4 +1,5 @@
 import os
+import json
 import re
 import threading
 import time
@@ -6,6 +7,11 @@ from datetime import datetime, timedelta
 
 import inflection
 from cached_property import cached_property
+try:
+    from adbutils.errors import AdbError
+except ImportError:
+    class AdbError(Exception):
+        pass
 
 from module.base.decorator import del_cached_property
 from module.config.config import AzurLaneConfig, TaskEnd
@@ -31,6 +37,9 @@ _ALLOWED_COMMANDS = frozenset([
     'azur_lane_uncensored', 'benchmark', 'game_manager'
 ])
 
+_RUNTIME_ROOT = os.path.dirname(os.path.abspath(__file__))
+_SCHEDULE_STATUS_FILE = os.path.join(_RUNTIME_ROOT, 'log', 'schedule_status.jsonl')
+
 
 class AzurLaneAutoScript:
     stop_event: threading.Event = None
@@ -43,6 +52,25 @@ class AzurLaneAutoScript:
         # Failure count of tasks
         # Key: str, task name, value: int, failure count
         self.failure_record = {}
+        # Used by sidecar schedule status logs for correlation.
+        self.last_task = None
+        # Count transport failures across consecutive run attempts:
+        # first failure may be transient; repeated failures force restart path.
+        self.transport_error_streak = 0
+        # Prevents duplicate restart calls when one restart is already queued.
+        self.restart_dedupe_seconds = 30
+
+    @staticmethod
+    def _append_jsonl(path, payload):
+        # Shared sidecar helper for parser-friendly JSONL logs.
+        try:
+            folder = os.path.dirname(path)
+            if folder:
+                os.makedirs(folder, exist_ok=True)
+            with open(path, 'a', encoding='utf-8') as f:
+                f.write(json.dumps(payload, ensure_ascii=True) + '\n')
+        except Exception as e:
+            logger.warning(f'Failed to append JSONL `{path}`: {e}')
 
     @cached_property
     def config(self):
@@ -90,6 +118,55 @@ class AzurLaneAutoScript:
             logger.exception(e)
             raise RequestHumanTakeover(str(e)) from e
 
+    def _write_schedule_status(self, next_task):
+        # Emit scheduler intent and task queues to a separate stream so
+        # external tooling can inspect current/next task order.
+        pending = [f.command for f in getattr(self.config, 'pending_task', [])]
+        waiting = [f.command for f in getattr(self.config, 'waiting_task', [])]
+        payload = {
+            'ts': datetime.utcnow().isoformat(timespec='milliseconds') + 'Z',
+            'config': self.config_name,
+            'current_task': self.last_task,
+            'next_task': next_task,
+            'pending': pending,
+            'next_waiting': waiting[:10],
+            'pending_count': len(pending),
+            'waiting_count': len(waiting),
+            'source': 'scheduler_loop',
+        }
+        self._append_jsonl(_SCHEDULE_STATUS_FILE, payload)
+
+    def _is_restart_pending_soon(self, within_seconds=None):
+        # Treat an existing upcoming Restart task as already-reported work.
+        within_seconds = self.restart_dedupe_seconds if within_seconds is None else within_seconds
+        restart_next_run = deep_get(self.config.data, keys='Restart.Scheduler.NextRun', default=None)
+        restart_enabled = bool(deep_get(self.config.data, keys='Restart.Scheduler.Enable', default=False))
+        if not restart_enabled or not isinstance(restart_next_run, datetime):
+            return False
+        return restart_next_run <= datetime.now() + timedelta(seconds=max(int(within_seconds), 0))
+
+    def _schedule_restart(self, reason, within_seconds=None):
+        # Centralize all restart scheduling through one dedupe-aware path.
+        if self._is_restart_pending_soon(within_seconds=within_seconds):
+            logger.info(f'Task call: Restart (deduped, already pending) reason={reason}')
+            return False
+        logger.info(f'Task call: Restart (reason={reason})')
+        self.config.task_call('Restart')
+        return True
+
+    def _recover_transport_once(self, reason):
+        # Use a single reconnect-screenshot probe before declaring transport
+        # failure terminal and letting restart logic run.
+        logger.warning(f'Transport failure detected ({reason}), attempting adb_reconnect once')
+        try:
+            self.device.adb_reconnect()
+            self.device.screenshot()
+            logger.info('Transport recovery succeeded')
+            return True
+        except Exception as e:
+            logger.warning(f'Transport recovery failed: {type(e).__name__}: {e}')
+            return False
+
     def run(self, command, skip_first_screenshot=False):
         """
         Args:
@@ -104,37 +181,56 @@ class AzurLaneAutoScript:
             if not skip_first_screenshot:
                 self.device.screenshot()
             self.__getattribute__(command)()
+            self.transport_error_streak = 0
             return True
         except TaskEnd:
+            self.transport_error_streak = 0
             return True
         except GameNotRunningError as e:
+            self.transport_error_streak = 0
             logger.warning(e)
-            self.config.task_call('Restart')
+            self._schedule_restart(reason='game_not_running')
             return False
         except (GameStuckError, GameTooManyClickError) as e:
+            self.transport_error_streak = 0
             logger.error(e)
             self.save_error_log()
             logger.warning(f'Game stuck, {self.device.package} will be restarted in 10 seconds')
             logger.warning('If you are playing by hand, please stop Alas')
-            self.config.task_call('Restart')
+            self._schedule_restart(reason=f'ui_stuck:{type(e).__name__}')
+            self.device.sleep(10)
+            return False
+        except (AdbError, GameTransportError) as e:
+            self.transport_error_streak += 1
+            logger.error(f'{type(e).__name__}: {e}')
+            self.save_error_log()
+            # One-shot recovery: avoid immediate restart churn on one-off ADB blips.
+            if self.transport_error_streak == 1 and self._recover_transport_once(reason=f'{command}:{type(e).__name__}'):
+                logger.warning('Transport recovered on first failure, skip immediate restart')
+                self.device.sleep(2)
+                return False
+            logger.warning('Transport failure repeated or unrecoverable, schedule restart')
+            self._schedule_restart(reason=f'transport_failure:{type(e).__name__}')
             self.device.sleep(10)
             return False
         except GameBugError as e:
+            self.transport_error_streak = 0
             logger.warning(e)
             self.save_error_log()
             logger.warning('An error has occurred in Azur Lane game client, Alas is unable to handle')
             logger.warning(f'Restarting {self.device.package} to fix it')
-            self.config.task_call('Restart')
+            self._schedule_restart(reason='game_bug')
             self.device.sleep(10)
             return False
         except GamePageUnknownError:
+            self.transport_error_streak = 0
             logger.info('Game server may be under maintenance or network may be broken, check server status now')
             self.checker.check_now()
             if self.checker.is_available():
                 if self.config.Error_RestartOnUnknownPage:
                     logger.warning('Game page unknown, server is available. Attempting restart.')
                     self.save_error_log()
-                    self.config.task_call('Restart')
+                    self._schedule_restart(reason='unknown_page')
                     self.device.sleep(10)
                     return False
                 else:
@@ -151,6 +247,7 @@ class AzurLaneAutoScript:
                 self.checker.wait_until_available()
                 return False
         except ScriptError as e:
+            self.transport_error_streak = 0
             logger.exception(e)
             logger.critical('This is likely to be a mistake of developers, but sometimes just random issues')
             handle_notify(
@@ -160,6 +257,7 @@ class AzurLaneAutoScript:
             )
             raise RequestHumanTakeover(str(e)) from e
         except RequestHumanTakeover:
+            self.transport_error_streak = 0
             logger.critical('Request human takeover')
             handle_notify(
                 self.config.Error_OnePushConfig,
@@ -168,6 +266,7 @@ class AzurLaneAutoScript:
             )
             raise
         except Exception as e:
+            self.transport_error_streak = 0
             logger.exception(e)
             self.save_error_log()
             handle_notify(
@@ -528,7 +627,7 @@ class AzurLaneAutoScript:
                         del_cached_property(self, 'config')
                         continue
                     if task.command != 'Restart':
-                        self.config.task_call('Restart')
+                        self._schedule_restart(reason='close_game_wait')
                         del_cached_property(self, 'config')
                         continue
                 elif method == 'goto_main':
@@ -578,9 +677,10 @@ class AzurLaneAutoScript:
                 # So update it once recovered
                 del_cached_property(self, 'config')
                 logger.info('Server or network is recovered. Restart game client')
-                self.config.task_call('Restart')
+                self._schedule_restart(reason='server_recovered')
             # Get task
             task = self.get_next_task()
+            self._write_schedule_status(next_task=task)
             # Init device and change server
             _ = self.device
             self.device.config = self.config
@@ -599,6 +699,7 @@ class AzurLaneAutoScript:
             success = self.run(inflection.underscore(task))
             logger.info(f'Scheduler: End task `{task}`')
             self.is_first_task = False
+            self.last_task = task
 
             # Check failures
             failed = self.failure_record.get(task, 0)
@@ -610,6 +711,20 @@ class AzurLaneAutoScript:
                                 "Please read the help text of the options.")
                 logger.critical("Possible reason #2: There is a problem with this task. "
                                 "Please contact developers or try to fix it yourself.")
+                if self.config.Error_HandleError:
+                    logger.warning(f"Auto recovery enabled, skip human takeover for task `{task}`")
+                    logger.warning(f"Delay task `{task}` for 10 minutes and schedule `Restart`")
+                    self.failure_record[task] = 0
+                    self.config.task_delay(task=task, minute=10)
+                    self._schedule_restart(reason=f'task_failed_3x:{task}')
+                    if task == 'Restart':
+                        logger.warning('Restart task failed repeatedly, wait 60 seconds before next scheduler cycle')
+                        # Use time.sleep directly: device.sleep is only a thin
+                        # wrapper today, but when Restart itself has failed the
+                        # device/ADB connection may be in an unknown state.
+                        time.sleep(60)
+                    del_cached_property(self, 'config')
+                    continue
                 logger.critical('Request human takeover')
                 handle_notify(
                     self.config.Error_OnePushConfig,
