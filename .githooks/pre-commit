@@ -22,4 +22,4 @@ resolve_python() {
 }
 
 PYTHON_BIN="$(resolve_python)"
-PATRICK_CUSTOM_SYNC_MODE=stage $PYTHON_BIN scripts/sync_patrick_custom.py
+PATRICK_CUSTOM_SYNC_MODE=stage $PYTHON_BIN agent_orchestrator/sync_patrick_custom.py

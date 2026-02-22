@@ -22,8 +22,8 @@ resolve_python() {
 }
 
 PYTHON_BIN="$(resolve_python)"
-PATRICK_CUSTOM_SYNC_MODE=check $PYTHON_BIN scripts/sync_patrick_custom.py
-$PYTHON_BIN scripts/sync_entrypoint_docs.py --check
+PATRICK_CUSTOM_SYNC_MODE=check $PYTHON_BIN agent_orchestrator/sync_patrick_custom.py
+$PYTHON_BIN agent_orchestrator/sync_entrypoint_docs.py --check
 
 tmp_changed="$(mktemp)"
 trap 'rm -f "$tmp_changed"' EXIT

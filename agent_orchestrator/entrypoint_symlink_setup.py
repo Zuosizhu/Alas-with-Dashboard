@@ -20,7 +20,7 @@ TARGETS = [
     REPO_ROOT / "CLAUDE.md",
     REPO_ROOT / "GEMINI.md",
 ]
-SYNC_SCRIPT = REPO_ROOT / "scripts" / "sync_entrypoint_docs.py"
+SYNC_SCRIPT = REPO_ROOT / "agent_orchestrator" / "sync_entrypoint_docs.py"
 SYMLINK_WARNING = (
     "Local symlink mode is for local convenience only. "
     "Do not commit symlinks to CLAUDE.md or GEMINI.md."

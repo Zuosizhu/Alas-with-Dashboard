@@ -91,7 +91,7 @@ def check() -> int:
         for line in mismatches:
             print(f"- {line}", file=sys.stderr)
         print(
-            "Run `python3 scripts/sync_entrypoint_docs.py --sync` and commit the results.",
+            "Run `python3 agent_orchestrator/sync_entrypoint_docs.py --sync` and commit the results.",
             file=sys.stderr,
         )
         return 1

@@ -33,7 +33,7 @@ A JSON-RPC server that exposes ALAS capabilities as MCP tools:
 
 This repository also enforces tooling checks via repo-tracked git hooks in `.githooks/`:
 
-- `pre-commit`: stages `alas_wrapped/config/PatrickCustom.json` through `scripts/sync_patrick_custom.py`.
+- `pre-commit`: stages `alas_wrapped/config/PatrickCustom.json` through `agent_orchestrator/sync_patrick_custom.py`.
 - `pre-push`: validates PatrickCustom cleanliness, verifies `AGENTS.md` -> `CLAUDE.md`/`GEMINI.md` sync, and conditionally runs `npm run typecheck` for `alas_wrapped/webapp/**` changes.
 
 Manual install path:
