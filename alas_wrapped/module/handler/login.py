@@ -26,6 +26,7 @@ from module.ui.ui import UI
 class LoginHandler(UI):
     LOGIN_MAX_TOTAL_SECONDS = 300
     LOGIN_MAX_NO_PROGRESS_SECONDS = 180
+    LOGIN_TRACE_ROTATE_BYTES = 20 * 1024 * 1024
     _RUNTIME_ROOT = Path(__file__).resolve().parents[2]
     _trace_write_warned = False
     # Side-channel trace file: append-only JSONL so external parsers can
@@ -49,6 +50,11 @@ class LoginHandler(UI):
             folder = os.path.dirname(self.LOGIN_TRACE_FILE)
             if folder:
                 os.makedirs(folder, exist_ok=True)
+            if os.path.exists(self.LOGIN_TRACE_FILE) and os.path.getsize(self.LOGIN_TRACE_FILE) >= self.LOGIN_TRACE_ROTATE_BYTES:
+                root, ext = os.path.splitext(self.LOGIN_TRACE_FILE)
+                ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+                rotated = f'{root}.{ts}{ext or ".jsonl"}'
+                os.replace(self.LOGIN_TRACE_FILE, rotated)
             with open(self.LOGIN_TRACE_FILE, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(payload, ensure_ascii=True) + '\n')
         except Exception as e:

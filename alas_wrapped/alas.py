@@ -39,6 +39,7 @@ _ALLOWED_COMMANDS = frozenset([
 
 _RUNTIME_ROOT = os.path.dirname(os.path.abspath(__file__))
 _SCHEDULE_STATUS_FILE = os.path.join(_RUNTIME_ROOT, 'log', 'schedule_status.jsonl')
+_JSONL_ROTATE_BYTES = 20 * 1024 * 1024
 
 
 class AzurLaneAutoScript:
@@ -67,6 +68,13 @@ class AzurLaneAutoScript:
             folder = os.path.dirname(path)
             if folder:
                 os.makedirs(folder, exist_ok=True)
+            if os.path.exists(path) and os.path.getsize(path) >= _JSONL_ROTATE_BYTES:
+                # Keep JSONL append-only in normal flow, but rotate oversized files
+                # to avoid unbounded disk growth during long runs.
+                root, ext = os.path.splitext(path)
+                ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+                rotated = f'{root}.{ts}{ext or ".jsonl"}'
+                os.replace(path, rotated)
             with open(path, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(payload, ensure_ascii=True) + '\n')
         except Exception as e:
