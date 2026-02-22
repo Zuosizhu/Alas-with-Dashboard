@@ -41,6 +41,9 @@ All notable changes to the ALAS AI Agent project.
 - **Transport recovery hardening**: Added one-shot ADB reconnect probe before restart escalation for transient transport failures.
 - **Device init retry bug**: `Device.__init__` no longer reads `self.config` before `super().__init__()` initializes it; retry policy now derives from constructor config input.
 - **Sidecar log growth guard**: Added automatic size-based rotation for `schedule_status.jsonl` and `login_trace.jsonl` when files reach 20 MB.
+- **Telemetry writer consistency**: Unified JSONL append/rotation logic behind a shared helper used by both scheduler and login sidecar traces.
+- **Emulator start retry visibility**: Added warning when emulator start fails and the pre-retry stop also fails, so retry loops are no longer silent in that path.
+- **Tool import resilience**: `alas_wrapped/tools` now uses package-relative imports with fallback, preventing brittle import behavior across runner contexts.
 
 ### Changed
 - **NORTH_STAR.md**: Expanded vision to cover three-stage CV migration (wrap → annotate → replace), orchestrator as tool/state provider, vision for building deterministic pipelines (not just recovery), and local VLM deployment option (GeForce 5090 via llama.cpp/Ollama).

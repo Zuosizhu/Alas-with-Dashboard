@@ -1,5 +1,4 @@
 import os
-import json
 import re
 import threading
 import time
@@ -14,6 +13,7 @@ except ImportError:
         pass
 
 from module.base.decorator import del_cached_property
+from module.base.jsonl import append_jsonl
 from module.config.config import AzurLaneConfig, TaskEnd
 from module.config.deep import deep_get, deep_set
 from module.exception import *
@@ -60,25 +60,6 @@ class AzurLaneAutoScript:
         self.transport_error_streak = 0
         # Prevents duplicate restart calls when one restart is already queued.
         self.restart_dedupe_seconds = 30
-
-    @staticmethod
-    def _append_jsonl(path, payload):
-        # Shared sidecar helper for parser-friendly JSONL logs.
-        try:
-            folder = os.path.dirname(path)
-            if folder:
-                os.makedirs(folder, exist_ok=True)
-            if os.path.exists(path) and os.path.getsize(path) >= _JSONL_ROTATE_BYTES:
-                # Keep JSONL append-only in normal flow, but rotate oversized files
-                # to avoid unbounded disk growth during long runs.
-                root, ext = os.path.splitext(path)
-                ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
-                rotated = f'{root}.{ts}{ext or ".jsonl"}'
-                os.replace(path, rotated)
-            with open(path, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(payload, ensure_ascii=True) + '\n')
-        except Exception as e:
-            logger.warning(f'Failed to append JSONL `{path}`: {e}')
 
     @cached_property
     def config(self):
@@ -142,7 +123,14 @@ class AzurLaneAutoScript:
             'waiting_count': len(waiting),
             'source': 'scheduler_loop',
         }
-        self._append_jsonl(_SCHEDULE_STATUS_FILE, payload)
+        append_jsonl(
+            _SCHEDULE_STATUS_FILE,
+            payload,
+            rotate_bytes=_JSONL_ROTATE_BYTES,
+            error_callback=lambda e: logger.warning(
+                f'Failed to append JSONL `{_SCHEDULE_STATUS_FILE}`: {e}'
+            ),
+        )
 
     def _is_restart_pending_soon(self, within_seconds=None):
         # Treat an existing upcoming Restart task as already-reported work.

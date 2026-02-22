@@ -21,7 +21,11 @@ from typing import Any, Dict, List, Optional
 from module.exception import GameNotRunningError, GamePageUnknownError
 from module.ui.page import Page
 
-from tools._context import get_context
+try:
+    from ._context import get_context
+except ImportError:
+    # Backward-compatible import path when invoked as a top-level `tools` module.
+    from tools._context import get_context
 
 
 def get_current_page(config_name: str = "alas") -> Dict[str, Any]:

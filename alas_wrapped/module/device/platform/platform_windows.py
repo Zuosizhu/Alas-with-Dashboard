@@ -322,6 +322,10 @@ class PlatformWindows(PlatformBase, EmulatorManager):
                 # Failed to start, stop and start again
                 if stopped and self._emulator_function_wrapper(self._emulator_stop):
                     continue
+                logger.warning(
+                    'Emulator start failed; stop before retry also failed, '
+                    'continuing without clean state'
+                )
 
         logger.error('Failed to start emulator 3 times, stopped')
         return False

@@ -1,5 +1,3 @@
-import json
-import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +11,7 @@ from uiautomator2.xpath import XPath, XPathSelector
 
 import module.config.server as server
 from module.base.timer import Timer
+from module.base.jsonl import append_jsonl
 from module.base.utils import color_similarity_2d, crop, random_rectangle_point
 from module.handler.assets import *
 from module.logger import logger
@@ -46,22 +45,19 @@ class LoginHandler(UI):
             'error': error,
             'elapsed_ms': elapsed_ms,
         }
-        try:
-            folder = os.path.dirname(self.LOGIN_TRACE_FILE)
-            if folder:
-                os.makedirs(folder, exist_ok=True)
-            if os.path.exists(self.LOGIN_TRACE_FILE) and os.path.getsize(self.LOGIN_TRACE_FILE) >= self.LOGIN_TRACE_ROTATE_BYTES:
-                root, ext = os.path.splitext(self.LOGIN_TRACE_FILE)
-                ts = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
-                rotated = f'{root}.{ts}{ext or ".jsonl"}'
-                os.replace(self.LOGIN_TRACE_FILE, rotated)
-            with open(self.LOGIN_TRACE_FILE, 'a', encoding='utf-8') as f:
-                f.write(json.dumps(payload, ensure_ascii=True) + '\n')
-        except Exception as e:
+
+        def _on_trace_error(e):
             # Trace logging must never break login flow.
             if not self._trace_write_warned:
                 logger.warning(f'login_trace telemetry disabled: {type(e).__name__}: {e}')
                 self._trace_write_warned = True
+
+        append_jsonl(
+            self.LOGIN_TRACE_FILE,
+            payload,
+            rotate_bytes=self.LOGIN_TRACE_ROTATE_BYTES,
+            error_callback=_on_trace_error,
+        )
 
     def _handle_app_login(self):
         """
@@ -291,6 +287,7 @@ class LoginHandler(UI):
     def app_start(self):
         logger.hr('App start')
         self.device.app_start()
+        # Raises on failure; return value is informational for callers that need it.
         self.handle_app_login()
         # self.ensure_no_unfinished_campaign()
 
@@ -298,6 +295,7 @@ class LoginHandler(UI):
         logger.hr('App restart')
         self.device.app_stop()
         self.device.app_start()
+        # Raises on failure; return value is informational for callers that need it.
         self.handle_app_login()
         # self.ensure_no_unfinished_campaign()
         self.config.task_delay(server_update=True)
