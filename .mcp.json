@@ -1,7 +1,6 @@
 {
   "mcpServers": {
     "alas": {
-      "type": "stdio",
       "command": "uv",
       "args": [
         "run",

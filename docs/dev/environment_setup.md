@@ -7,6 +7,23 @@
 
 `alas_wrapped/` uses **Python 3.9** with dependencies managed by **[UV](https://docs.astral.sh/uv/)**. The dependency graph is pinned via `uv pip compile` to produce a reproducible lockfile.
 
+## Launch Entry Points
+
+Canonical launcher for this repository:
+
+```batch
+start_alas.bat [options] [config_name]
+```
+
+Direct wrapped launch (useful for debugging launcher behavior):
+
+```bash
+cd alas_wrapped
+PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe gui.py --run PatrickCustom
+```
+
+Compatibility wrappers (`alas_wrapped/alas.bat`, `alas_wrapped/deploy/launcher/Alas.bat`) delegate to `start_alas.bat` and are not separate launcher implementations.
+
 ## File Layout
 
 | File | Purpose |

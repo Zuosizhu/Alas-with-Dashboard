@@ -1,6 +1,6 @@
 # ALAS Copilot Entrypoint
 
-Canonical instructions live in `CLAUDE.md`.
+Canonical instructions live in `AGENTS.md`.
 
 Critical rules (duplicated here on purpose):
 - Never modify `upstream_alas/` directly.
@@ -10,4 +10,4 @@ Critical rules (duplicated here on purpose):
 - Do not commit runtime artifacts or local secrets.
 - For non-trivial changes, end with a commit and PR (or provide exact git commands if runtime cannot execute git).
 
-When task scope changes, follow task-triggered required reads in `CLAUDE.md`.
+When task scope changes, follow task-triggered required reads in `AGENTS.md`.

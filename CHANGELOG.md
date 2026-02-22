@@ -2,29 +2,65 @@
 
 All notable changes to the ALAS AI Agent project.
 
-## [Unreleased] - 2026-02-18
+## [Unreleased] - 2026-02-17
+
+### Added
+- **Local VLM Setup Plan**: Added `docs/plans/local_vlm_setup.md` - comprehensive primer for serving a vision-language model locally on GeForce 5090:
+  - Model selection (Qwen3-VL-8B, MiniCPM-V 4.5, Qwen3-VL-32B)
+  - llama.cpp vs Ollama comparison with setup instructions
+  - Benchmarking plan against bot screenshot rate
+  - Integration plan with MCP vision router
+  - Four-phase rollout (L1-L4)
+- **Interactive State Machine Visualization Plan**: Added `docs/plans/interactive_state_viz_plan.md` - plan for web-based graph explorer:
+  - Cytoscape.js as rendering engine
+  - Data extraction script from page.py
+  - Three-phase rollout (V1 static → V2 live state → V3 debugging tools)
+- **State Machine Visualization**: Added `docs/state_machine/STATE_MACHINE_VISUALIZATION.md` - complete documentation of ALAS's 43-page state machine:
+  - Comprehensive Mermaid diagrams showing all 98 state transitions
+  - Detailed transition tables for every page
+  - Hub-and-spoke architecture visualization
+  - Navigation algorithm explanation
+  - Failure mode analysis with recovery opportunities
+  - Foundation for vision-based recovery and interactive debugging
+- **Durable Agent Architecture Design**: Added `docs/plans/durable_agent_architecture_design.md` - comprehensive design for autonomous failure handling and recovery (Phase II):
+  - LangGraph durable execution with checkpointing
+  - Supervisor/follower pattern for tool orchestration
+  - Retry policies with exponential backoff
+  - Circuit breaker pattern for cascading failure prevention
+  - Vision-based recovery agent for unexpected states
+  - Structured observability with metrics and tracing
+  - 10-week implementation roadmap
+- **Recovery Agent Architecture**: Added `docs/plans/recovery_agent_architecture.md` - comprehensive recovery agent design with layered recovery strategy, health monitoring, and error classification.
+- **Recovery Agent Implementation Plan**: Added `docs/plans/recovery_agent_implementation_plan.md` - actionable phased implementation plan for the recovery agent system.
 
 ### Changed
-- **Emulator Debloat Guide** (`docs/dev/emulator_depbloat.md`): Expanded and
-  corrected based on source-code appraisal of three community tools.
-  - **MEmu §1.3**: Added ADB health recovery pattern — cycle `adb kill-server`
-    / `adb start-server` when device state is `offline` or `unauthorized`.
-  - **MEmu §1.4 Option C**: Added coverage note; the current domain list is
-    minimal. Extended list available from 1broccoli's `memu_block.example.txt`
-    (see §5).
-  - **LDPlayer §2.2**: Added optional startup ad suppression technique via
-    `%AppData%\XuanZhi9\cache\` (source: Red0Hood community report).
-  - **LDPlayer §2.3 Option C**: Expanded from 4 domains to 20 — added 5
-    additional `ldmnq.com` subdomains, 3 `ldplayer.net` endpoints, 7
-    LDPlayer-specific CloudFront distributions, and `android.bugly.qq.com`
-    (Tencent crash-reporting SDK). New entries sourced from Red0Hood host list,
-    malformed URL-format entries discarded.
-  - **§5 References**: Added appraisal verdicts. HideCM tool flagged as broken
-    (outbound firewall rule is commented out in source — does not block ads).
-    1broccoli tool flagged as reference-only (uses `pm disable-user` not
-    `pm uninstall --user 0`, no Android 12 guard, surprise-reboot in hosts
-    fallback). Red0Hood flagged as data-only (opaque binaries should not be
-    run; valid domain entries incorporated above).
+- **NORTH_STAR.md**: Expanded vision to cover three-stage CV migration (wrap → annotate → replace), orchestrator as tool/state provider, vision for building deterministic pipelines (not just recovery), and local VLM deployment option (GeForce 5090 via llama.cpp/Ollama).
+- **ARCHITECTURE.md**: Added Local VLM (cloud + local) to system diagram, new Dashboard/State Tools subdomain, new CV Migration subdomain with three stages, updated Vision Integration to cover both Gemini Flash and local VLM options.
+- **ROADMAP.md**: Complete rewrite with expanded phase plan — added Phase L (Local VLM), Phase V (Interactive Viz), CV Migration Stages (A/B/C), 2026 milestone timeline.
+
+### Fixed
+- **Restart task resilience**: Changed `device.sleep(60)` to `time.sleep(60)` in auto-recovery fallback when Restart task fails — defensive improvement when ADB may be in unknown state.
+
+### Added
+- **Entrypoint Sync Tooling**: Added `scripts/sync_entrypoint_docs.py` to enforce AGENTS-canonical entrypoint docs and keep `CLAUDE.md` + `GEMINI.md` in sync.
+- **Repo-Tracked Pre-Push Hook**: Added `.githooks/pre-push` plus `scripts/install_hooks.sh`.
+  - Always checks entrypoint doc sync before push.
+  - Runs `npm run typecheck` only when pushed commits include `alas_wrapped/webapp/**`.
+  - Supports `SKIP_WEBAPP_TYPECHECK=1` bypass for exceptional pushes.
+- **Optional Symlink Helper**: Added `scripts/entrypoint_symlink_setup.py` to attempt local symlink mode for `CLAUDE.md` and `GEMINI.md` with copy fallback.
+- **PatrickCustom commit enforcement**: Added `scripts/sync_patrick_custom.py`, a `.githooks/pre-commit` that always stages `PatrickCustom.json` into the current commit, and a `.githooks/pre-push` guard that blocks pushes with uncommitted PatrickCustom drift.
+
+### Changed
+- **Documentation Governance**: Switched canonical instruction source to `AGENTS.md`; `CLAUDE.md`/`GEMINI.md` are now derived.
+- **MCP Configuration**: Removed personal MCP servers (`github`, `context7`, `supermemory`) from project `.mcp.json` - these belong in user-global settings.
+- **Automatic Hook Installation**: Modified startup scripts (`start_alas.bat`, `start_wrapped_electron.ps1`, `start_wrapped_electron_admin.ps1`) to automatically install git hooks on first run - manual `scripts/install_hooks.sh` execution no longer required.
+- **Launcher Canonicalization**: Consolidated Windows launcher logic into repository-root `start_alas.bat`.
+  - `alas_wrapped/alas.bat` and `alas_wrapped/deploy/launcher/Alas.bat` now delegate to the canonical launcher.
+  - Removed legacy `alas_wrapped/dev_tools/alas2.bat` to reduce competing entrypoints.
+- **Launcher Documentation Cleanup**: Normalized launcher docs to match canonical flow.
+  - Renamed `start_alas_v2_README.md` to `start_alas_README.md`.
+  - Removed versioned (`v2`) naming from launcher documentation.
+  - Updated `docs/dev/environment_setup.md` to document canonical launcher and wrapper behavior.
 
 ### Fixed
 - **PR #26 review feedback**: Addressed Copilot PR review comments:
