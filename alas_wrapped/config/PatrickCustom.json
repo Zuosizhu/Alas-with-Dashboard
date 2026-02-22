@@ -136,7 +136,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-17 01:00:00",
+      "NextRun": "2026-02-22 01:00:00",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -1285,7 +1285,7 @@
   "Commission": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:46:11",
+      "NextRun": "2026-02-21 21:08:17",
       "Command": "Commission",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1303,7 +1303,7 @@
   "Tactical": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 03:15:41",
+      "NextRun": "2026-02-21 20:37:37",
       "Command": "Tactical",
       "SuccessInterval": "30-60",
       "FailureInterval": "120-240",
@@ -1331,7 +1331,7 @@
   "Research": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-17 01:00:00",
+      "NextRun": "2026-02-21 22:46:01",
       "Command": "Research",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1352,7 +1352,7 @@
   "Dorm": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 02:39:38",
+      "NextRun": "2026-02-21 22:01:22",
       "Command": "Dorm",
       "SuccessInterval": 278,
       "FailureInterval": 278,
@@ -1366,7 +1366,7 @@
     "BuyFurniture": {
       "Enable": true,
       "BuyOption": "all",
-      "LastRun": "2020-01-01 00:00:00"
+      "LastRun": "2026-02-16 04:36:58"
     },
     "Storage": {
       "Storage": {}
@@ -1375,7 +1375,7 @@
   "Meowfficer": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 04:14:49",
+      "NextRun": "2026-02-21 20:33:16",
       "Command": "Meowfficer",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1426,7 +1426,7 @@
   "Reward": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 01:38:29",
+      "NextRun": "2026-02-21 20:17:07",
       "Command": "Reward",
       "SuccessInterval": "120-240",
       "FailureInterval": "120-240",
@@ -1446,7 +1446,7 @@
   "Awaken": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-09 01:00:00",
+      "NextRun": "2026-02-22 01:00:00",
       "Command": "Awaken",
       "SuccessInterval": 0,
       "FailureInterval": 120,
@@ -1509,7 +1509,7 @@
   "Exercise": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-16 13:00:00",
+      "NextRun": "2026-02-22 01:00:00",
       "Command": "Exercise",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1522,7 +1522,7 @@
       "LowHpThreshold": 0.25,
       "LowHpConfirmWait": 1,
       "OpponentRefreshValue": 0,
-      "OpponentRefreshRecord": "2026-02-16 01:19:31"
+      "OpponentRefreshRecord": "2026-02-21 19:04:33"
     },
     "Storage": {
       "Storage": {}
@@ -1530,7 +1530,7 @@
   },
   "ShopFrequent": {
     "Scheduler": {
-      "Enable": true,
+      "Enable": false,
       "NextRun": "2020-01-01 00:00:00",
       "Command": "ShopFrequent",
       "SuccessInterval": 30,
@@ -1640,7 +1640,7 @@
   "Freebies": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-09 01:00:00",
+      "NextRun": "2026-02-22 01:00:00",
       "Command": "Freebies",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1683,7 +1683,7 @@
   "PrivateQuarters": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-09 01:00:00",
+      "NextRun": "2026-02-21 20:06:22",
       "Command": "PrivateQuarters",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1715,7 +1715,7 @@
   "OpsiAshBeacon": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 14:37:33",
+      "NextRun": "2026-02-21 20:18:37",
       "Command": "OpsiAshBeacon",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1750,7 +1750,7 @@
   },
   "OpsiExplore": {
     "Scheduler": {
-      "Enable": true,
+      "Enable": false,
       "NextRun": "2026-02-08 14:57:30",
       "Command": "OpsiExplore",
       "SuccessInterval": 0,
@@ -1760,7 +1760,7 @@
     "OpsiExplore": {
       "SpecialRadar": true,
       "ForceRun": false,
-      "LastZone": 61
+      "LastZone": 53
     },
     "OpsiFleet": {
       "Fleet": 1,
@@ -1772,7 +1772,7 @@
   },
   "OpsiShop": {
     "Scheduler": {
-      "Enable": true,
+      "Enable": false,
       "NextRun": "2026-02-08 14:57:30",
       "Command": "OpsiShop",
       "SuccessInterval": 30,
@@ -1806,7 +1806,7 @@
   "OpsiDaily": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-09 01:00:00",
+      "NextRun": "2026-02-21 20:02:12",
       "Command": "OpsiDaily",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1847,7 +1847,7 @@
   "OpsiAbyssal": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-08 14:57:30",
+      "NextRun": "2026-02-22 01:00:00",
       "Command": "OpsiAbyssal",
       "SuccessInterval": 60,
       "FailureInterval": 60,

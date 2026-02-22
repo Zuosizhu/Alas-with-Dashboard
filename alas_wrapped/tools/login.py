@@ -15,7 +15,11 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, Optional
 
-from tools._context import get_context
+try:
+    from ._context import get_context
+except ImportError:
+    # Backward-compatible import path when invoked as a top-level `tools` module.
+    from tools._context import get_context
 
 
 def ensure_main(

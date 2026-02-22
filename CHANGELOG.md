@@ -33,6 +33,18 @@ All notable changes to the ALAS AI Agent project.
 - **Recovery Agent Architecture**: Added `docs/plans/recovery_agent_architecture.md` - comprehensive recovery agent design with layered recovery strategy, health monitoring, and error classification.
 - **Recovery Agent Implementation Plan**: Added `docs/plans/recovery_agent_implementation_plan.md` - actionable phased implementation plan for the recovery agent system.
 
+### Added
+- **Scheduler sidecar telemetry**: Added `alas_wrapped/log/schedule_status.jsonl` emission from scheduler loop with `current_task`, `next_task`, and queue snapshots for machine-parsable monitoring.
+- **Login sidecar telemetry**: Added `alas_wrapped/log/login_trace.jsonl` login phase events with timeout guard traces for post-mortem analysis.
+
+### Fixed
+- **Transport recovery hardening**: Added one-shot ADB reconnect probe before restart escalation for transient transport failures.
+- **Device init retry bug**: `Device.__init__` no longer reads `self.config` before `super().__init__()` initializes it; retry policy now derives from constructor config input.
+- **Sidecar log growth guard**: Added automatic size-based rotation for `schedule_status.jsonl` and `login_trace.jsonl` when files reach 20 MB.
+- **Telemetry writer consistency**: Unified JSONL append/rotation logic behind a shared helper used by both scheduler and login sidecar traces.
+- **Emulator start retry visibility**: Added warning when emulator start fails and the pre-retry stop also fails, so retry loops are no longer silent in that path.
+- **Tool import resilience**: `alas_wrapped/tools` now uses package-relative imports with fallback, preventing brittle import behavior across runner contexts.
+
 ### Changed
 - **NORTH_STAR.md**: Expanded vision to cover three-stage CV migration (wrap → annotate → replace), orchestrator as tool/state provider, vision for building deterministic pipelines (not just recovery), and local VLM deployment option (GeForce 5090 via llama.cpp/Ollama).
 - **ARCHITECTURE.md**: Added Local VLM (cloud + local) to system diagram, new Dashboard/State Tools subdomain, new CV Migration subdomain with three stages, updated Vision Integration to cover both Gemini Flash and local VLM options.
