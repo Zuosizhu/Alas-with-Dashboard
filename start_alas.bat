@@ -26,6 +26,7 @@ if !ERRORLEVEL! EQU 0 (
     if not "!CURRENT_HOOKS_PATH!"==".githooks" (
         echo Installing repository git hooks...
         git config core.hooksPath .githooks
+        git update-index --chmod=+x .githooks/pre-commit .githooks/pre-push 2>nul
         echo Git hooks configured successfully.
         echo.
     )
