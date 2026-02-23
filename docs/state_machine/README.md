@@ -53,3 +53,64 @@ This pragmatic approach lets us use ALAS's battle-tested logic while gradually m
 - [ ] Implement state postcondition verification
 - [ ] Add timeout/retry metadata to transitions
 - [ ] Consider formal state machine extraction for critical paths
+
+
+## Dry-Run Workflow Validation
+
+`module/state_machine.py` now provides a deterministic `dry_run_workflow(...)` helper used by `workflow.daily_base_sweep` before execution.
+
+What it validates:
+- each referenced state exists in `Page.all_pages`
+- each referenced tool is registered in the tool registry
+- a graph path exists between consecutive states using page links
+
+This enables state-path validation without launching a full bot run, so proposed workflow harnesses can be checked early.
+
+Failure-point diagnostics are exposed via `analyze_workflow_failure_point(...)`, which returns the first blocking step (step index, source state, target state, tool name, and reason). This makes it explicit where a proposed harness diverges from the current page graph or tool-state bindings.
+
+
+
+### Semantic Graph Audit Tool
+
+You can programmatically validate workflow harnesses against ALAS semantic state edges and tool-state declarations using:
+
+```bash
+cd alas_wrapped
+PYTHONPATH=. python tools/state_graph_audit.py --workflow daily_base_sweep --pretty
+```
+
+This uses `StateMachine.validate_workflow_spec_against_graph(...)` and checks:
+- page exists in `Page.all_pages`
+- shortest semantic path exists between consecutive states
+- tool is declared for the target state in `tool_specs()` (or `*`)
+
+
+## What Actually Works Today (and What It Does Not Prove)
+
+Working now:
+- `run_daily_base_sweep(...)` runs real wrapped ALAS handlers in sequence.
+- `dry_run_workflow(...)` validates a proposed workflow against runtime-bound tools/states.
+- `validate_workflow_spec_against_graph(...)` validates harness definitions against semantic page edges and `tool_specs()` declarations.
+
+Does **not** prove by itself:
+- OCR/device correctness on a live emulator.
+- That every semantic edge is always traversable in all transient UI conditions.
+
+Recommended verification ladder:
+1. Static semantic audit (`tools/state_graph_audit.py`)
+2. Runtime dry-run validation (`dry_run_workflow`)
+3. Real execution in emulator (`run_daily_base_sweep`)
+4. End-to-end observation/log review
+
+## Practical Test Matrix
+
+Use these commands:
+
+```bash
+cd /workspace/ALAS
+python -m py_compile alas_wrapped/module/state_machine.py alas_wrapped/module/test_state_machine_workflows.py alas_wrapped/tools/state_graph_audit.py
+
+cd alas_wrapped
+PYTHONPATH=. pytest -q module/test_state_machine_workflows.py
+PYTHONPATH=. python tools/state_graph_audit.py --workflow daily_base_sweep --pretty
+```

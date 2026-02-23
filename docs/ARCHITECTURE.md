@@ -55,6 +55,7 @@
 ### Agent Tooling
 - **Status**: ✅ Working (verified 2026-01-26)
 - **Summary**: Extract ALAS's implicit workflows into callable MCP tools.
+- **Current deterministic workflow**: `workflow.daily_base_sweep` (mail/dorm/commission/research/shop/guild).
 - **Key Doc**: [agent_tooling/README.md](./agent_tooling/README.md)
 - **Implementation**: `agent_orchestrator/alas_mcp_server.py`.
 

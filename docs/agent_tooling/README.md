@@ -88,10 +88,22 @@ All new tools should return this envelope:
 
 The supervisor relies on `expected_state` / `observed_state` to decide whether to continue, retry, or escalate.
 
+For composite deterministic workflows, dry-run validation should verify: state exists, graph path exists, and the selected tool is available on the target state.
+
+Use `alas_wrapped/tools/state_graph_audit.py` to perform this check against semantic page edges + tool specs without launching a full run.
+
+### What is testable right now
+
+- **Static harness consistency**: `tools/state_graph_audit.py` (states/tools/semantic edges).
+- **State-machine logic behavior**: `module/test_state_machine_workflows.py` (unit-level).
+- **Live gameplay correctness**: requires emulator/device integration runs (outside pure semantic audits).
+
+
 ## Next Steps
 
 - [ ] Extract more ALAS task handlers as individual tools
 - [x] Start with login as the first complete workflow tool (`alas_login_ensure_main`)
+- [x] Add a composite deterministic workflow tool: `workflow.daily_base_sweep`
 - [ ] Add tool metadata (expected states, produced states)
 - [ ] Keep MCP transport stable; expand the tool surface area first
 - [ ] Add tool result validation

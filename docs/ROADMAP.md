@@ -49,7 +49,7 @@ All new tools should return:
 - **Combat (support)**: start/auto/exit-safe patterns
 
 ### Success Criteria
-- [ ] At least one complete workflow works end-to-end using only deterministic tools (start with login).
+- [x] At least one complete workflow works end-to-end using only deterministic tools (`workflow.daily_base_sweep`).
 - [x] Deterministic replay harness scaffolded (fixture recorder + mock device + simulated clock patches + pytest replay test).
 - [ ] Tools have documented preconditions/postconditions via `expected_state`/`observed_state`.
 - [ ] Dashboard tools expose game state (oil, gold, gems, AP, task queue).
