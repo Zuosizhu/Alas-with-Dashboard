@@ -2,6 +2,29 @@
 
 All notable changes to the ALAS AI Agent project.
 
+## [Unreleased] - 2026-02-23
+
+### Added
+- **Workflow validation framework** (PR #23):
+  - `workflow.daily_base_sweep` composite deterministic tool (mail/dorm/commission/research/shop/guild).
+  - `dry_run_workflow()` runtime validation against tool bindings.
+  - `validate_workflow_spec_against_graph()` static harness validation.
+  - `state_graph_audit.py` CLI for semantic edge validation.
+  - Comprehensive unit tests for state-machine workflow logic.
+- **Glossary & upstream sync docs** (PR #28):
+  - `docs/GLOSSARY.md` with project terminology.
+  - `docs/UPSTREAM_SYNC.md` with step-by-step sync instructions.
+
+### Fixed
+- **Replay harness clock sync** (PR #31): `MockDevice.click()`/`swipe()` now update `SimulatedClock` from manifest timestamps.
+- **Replay area validation** (PR #31): Area bounds validated for type and length before unpacking.
+- **Workflow sweep KeyError guard** (PR #23): `Page.all_pages` lookup uses `.get()` with structured error on missing pages.
+- **cv2 import fallback** (PR #23): `state_graph_audit.py` handles missing cv2 module, not just missing `libGL.so.1`.
+
+### Changed
+- Retargeted and rebased PRs #23, #28 from stale `master` to active `trunk/stabilization`.
+- Closed superseded PRs: #30 (replay harness, Jules), #24 (telemetry), #20 (stale docs), #16 (upstream sync w/ template.py regressions).
+
 ## [Unreleased] - 2026-02-17
 
 ### Added
