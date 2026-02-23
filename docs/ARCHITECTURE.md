@@ -76,6 +76,16 @@
 - **Key Doc**: [state_machine/README.md](./state_machine/README.md)
 - **Implementation**: Wired into `AzurLaneAutoScript` via `cached_property`.
 
+
+### Deterministic Replay Harness
+- **Status**: 🛠️ In Progress
+- **Summary**: Offline fixture record/replay loop for validating state-machine regressions without emulator runtime.
+- **Components**:
+  - `alas_wrapped/dev_tools/record_scenario.py` records screenshots + click/swipe events into JSONL manifests.
+  - `agent_orchestrator/replay/mock_device.py` replays fixture images and enforces event-order/action-area assertions.
+  - `agent_orchestrator/replay/time_control.py` patches ALAS timer/sleep calls to a simulated clock for fast-forward deterministic execution.
+- **Depends on**: State Machine, ALAS Device interface
+
 ### Vision Integration
 - **Status**: ⏳ Planned
 - **Summary**: Vision for both building deterministic pipelines AND runtime recovery.

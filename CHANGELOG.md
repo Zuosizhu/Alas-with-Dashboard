@@ -5,6 +5,12 @@ All notable changes to the ALAS AI Agent project.
 ## [Unreleased] - 2026-02-17
 
 ### Added
+- **Deterministic replay harness scaffold**:
+  - Added `alas_wrapped/dev_tools/record_scenario.py` for fixture capture (screenshots + action manifest).
+  - Added `agent_orchestrator/replay/mock_device.py` with manifest-driven replay + deviation assertions.
+  - Added `agent_orchestrator/replay/time_control.py` for simulated clock patching (`time.time`, `time.sleep`, and ALAS timer aliases).
+  - Added `agent_orchestrator/test_login_replay.py` covering fast-forward replay and deviation detection.
+
 - **Local VLM Setup Plan**: Added `docs/plans/local_vlm_setup.md` - comprehensive primer for serving a vision-language model locally on GeForce 5090:
   - Model selection (Qwen3-VL-8B, MiniCPM-V 4.5, Qwen3-VL-32B)
   - llama.cpp vs Ollama comparison with setup instructions
