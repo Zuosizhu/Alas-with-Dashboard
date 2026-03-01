@@ -58,17 +58,16 @@ Each line is a JSON object with one of the following structures:
 
 ## Recording New Fixtures
 
-Use the record_scenario.py tool from alas_wrapped:
+Use the record_scenario.py tool:
 
 ```bash
-cd alas_wrapped
-python dev_tools/record_scenario.py <scenario_name> --config PatrickCustom
+python alas_wrapped/dev_tools/record_scenario.py <scenario_name> --config PatrickCustom
 ```
 
 Options:
 - `--config`: ALAS config name (default: "alas")
 - `--method`: Device method to record (default: "handle_app_login")
-- `--fixtures-root`: Output directory (default: "tests/fixtures")
+- `--fixtures-root`: Output directory (default: "<repo_root>/tests/fixtures")
 
 ## Using Fixtures in Tests
 

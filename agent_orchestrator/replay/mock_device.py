@@ -52,10 +52,16 @@ class ReplayManifest:
 
         events: list[dict[str, Any]] = []
         with manifest_path.open("r", encoding="utf-8") as handle:
-            for line in handle:
+            for line_no, line in enumerate(handle, start=1):
                 line = line.strip()
-                if line:
+                if not line:
+                    continue
+                try:
                     events.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    raise ReplayDeviationError(
+                        f"Invalid JSON at {manifest_path}:{line_no}: {e}"
+                    ) from e
         return events
 
 
@@ -88,8 +94,16 @@ class MockDevice:
         image_path = self.manifest.images_dir / event["image"]
         if not image_path.exists():
             raise ReplayDeviationError(f"Missing recorded frame: {image_path}")
-        with Image.open(image_path) as image:
-            return np.array(image)
+        # Protect against decompression bombs (e.g., ZIP/GZIP bombs)
+        # Limit to reasonable screenshot dimensions (e.g., 4K * 4K = 16M pixels)
+        MAX_IMAGE_PIXELS = 16_000_000
+        original_max_pixels = Image.MAX_IMAGE_PIXELS
+        try:
+            Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+            with Image.open(image_path) as image:
+                return np.array(image)
+        finally:
+            Image.MAX_IMAGE_PIXELS = original_max_pixels
 
     def click(self, target: Any) -> None:
         event = self._consume(expected_type="action")
@@ -159,7 +173,9 @@ class MockDevice:
             )
 
     @staticmethod
-    def _point_in_area(point: tuple[int, int], area: list[int]) -> bool:
+    def _point_in_area(
+        point: tuple[int, int], area: list[int] | tuple[int, int, int, int]
+    ) -> bool:
         x, y = point
         if not isinstance(area, (list, tuple)) or len(area) != 4:
             raise ReplayDeviationError(f"Area must be [x1,y1,x2,y2], got {area!r}")
