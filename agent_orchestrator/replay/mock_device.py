@@ -68,10 +68,17 @@ class ReplayManifest:
 class MockDevice:
     """Replay-only device that enforces recorded screenshot/action ordering."""
 
-    def __init__(self, fixture_dir: str | Path, clock: SimulatedClock):
+    def __init__(
+        self,
+        fixture_dir: str | Path,
+        clock: SimulatedClock,
+        max_screenshots: int | None = None,
+    ):
         self.manifest = ReplayManifest(Path(fixture_dir))
         self.clock = clock
         self._index = 0
+        self._screenshot_count = 0
+        self._max_screenshots = max_screenshots
 
     def _peek(self) -> dict[str, Any]:
         if self._index >= len(self.manifest.events):
@@ -89,6 +96,15 @@ class MockDevice:
         return event
 
     def screenshot(self) -> np.ndarray:
+        self._screenshot_count += 1
+        if (
+            self._max_screenshots is not None
+            and self._screenshot_count > self._max_screenshots
+        ):
+            raise ReplayDeviationError(
+                f"screenshot() called {self._screenshot_count} times, exceeding "
+                f"max_screenshots={self._max_screenshots}. Possible infinite loop in replay."
+            )
         event = self._consume(expected_type="screenshot")
         self.clock.set(float(event["timestamp"]))
         image_path = self.manifest.images_dir / event["image"]
@@ -170,6 +186,93 @@ class MockDevice:
         if not self._point_in_area(p2, end_area):
             raise ReplayDeviationError(
                 f"Swipe end out of expected area: {p2} not in {end_area}"
+            )
+
+    def long_click(self, target: Any, duration: Any = None) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "long_click":
+            raise ReplayDeviationError(
+                f"Expected long_click action, found {event.get('action')}"
+            )
+
+        expected_target = event.get("target")
+        actual_target = str(target)
+        if expected_target and expected_target != actual_target:
+            raise ReplayDeviationError(
+                f"Expected long_click target {expected_target}, found {actual_target}"
+            )
+
+        area = event.get("area")
+        if not area:
+            raise ReplayDeviationError(
+                "long_click action in manifest missing `area` bounds"
+            )
+        if not isinstance(area, (list, tuple)) or len(area) != 4:
+            raise ReplayDeviationError(
+                f"long_click `area` must be [x1,y1,x2,y2], got {area!r}"
+            )
+
+        x, y = self._extract_click_point(target)
+        x1, y1, x2, y2 = area
+        if not (x1 <= x <= x2 and y1 <= y <= y2):
+            raise ReplayDeviationError(
+                f"long_click out of expected area: ({x}, {y}) not in [{x1}, {y1}, {x2}, {y2}]"
+            )
+
+    def drag(self, p1: tuple[int, int], p2: tuple[int, int], **kwargs: Any) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "drag":
+            raise ReplayDeviationError(
+                f"Expected drag action, found {event.get('action')}"
+            )
+
+        start_area = event.get("start_area")
+        end_area = event.get("end_area")
+        if (
+            not start_area
+            or not isinstance(start_area, (list, tuple))
+            or len(start_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Drag `start_area` must be [x1,y1,x2,y2], got {start_area!r}"
+            )
+        if (
+            not end_area
+            or not isinstance(end_area, (list, tuple))
+            or len(end_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Drag `end_area` must be [x1,y1,x2,y2], got {end_area!r}"
+            )
+        if not self._point_in_area(p1, start_area):
+            raise ReplayDeviationError(
+                f"Drag start out of expected area: {p1} not in {start_area}"
+            )
+        if not self._point_in_area(p2, end_area):
+            raise ReplayDeviationError(
+                f"Drag end out of expected area: {p2} not in {end_area}"
+            )
+
+    def app_start(self) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "app_start":
+            raise ReplayDeviationError(
+                f"Expected app_start action, found {event.get('action')}"
+            )
+
+    def app_stop(self) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "app_stop":
+            raise ReplayDeviationError(
+                f"Expected app_stop action, found {event.get('action')}"
             )
 
     @staticmethod

@@ -265,6 +265,118 @@ def test_scenario_name_validation_rejects_traversal():
         _validate_scenario_name("")
 
 
+def test_infinite_loop_detection(tmp_path):
+    """Test that max_screenshots catches infinite loop regressions early.
+
+    A buggy handler that loops continuously will exceed the screenshot limit
+    and raise ReplayDeviationError before hanging the test suite.
+    """
+    fixture_dir = tmp_path / "loop_fixture"
+    images_dir = fixture_dir / "images"
+    images_dir.mkdir(parents=True)
+
+    for idx in range(1, 4):
+        image = np.full((10, 10, 3), idx * 50, dtype=np.uint8)
+        Image.fromarray(image).save(images_dir / f"{idx:04d}.png")
+
+    events = [
+        {
+            "index": idx,
+            "event": "screenshot",
+            "timestamp": 1708600000.0 + idx,
+            "frame": idx,
+            "image": f"{idx:04d}.png",
+        }
+        for idx in range(1, 4)
+    ]
+    with (fixture_dir / "manifest.jsonl").open("w", encoding="utf-8") as handle:
+        for event in events:
+            handle.write(json.dumps(event) + "\n")
+
+    clock = SimulatedClock.from_timestamp(0.0)
+    # Allow 2 screenshots before flagging — fixture has 3, so the guard fires
+    # before the manifest is exhausted, proving the guard catches loops early.
+    mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock, max_screenshots=2)
+
+    def buggy_handler():
+        for _ in range(10):  # Would loop forever in production
+            mock_device.screenshot()
+
+    with pytest.raises(ReplayDeviationError, match="Possible infinite loop"):
+        buggy_handler()
+
+
+def test_long_click_replay(tmp_path):
+    """Test that long_click is replayed with area bounds validation."""
+    fixture_dir = tmp_path / "long_click_fixture"
+    images_dir = fixture_dir / "images"
+    images_dir.mkdir(parents=True)
+    image = np.full((10, 10, 3), 128, dtype=np.uint8)
+    Image.fromarray(image).save(images_dir / "0001.png")
+
+    events = [
+        {
+            "index": 1,
+            "event": "screenshot",
+            "timestamp": 1708600000.0,
+            "frame": 1,
+            "image": "0001.png",
+        },
+        {
+            "index": 2,
+            "event": "action",
+            "timestamp": 1708600000.5,
+            "action": "long_click",
+            "target": "LOGIN_CHECK",
+            "area": [90, 90, 150, 150],
+            "duration": [1.0, 1.2],
+        },
+    ]
+    with (fixture_dir / "manifest.jsonl").open("w", encoding="utf-8") as handle:
+        for event in events:
+            handle.write(json.dumps(event) + "\n")
+
+    clock = SimulatedClock.from_timestamp(0.0)
+    mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
+    _ = mock_device.screenshot()
+    mock_device.long_click(_ButtonStub((100, 100, 140, 140)))
+    assert mock_device.is_manifest_exhausted()
+
+    # Out-of-area long_click should raise
+    clock2 = SimulatedClock.from_timestamp(0.0)
+    mock_device2 = MockDevice(fixture_dir=fixture_dir, clock=clock2)
+    _ = mock_device2.screenshot()
+    with pytest.raises(ReplayDeviationError, match="long_click out of expected area"):
+        mock_device2.long_click(_ButtonStub((1000, 1000, 1040, 1040)))
+
+
+def test_app_start_app_stop_replay(tmp_path):
+    """Test that app_start and app_stop are validated against the manifest."""
+    fixture_dir = tmp_path / "app_lifecycle_fixture"
+    images_dir = fixture_dir / "images"
+    images_dir.mkdir(parents=True)
+
+    events = [
+        {"index": 1, "event": "action", "timestamp": 1708600000.0, "action": "app_stop"},
+        {"index": 2, "event": "action", "timestamp": 1708600001.0, "action": "app_start"},
+    ]
+    with (fixture_dir / "manifest.jsonl").open("w", encoding="utf-8") as handle:
+        for event in events:
+            handle.write(json.dumps(event) + "\n")
+
+    clock = SimulatedClock.from_timestamp(0.0)
+    mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
+    mock_device.app_stop()
+    mock_device.app_start()
+    assert mock_device.is_manifest_exhausted()
+
+    # Wrong order should raise
+    clock2 = SimulatedClock.from_timestamp(0.0)
+    mock_device2 = MockDevice(fixture_dir=fixture_dir, clock=clock2)
+    with pytest.raises(ReplayDeviationError, match="Expected app_start action, found app_stop"):
+        mock_device2.app_start()  # Manifest expects app_stop first
+
+
 def test_scenario_recorder_rejects_outside_base_dir(tmp_path):
     """Test that ScenarioRecorder rejects paths outside base directory.
 

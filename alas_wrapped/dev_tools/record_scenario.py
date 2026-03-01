@@ -20,7 +20,7 @@ import re
 import time
 from pathlib import Path
 from types import MethodType
-from typing import Any
+from typing import IO, Any
 
 from PIL import Image
 
@@ -78,12 +78,27 @@ class ScenarioRecorder:
 
         self._event_index = 0
         self._frame_index = 0
+        self._handle: IO[str] | None = None
+
+    def __enter__(self) -> "ScenarioRecorder":
+        self._handle = self.manifest_path.open("a", encoding="utf-8")
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        if self._handle is not None:
+            self._handle.flush()
+            self._handle.close()
+            self._handle = None
 
     def write_event(self, payload: dict[str, Any]) -> None:
         self._event_index += 1
         payload["index"] = self._event_index
-        with self.manifest_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(payload) + "\n")
+        if self._handle is not None:
+            self._handle.write(json.dumps(payload) + "\n")
+            self._handle.flush()
+        else:
+            with self.manifest_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload) + "\n")
 
     def save_frame(self, image_array) -> str:
         self._frame_index += 1
@@ -115,6 +130,10 @@ class DevicePatchSession:
         self.original_screenshot = device.screenshot
         self.original_click = device.click
         self.original_swipe = device.swipe
+        self.original_long_click = getattr(device, "long_click", None)
+        self.original_drag = getattr(device, "drag", None)
+        self.original_app_start = getattr(device, "app_start", None)
+        self.original_app_stop = getattr(device, "app_stop", None)
 
     def __enter__(self):
         def wrapped_screenshot(instance, *args, **kwargs):
@@ -190,15 +209,108 @@ class DevicePatchSession:
                 print(f"[WARNING] Failed to record swipe: {e}")
             return self.original_swipe(p1, p2, *args, **kwargs)
 
+        def wrapped_long_click(instance, button, *args, **kwargs):
+            target, area = self.recorder._extract_button(button)
+            if area is None:
+                raise ValueError(f"Unable to infer long_click area for target={target}")
+            duration = kwargs.get("duration") or (args[0] if args else None)
+            try:
+                event: dict[str, Any] = {
+                    "event": "action",
+                    "timestamp": time.time(),
+                    "action": "long_click",
+                    "target": target,
+                    "area": area,
+                }
+                if duration is not None:
+                    event["duration"] = list(duration) if hasattr(duration, "__iter__") else duration
+                self.recorder.write_event(event)
+            except Exception as e:
+                print(f"[WARNING] Failed to record long_click: {e}")
+            return self.original_long_click(button, *args, **kwargs)
+
+        def wrapped_drag(instance, p1, p2, *args, **kwargs):
+            DRAG_HALF_WIDTH = 10
+            x1, y1 = int(p1[0]), int(p1[1])
+            x2, y2 = int(p2[0]), int(p2[1])
+            start_area = [
+                x1 - DRAG_HALF_WIDTH,
+                y1 - DRAG_HALF_WIDTH,
+                x1 + DRAG_HALF_WIDTH,
+                y1 + DRAG_HALF_WIDTH,
+            ]
+            end_area = [
+                x2 - DRAG_HALF_WIDTH,
+                y2 - DRAG_HALF_WIDTH,
+                x2 + DRAG_HALF_WIDTH,
+                y2 + DRAG_HALF_WIDTH,
+            ]
+            try:
+                self.recorder.write_event(
+                    {
+                        "event": "action",
+                        "timestamp": time.time(),
+                        "action": "drag",
+                        "target": kwargs.get("name", "DRAG"),
+                        "start_area": start_area,
+                        "end_area": end_area,
+                    }
+                )
+            except Exception as e:
+                print(f"[WARNING] Failed to record drag: {e}")
+            return self.original_drag(p1, p2, *args, **kwargs)
+
+        def wrapped_app_start(instance, *args, **kwargs):
+            try:
+                self.recorder.write_event(
+                    {
+                        "event": "action",
+                        "timestamp": time.time(),
+                        "action": "app_start",
+                    }
+                )
+            except Exception as e:
+                print(f"[WARNING] Failed to record app_start: {e}")
+            return self.original_app_start(*args, **kwargs)
+
+        def wrapped_app_stop(instance, *args, **kwargs):
+            try:
+                self.recorder.write_event(
+                    {
+                        "event": "action",
+                        "timestamp": time.time(),
+                        "action": "app_stop",
+                    }
+                )
+            except Exception as e:
+                print(f"[WARNING] Failed to record app_stop: {e}")
+            return self.original_app_stop(*args, **kwargs)
+
         self.device.screenshot = MethodType(wrapped_screenshot, self.device)
         self.device.click = MethodType(wrapped_click, self.device)
         self.device.swipe = MethodType(wrapped_swipe, self.device)
+        if self.original_long_click is not None:
+            self.device.long_click = MethodType(wrapped_long_click, self.device)
+        if self.original_drag is not None:
+            self.device.drag = MethodType(wrapped_drag, self.device)
+        if self.original_app_start is not None:
+            self.device.app_start = MethodType(wrapped_app_start, self.device)
+        if self.original_app_stop is not None:
+            self.device.app_stop = MethodType(wrapped_app_stop, self.device)
         return self
 
     def __exit__(self, exc_type, exc, tb):
         self.device.screenshot = self.original_screenshot
         self.device.click = self.original_click
         self.device.swipe = self.original_swipe
+        if self.original_long_click is not None:
+            self.device.long_click = self.original_long_click
+        if self.original_drag is not None:
+            self.device.drag = self.original_drag
+        if self.original_app_start is not None:
+            self.device.app_start = self.original_app_start
+        if self.original_app_stop is not None:
+            self.device.app_stop = self.original_app_stop
 
 
 def parse_args() -> argparse.Namespace:
@@ -238,7 +350,7 @@ def main() -> int:
         raise AttributeError(f"Device has no method '{args.method}'")
 
     call = getattr(device, args.method)
-    with DevicePatchSession(device=device, recorder=recorder):
+    with recorder, DevicePatchSession(device=device, recorder=recorder):
         result = call()
 
     print(f"Recorded scenario '{args.scenario}' at {recorder.fixture_dir}")
