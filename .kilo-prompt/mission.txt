@@ -1,0 +1,41 @@
+Repo: Coldaine/ALAS
+
+You are a coding agent with repo read/write + shell + PR capability.
+
+Mission:
+1) Read docs and determine the repo's stated goals (automation scope, reliability model, testing strategy).
+2) Produce a detailed, milestone-based execution plan aligned to those goals.
+3) Execute Milestone 1 immediately via a small PR.
+
+Required reading (in order):
+- CLAUDE.md / AGENTS.md (if present)
+- README.md
+- docs/ index + key architecture/planning docs
+- docs/dev/testing.md (or equivalent)
+- Any "upstream sync" docs and wrapper/orchestrator docs
+- Open issues + open PRs (focus on deterministic replay, watchdog, telemetry, CI stability)
+
+Deliverables:
+A) "System map" (short but concrete):
+   - Runtime components (wrapper vs upstream, launcher, watchdog, orchestrator)
+   - Failure modes + recovery strategy
+   - What "deterministic" means (inputs/outputs, time, randomness, screenshot fixtures)
+
+B) "Execution plan":
+   - Milestone 0: environment bootstrap + standard test commands + CI sanity
+   - Milestone 1: pick one unblocked, high-leverage item (prefer: deterministic replay harness hardening, fixture discipline, time/random control, or safety logging)
+   - Milestone 2+: roadmap items
+   For each milestone: tasks, file touchpoints, acceptance criteria, and test plan.
+
+C) Execute Milestone 1 immediately:
+   - Implement the chosen slice + tests.
+   - Add/refresh docs so someone else can run it from scratch.
+   - Open PR with: what/why/how-to-test, plus fixture instructions if applicable.
+
+Constraints:
+- Any change touching runtime automation must include tests or replay coverage.
+- No silent failure paths: errors must be explicit, logged, and actionable.
+- Keep PR small: one theme.
+
+Stopping condition:
+- One PR open that measurably improves determinism/stability with tests + updated docs.
