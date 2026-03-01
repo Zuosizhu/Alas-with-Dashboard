@@ -399,3 +399,70 @@ def test_scenario_recorder_rejects_outside_base_dir(tmp_path):
     except ValueError:
         # Expected: path resolves outside base_dir
         pass
+
+
+def _write_n_screenshots_fixture(base: Path, n: int) -> Path:
+    fixture_dir = base / "login_regression_fixture"
+    images_dir = fixture_dir / "images"
+    images_dir.mkdir(parents=True)
+
+    for idx in range(1, n + 1):
+        image = np.full((10, 10, 3), idx * 10, dtype=np.uint8)
+        Image.fromarray(image).save(images_dir / f"{idx:04d}.png")
+
+    with (fixture_dir / "manifest.jsonl").open("w", encoding="utf-8") as handle:
+        for idx in range(1, n + 1):
+            event = {
+                "index": idx,
+                "event": "screenshot",
+                "timestamp": 1708600000.0 + idx,
+                "frame": idx,
+                "image": f"{idx:04d}.png",
+            }
+            handle.write(json.dumps(event) + "\n")
+
+    return fixture_dir
+
+
+def test_login_regression_detection(tmp_path):
+    """Test that normal login exits and a regression loop is caught by max_screenshots.
+
+    Ported from Jules's regression test pattern: proves the max_screenshots guard catches
+    a real-world infinite login loop bug where a handler mistakenly uses 'continue'
+    instead of 'return True', causing it to loop until the guard fires.
+    """
+    fixture_dir = _write_n_screenshots_fixture(tmp_path, n=10)
+    clock = SimulatedClock.from_timestamp(1708600000.0)
+
+    class _NormalLoginHandler:
+        def __init__(self, device):
+            self.device = device
+            self.calls = 0
+
+        def handle_app_login(self):
+            self.calls += 1
+            self.device.screenshot()
+            return True
+
+    normal_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
+    normal_handler = _NormalLoginHandler(device=normal_device)
+    assert normal_handler.handle_app_login() is True
+    assert normal_handler.calls == 1
+
+    class _BuggyLoginHandler:
+        def __init__(self, device):
+            self.device = device
+            self.calls = 0
+
+        def handle_app_login(self):
+            while True:
+                self.calls += 1
+                self.device.screenshot()
+                continue  # Bug: should return True instead
+
+    buggy_clock = SimulatedClock.from_timestamp(1708600000.0)
+    buggy_device = MockDevice(fixture_dir=fixture_dir, clock=buggy_clock, max_screenshots=3)
+    buggy_handler = _BuggyLoginHandler(device=buggy_device)
+
+    with pytest.raises(ReplayDeviationError, match="Possible infinite loop"):
+        buggy_handler.handle_app_login()
