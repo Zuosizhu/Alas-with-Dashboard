@@ -48,7 +48,13 @@ def _write_fixture(base: Path) -> Path:
         Image.fromarray(image).save(images_dir / f"{idx:04d}.png")
 
     events = [
-        {"index": 1, "event": "screenshot", "timestamp": 1708600000.100, "frame": 1, "image": "0001.png"},
+        {
+            "index": 1,
+            "event": "screenshot",
+            "timestamp": 1708600000.100,
+            "frame": 1,
+            "image": "0001.png",
+        },
         {
             "index": 2,
             "event": "action",
@@ -57,7 +63,13 @@ def _write_fixture(base: Path) -> Path:
             "target": "LOGIN_CHECK",
             "area": [90, 90, 150, 150],
         },
-        {"index": 3, "event": "screenshot", "timestamp": 1708600001.100, "frame": 2, "image": "0002.png"},
+        {
+            "index": 3,
+            "event": "screenshot",
+            "timestamp": 1708600001.100,
+            "frame": 2,
+            "image": "0002.png",
+        },
         {
             "index": 4,
             "event": "action",
@@ -67,7 +79,13 @@ def _write_fixture(base: Path) -> Path:
             "start_area": [190, 190, 210, 210],
             "end_area": [230, 230, 250, 250],
         },
-        {"index": 5, "event": "screenshot", "timestamp": 1708600002.100, "frame": 3, "image": "0003.png"},
+        {
+            "index": 5,
+            "event": "screenshot",
+            "timestamp": 1708600002.100,
+            "frame": 3,
+            "image": "0003.png",
+        },
     ]
 
     with (fixture_dir / "manifest.jsonl").open("w", encoding="utf-8") as handle:
@@ -78,6 +96,7 @@ def _write_fixture(base: Path) -> Path:
 
 
 def test_login_replay_fast_forward(tmp_path):
+    """Test that replay runs at CPU speed with deterministic time advancement."""
     fixture_dir = _write_fixture(tmp_path)
     clock = SimulatedClock.from_timestamp(1708599999.0)
     mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
@@ -92,6 +111,7 @@ def test_login_replay_fast_forward(tmp_path):
 
 
 def test_replay_deviation_raises(tmp_path):
+    """Test that replay raises when execution diverges from manifest."""
     fixture_dir = _write_fixture(tmp_path)
     clock = SimulatedClock.from_timestamp(1708599999.0)
     mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
@@ -102,6 +122,7 @@ def test_replay_deviation_raises(tmp_path):
 
 
 def test_replay_target_mismatch_raises(tmp_path):
+    """Test that replay raises when click target doesn't match recorded target."""
     fixture_dir = _write_fixture(tmp_path)
     clock = SimulatedClock.from_timestamp(1708599999.0)
     mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
@@ -112,6 +133,7 @@ def test_replay_target_mismatch_raises(tmp_path):
 
 
 def test_patched_time_advances_sleep_without_wait():
+    """Test that patched_time advances clock without real sleep delays."""
     clock = SimulatedClock.from_timestamp(10.0)
     with patched_time(clock):
         start = time.time()
@@ -119,3 +141,33 @@ def test_patched_time_advances_sleep_without_wait():
         end = time.time()
 
     assert end - start == pytest.approx(2.5)
+
+
+def test_click_out_of_area_raises(tmp_path):
+    """Test that click outside recorded area raises ReplayDeviationError."""
+    fixture_dir = _write_fixture(tmp_path)
+    clock = SimulatedClock.from_timestamp(1708599999.0)
+    mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
+
+    _ = mock_device.screenshot()
+    # Click target is valid but coordinates are outside area
+    with pytest.raises(ReplayDeviationError, match="Click out of expected area"):
+        mock_device.click(
+            _ButtonStub((1000, 1000, 1040, 1040))
+        )  # Outside [90,90,150,150]
+
+
+def test_swipe_wrong_start_area_raises(tmp_path):
+    """Test that swipe with wrong start area raises ReplayDeviationError."""
+    fixture_dir = _write_fixture(tmp_path)
+    clock = SimulatedClock.from_timestamp(1708599999.0)
+    mock_device = MockDevice(fixture_dir=fixture_dir, clock=clock)
+
+    # Consume first screenshot + click + second screenshot
+    _ = mock_device.screenshot()
+    mock_device.click(_ButtonStub((100, 100, 140, 140)))
+    _ = mock_device.screenshot()
+
+    # Swipe start point outside expected start_area
+    with pytest.raises(ReplayDeviationError, match="Swipe start out of expected area"):
+        mock_device.swipe((1000, 1000), (240, 240))  # Outside [190,190,210,210]

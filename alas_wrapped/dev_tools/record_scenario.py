@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+"""Record ALAS screenshot/action sequences for deterministic replay testing.
+
+This tool patches ALAS's Device class to record all screenshots and actions
+(clicks/swipes) to a fixture directory for later offline replay.
+
+Usage:
+    cd alas_wrapped
+    python dev_tools/record_scenario.py login_flow --config PatrickCustom
+
+The recorded fixture will be saved to tests/fixtures/<scenario>/ with:
+    - manifest.jsonl: Timestamped event log (screenshots + actions)
+    - images/: Screenshot frames as PNG files
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -118,8 +133,13 @@ class DevicePatchSession:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Record ALAS screenshot/action sequence for deterministic replay")
-    parser.add_argument("scenario", help="Fixture scenario name, saved under tests/fixtures/<scenario>")
+    parser = argparse.ArgumentParser(
+        description="Record ALAS screenshot/action sequence for deterministic replay"
+    )
+    parser.add_argument(
+        "scenario",
+        help="Fixture scenario name, saved under tests/fixtures/<scenario>",
+    )
     parser.add_argument("--config", default="alas", help="ALAS config name")
     parser.add_argument(
         "--method",
@@ -152,7 +172,9 @@ def main() -> int:
         result = call()
 
     print(f"Recorded scenario '{args.scenario}' at {recorder.fixture_dir}")
-    print(f"Events: {recorder._event_index}, frames: {recorder._frame_index}, result: {result}")
+    print(
+        f"Events: {recorder._event_index}, frames: {recorder._frame_index}, result: {result}"
+    )
     return 0
 
 

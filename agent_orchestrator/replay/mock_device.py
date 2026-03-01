@@ -96,18 +96,24 @@ class MockDevice:
         if "timestamp" in event:
             self.clock.set(float(event["timestamp"]))
         if event.get("action") != "click":
-            raise ReplayDeviationError(f"Expected click action, found {event.get('action')}")
+            raise ReplayDeviationError(
+                f"Expected click action, found {event.get('action')}"
+            )
 
         expected_target = event.get("target")
         actual_target = str(target)
         if expected_target and expected_target != actual_target:
-            raise ReplayDeviationError(f"Expected click target {expected_target}, found {actual_target}")
+            raise ReplayDeviationError(
+                f"Expected click target {expected_target}, found {actual_target}"
+            )
 
         area = event.get("area")
         if not area:
             raise ReplayDeviationError("Click action in manifest missing `area` bounds")
         if not isinstance(area, (list, tuple)) or len(area) != 4:
-            raise ReplayDeviationError(f"Click `area` must be [x1,y1,x2,y2], got {area!r}")
+            raise ReplayDeviationError(
+                f"Click `area` must be [x1,y1,x2,y2], got {area!r}"
+            )
 
         x, y = self._extract_click_point(target)
         x1, y1, x2, y2 = area
@@ -121,18 +127,36 @@ class MockDevice:
         if "timestamp" in event:
             self.clock.set(float(event["timestamp"]))
         if event.get("action") != "swipe":
-            raise ReplayDeviationError(f"Expected swipe action, found {event.get('action')}")
+            raise ReplayDeviationError(
+                f"Expected swipe action, found {event.get('action')}"
+            )
 
         start_area = event.get("start_area")
         end_area = event.get("end_area")
-        if not start_area or not isinstance(start_area, (list, tuple)) or len(start_area) != 4:
-            raise ReplayDeviationError(f"Swipe `start_area` must be [x1,y1,x2,y2], got {start_area!r}")
-        if not end_area or not isinstance(end_area, (list, tuple)) or len(end_area) != 4:
-            raise ReplayDeviationError(f"Swipe `end_area` must be [x1,y1,x2,y2], got {end_area!r}")
+        if (
+            not start_area
+            or not isinstance(start_area, (list, tuple))
+            or len(start_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Swipe `start_area` must be [x1,y1,x2,y2], got {start_area!r}"
+            )
+        if (
+            not end_area
+            or not isinstance(end_area, (list, tuple))
+            or len(end_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Swipe `end_area` must be [x1,y1,x2,y2], got {end_area!r}"
+            )
         if not self._point_in_area(p1, start_area):
-            raise ReplayDeviationError(f"Swipe start out of expected area: {p1} not in {start_area}")
+            raise ReplayDeviationError(
+                f"Swipe start out of expected area: {p1} not in {start_area}"
+            )
         if not self._point_in_area(p2, end_area):
-            raise ReplayDeviationError(f"Swipe end out of expected area: {p2} not in {end_area}")
+            raise ReplayDeviationError(
+                f"Swipe end out of expected area: {p2} not in {end_area}"
+            )
 
     @staticmethod
     def _point_in_area(point: tuple[int, int], area: list[int]) -> bool:
@@ -159,7 +183,9 @@ class MockDevice:
                 x1, y1, x2, y2 = map(int, area)
                 return (x1 + x2) // 2, (y1 + y2) // 2
 
-        raise ReplayDeviationError(f"Unable to extract click coordinates from target={target!r}")
+        raise ReplayDeviationError(
+            f"Unable to extract click coordinates from target={target!r}"
+        )
 
     def is_manifest_exhausted(self) -> bool:
         return self._index >= len(self.manifest.events)
