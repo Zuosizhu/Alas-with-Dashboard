@@ -1,0 +1,20 @@
+You are a coding agent working on PR #32 in this repository (branch: kilo/deterministic-replay-harness).
+
+Your mission is to fully address all open review comments and ensure the PR is complete and correct.
+
+Steps:
+1. Run: gh pr view 32 --comments
+2. Run: gh pr diff 32
+3. Read all new/changed files in the PR.
+4. Address EVERY review comment by implementing the requested change or clearly documenting why it's not applicable.
+5. For each fix: make the code change, ensure tests cover it.
+6. Update docs if any comment asks for it.
+7. Commit all fixes on the PR branch (do NOT force-push, add new commits).
+8. Push.
+9. Reply to the review: gh pr review 32 --comment -b "All comments addressed: ..."
+
+Constraints:
+- Any change to replay/recording code must include test coverage.
+- No silent failure paths.
+
+Stopping condition: All review comments resolved, committed, pushed.

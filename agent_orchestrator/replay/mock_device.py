@@ -52,20 +52,33 @@ class ReplayManifest:
 
         events: list[dict[str, Any]] = []
         with manifest_path.open("r", encoding="utf-8") as handle:
-            for line in handle:
+            for line_no, line in enumerate(handle, start=1):
                 line = line.strip()
-                if line:
+                if not line:
+                    continue
+                try:
                     events.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    raise ReplayDeviationError(
+                        f"Invalid JSON at {manifest_path}:{line_no}: {e}"
+                    ) from e
         return events
 
 
 class MockDevice:
     """Replay-only device that enforces recorded screenshot/action ordering."""
 
-    def __init__(self, fixture_dir: str | Path, clock: SimulatedClock):
+    def __init__(
+        self,
+        fixture_dir: str | Path,
+        clock: SimulatedClock,
+        max_screenshots: int | None = None,
+    ):
         self.manifest = ReplayManifest(Path(fixture_dir))
         self.clock = clock
         self._index = 0
+        self._screenshot_count = 0
+        self._max_screenshots = max_screenshots
 
     def _peek(self) -> dict[str, Any]:
         if self._index >= len(self.manifest.events):
@@ -83,31 +96,54 @@ class MockDevice:
         return event
 
     def screenshot(self) -> np.ndarray:
+        self._screenshot_count += 1
+        if (
+            self._max_screenshots is not None
+            and self._screenshot_count > self._max_screenshots
+        ):
+            raise ReplayDeviationError(
+                f"screenshot() called {self._screenshot_count} times, exceeding "
+                f"max_screenshots={self._max_screenshots}. Possible infinite loop in replay."
+            )
         event = self._consume(expected_type="screenshot")
         self.clock.set(float(event["timestamp"]))
         image_path = self.manifest.images_dir / event["image"]
         if not image_path.exists():
             raise ReplayDeviationError(f"Missing recorded frame: {image_path}")
-        with Image.open(image_path) as image:
-            return np.array(image)
+        # Protect against decompression bombs (e.g., ZIP/GZIP bombs)
+        # Limit to reasonable screenshot dimensions (e.g., 4K * 4K = 16M pixels)
+        MAX_IMAGE_PIXELS = 16_000_000
+        original_max_pixels = Image.MAX_IMAGE_PIXELS
+        try:
+            Image.MAX_IMAGE_PIXELS = MAX_IMAGE_PIXELS
+            with Image.open(image_path) as image:
+                return np.array(image)
+        finally:
+            Image.MAX_IMAGE_PIXELS = original_max_pixels
 
     def click(self, target: Any) -> None:
         event = self._consume(expected_type="action")
         if "timestamp" in event:
             self.clock.set(float(event["timestamp"]))
         if event.get("action") != "click":
-            raise ReplayDeviationError(f"Expected click action, found {event.get('action')}")
+            raise ReplayDeviationError(
+                f"Expected click action, found {event.get('action')}"
+            )
 
         expected_target = event.get("target")
         actual_target = str(target)
         if expected_target and expected_target != actual_target:
-            raise ReplayDeviationError(f"Expected click target {expected_target}, found {actual_target}")
+            raise ReplayDeviationError(
+                f"Expected click target {expected_target}, found {actual_target}"
+            )
 
         area = event.get("area")
         if not area:
             raise ReplayDeviationError("Click action in manifest missing `area` bounds")
         if not isinstance(area, (list, tuple)) or len(area) != 4:
-            raise ReplayDeviationError(f"Click `area` must be [x1,y1,x2,y2], got {area!r}")
+            raise ReplayDeviationError(
+                f"Click `area` must be [x1,y1,x2,y2], got {area!r}"
+            )
 
         x, y = self._extract_click_point(target)
         x1, y1, x2, y2 = area
@@ -121,21 +157,128 @@ class MockDevice:
         if "timestamp" in event:
             self.clock.set(float(event["timestamp"]))
         if event.get("action") != "swipe":
-            raise ReplayDeviationError(f"Expected swipe action, found {event.get('action')}")
+            raise ReplayDeviationError(
+                f"Expected swipe action, found {event.get('action')}"
+            )
 
         start_area = event.get("start_area")
         end_area = event.get("end_area")
-        if not start_area or not isinstance(start_area, (list, tuple)) or len(start_area) != 4:
-            raise ReplayDeviationError(f"Swipe `start_area` must be [x1,y1,x2,y2], got {start_area!r}")
-        if not end_area or not isinstance(end_area, (list, tuple)) or len(end_area) != 4:
-            raise ReplayDeviationError(f"Swipe `end_area` must be [x1,y1,x2,y2], got {end_area!r}")
+        if (
+            not start_area
+            or not isinstance(start_area, (list, tuple))
+            or len(start_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Swipe `start_area` must be [x1,y1,x2,y2], got {start_area!r}"
+            )
+        if (
+            not end_area
+            or not isinstance(end_area, (list, tuple))
+            or len(end_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Swipe `end_area` must be [x1,y1,x2,y2], got {end_area!r}"
+            )
         if not self._point_in_area(p1, start_area):
-            raise ReplayDeviationError(f"Swipe start out of expected area: {p1} not in {start_area}")
+            raise ReplayDeviationError(
+                f"Swipe start out of expected area: {p1} not in {start_area}"
+            )
         if not self._point_in_area(p2, end_area):
-            raise ReplayDeviationError(f"Swipe end out of expected area: {p2} not in {end_area}")
+            raise ReplayDeviationError(
+                f"Swipe end out of expected area: {p2} not in {end_area}"
+            )
+
+    def long_click(self, target: Any, duration: Any = None) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "long_click":
+            raise ReplayDeviationError(
+                f"Expected long_click action, found {event.get('action')}"
+            )
+
+        expected_target = event.get("target")
+        actual_target = str(target)
+        if expected_target and expected_target != actual_target:
+            raise ReplayDeviationError(
+                f"Expected long_click target {expected_target}, found {actual_target}"
+            )
+
+        area = event.get("area")
+        if not area:
+            raise ReplayDeviationError(
+                "long_click action in manifest missing `area` bounds"
+            )
+        if not isinstance(area, (list, tuple)) or len(area) != 4:
+            raise ReplayDeviationError(
+                f"long_click `area` must be [x1,y1,x2,y2], got {area!r}"
+            )
+
+        x, y = self._extract_click_point(target)
+        x1, y1, x2, y2 = area
+        if not (x1 <= x <= x2 and y1 <= y <= y2):
+            raise ReplayDeviationError(
+                f"long_click out of expected area: ({x}, {y}) not in [{x1}, {y1}, {x2}, {y2}]"
+            )
+
+    def drag(self, p1: tuple[int, int], p2: tuple[int, int], **kwargs: Any) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "drag":
+            raise ReplayDeviationError(
+                f"Expected drag action, found {event.get('action')}"
+            )
+
+        start_area = event.get("start_area")
+        end_area = event.get("end_area")
+        if (
+            not start_area
+            or not isinstance(start_area, (list, tuple))
+            or len(start_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Drag `start_area` must be [x1,y1,x2,y2], got {start_area!r}"
+            )
+        if (
+            not end_area
+            or not isinstance(end_area, (list, tuple))
+            or len(end_area) != 4
+        ):
+            raise ReplayDeviationError(
+                f"Drag `end_area` must be [x1,y1,x2,y2], got {end_area!r}"
+            )
+        if not self._point_in_area(p1, start_area):
+            raise ReplayDeviationError(
+                f"Drag start out of expected area: {p1} not in {start_area}"
+            )
+        if not self._point_in_area(p2, end_area):
+            raise ReplayDeviationError(
+                f"Drag end out of expected area: {p2} not in {end_area}"
+            )
+
+    def app_start(self) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "app_start":
+            raise ReplayDeviationError(
+                f"Expected app_start action, found {event.get('action')}"
+            )
+
+    def app_stop(self) -> None:
+        event = self._consume(expected_type="action")
+        if "timestamp" in event:
+            self.clock.set(float(event["timestamp"]))
+        if event.get("action") != "app_stop":
+            raise ReplayDeviationError(
+                f"Expected app_stop action, found {event.get('action')}"
+            )
 
     @staticmethod
-    def _point_in_area(point: tuple[int, int], area: list[int]) -> bool:
+    def _point_in_area(
+        point: tuple[int, int], area: list[int] | tuple[int, int, int, int]
+    ) -> bool:
         x, y = point
         if not isinstance(area, (list, tuple)) or len(area) != 4:
             raise ReplayDeviationError(f"Area must be [x1,y1,x2,y2], got {area!r}")
@@ -159,7 +302,9 @@ class MockDevice:
                 x1, y1, x2, y2 = map(int, area)
                 return (x1 + x2) // 2, (y1 + y2) // 2
 
-        raise ReplayDeviationError(f"Unable to extract click coordinates from target={target!r}")
+        raise ReplayDeviationError(
+            f"Unable to extract click coordinates from target={target!r}"
+        )
 
     def is_manifest_exhausted(self) -> bool:
         return self._index >= len(self.manifest.events)
