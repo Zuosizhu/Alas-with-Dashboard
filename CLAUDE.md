@@ -85,7 +85,7 @@ Core config files:
 - `alas_wrapped/config/alas.json`
 
 Known environment values for this setup:
-- `Alas.Emulator.Serial`: `127.0.0.1:21503`
+- `Alas.Emulator.Serial`: `127.0.0.1:21513`
 - `Alas.EmulatorInfo.Emulator`: `MEmuPlayer`
 
 Wrapped runtime setup:

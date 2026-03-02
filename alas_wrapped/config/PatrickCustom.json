@@ -69,7 +69,7 @@
   },
   "Alas": {
     "Emulator": {
-      "Serial": "127.0.0.1:21503",
+      "Serial": "127.0.0.1:21513",
       "PackageName": "com.YoStarEN.AzurLane",
       "ServerName": "disabled",
       "ScreenshotMethod": "uiautomator2",

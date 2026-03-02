@@ -348,7 +348,7 @@ class ConnectionAttr:
                 device = u2.connect(self.serial)
 
         # Stay alive
-        device.set_new_command_timeout(604800)
+        # device.set_new_command_timeout(604800)  # Removed - method dropped in uiautomator2 >= 3.x
 
-        logger.attr('u2.Device', f'Device(atx_agent_url={device._get_atx_agent_url()})')
+        logger.attr('u2.Device', f'Device(serial={self.serial})')
         return device

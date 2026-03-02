@@ -75,21 +75,21 @@ send you to the home screen.
 **Connect**
 
 ```cmd
-adb connect 127.0.0.1:21503
+adb connect 127.0.0.1:21513
 ```
 
 Why: ADB defaults to USB. MEmu exposes a TCP bridge; you must explicitly
 connect before `adb shell` targets the emulator.
 
 Debug: `failed to connect` → wrong port (check MEmu Settings → Connection;
-common alternates: 21513, 21523) or ADB server not running (`adb start-server`).
+common alternates: 21503, 21523) or ADB server not running (`adb start-server`).
 
 Debug: device shows as `offline` or `unauthorized` → cycle the ADB server:
 
 ```cmd
 adb kill-server
 adb start-server
-adb connect 127.0.0.1:21503
+adb connect 127.0.0.1:21513
 ```
 
 `offline` means the transport lost its connection. `unauthorized` means the
@@ -491,7 +491,7 @@ adb shell pm list packages | findstr ldmnq       # LDPlayer
 
 ## 4. Connection to This Project
 
-This repository uses **MEmu** (`127.0.0.1:21503`) as the target emulator for
+This repository uses **MEmu** (`127.0.0.1:21513`) as the target emulator for
 ALAS automation. Debloating reduces background CPU and network noise that
 can interfere with pixel-matching accuracy and OCR reliability.
 
@@ -502,7 +502,7 @@ After debloating:
   (the ADB port does not change with debloating, but verify after port-related
   settings edits).
 
-Known-good serial for this setup: `127.0.0.1:21503` (see `CLAUDE.md`).
+Known-good serial for this setup: `127.0.0.1:21513` (see `CLAUDE.md`).
 
 **Note on MEmu Android version:** Check your MEmu build's Android version
 before removing `com.microvirt.launcher2`. ALAS has been verified against

@@ -13,7 +13,7 @@ Use this when any of the following happen:
 
 1. Confirm emulator/ADB baseline:
    - MEmu running
-   - device visible at `127.0.0.1:21503`
+   - device visible at `127.0.0.1:21513`
 2. Run the existing log parser on the latest log:
    ```bash
    cd agent_orchestrator
