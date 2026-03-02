@@ -30,3 +30,14 @@ Gemini Flash is "cheap enough for live testing":
 ## Implementation
 
 *Detailed test infrastructure docs will be added as testing is implemented.*
+
+
+## Deterministic Replay Harness (Current)
+
+The repository now includes a deterministic replay scaffold for state-machine regression checks:
+
+- **Recorder**: `alas_wrapped/dev_tools/record_scenario.py` patches ALAS `screenshot/click/swipe` calls and writes a fixture directory with PNG frames + `manifest.jsonl`.
+- **Replay Device**: `agent_orchestrator/replay/mock_device.py` replays the manifest stream and raises `ReplayDeviationError` on ordering or coordinate mismatches.
+- **Clock Control**: `agent_orchestrator/replay/time_control.py` patches `time.time`, `time.sleep`, and `module.base.timer` aliases so replay runs at CPU speed while preserving exact recorded timestamps.
+
+This approach gives deterministic verification of timeout-driven behavior without emulator/ADB dependencies during test execution.

@@ -14,7 +14,11 @@ import cv2
 import numpy as np
 
 from module.base.template import Template
-from tools._context import get_context
+try:
+    from ._context import get_context
+except ImportError:
+    # Backward-compatible import path when invoked as a top-level `tools` module.
+    from tools._context import get_context
 
 # Cache for loaded templates to avoid disk I/O on every call
 _TEMPLATE_CACHE: Dict[str, Template] = {}

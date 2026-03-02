@@ -2,29 +2,89 @@
 
 All notable changes to the ALAS AI Agent project.
 
-## [Unreleased] - 2026-02-18
+## [Unreleased] - 2026-02-23
+
+### Added
+- **Workflow validation framework** (PR #23):
+  - `workflow.daily_base_sweep` composite deterministic tool (mail/dorm/commission/research/shop/guild).
+  - `dry_run_workflow()` runtime validation against tool bindings.
+  - `validate_workflow_spec_against_graph()` static harness validation.
+  - `state_graph_audit.py` CLI for semantic edge validation.
+  - Comprehensive unit tests for state-machine workflow logic.
+- **Glossary & upstream sync docs** (PR #28):
+  - `docs/GLOSSARY.md` with project terminology.
+  - `docs/UPSTREAM_SYNC.md` with step-by-step sync instructions.
+
+### Fixed
+- **Replay harness clock sync** (PR #31): `MockDevice.click()`/`swipe()` now update `SimulatedClock` from manifest timestamps.
+- **Replay area validation** (PR #31): Area bounds validated for type and length before unpacking.
+- **Workflow sweep KeyError guard** (PR #23): `Page.all_pages` lookup uses `.get()` with structured error on missing pages.
+- **cv2 import fallback** (PR #23): `state_graph_audit.py` handles missing cv2 module, not just missing `libGL.so.1`.
 
 ### Changed
-- **Emulator Debloat Guide** (`docs/dev/emulator_depbloat.md`): Expanded and
-  corrected based on source-code appraisal of three community tools.
-  - **MEmu §1.3**: Added ADB health recovery pattern — cycle `adb kill-server`
-    / `adb start-server` when device state is `offline` or `unauthorized`.
-  - **MEmu §1.4 Option C**: Added coverage note; the current domain list is
-    minimal. Extended list available from 1broccoli's `memu_block.example.txt`
-    (see §5).
-  - **LDPlayer §2.2**: Added optional startup ad suppression technique via
-    `%AppData%\XuanZhi9\cache\` (source: Red0Hood community report).
-  - **LDPlayer §2.3 Option C**: Expanded from 4 domains to 20 — added 5
-    additional `ldmnq.com` subdomains, 3 `ldplayer.net` endpoints, 7
-    LDPlayer-specific CloudFront distributions, and `android.bugly.qq.com`
-    (Tencent crash-reporting SDK). New entries sourced from Red0Hood host list,
-    malformed URL-format entries discarded.
-  - **§5 References**: Added appraisal verdicts. HideCM tool flagged as broken
-    (outbound firewall rule is commented out in source — does not block ads).
-    1broccoli tool flagged as reference-only (uses `pm disable-user` not
-    `pm uninstall --user 0`, no Android 12 guard, surprise-reboot in hosts
-    fallback). Red0Hood flagged as data-only (opaque binaries should not be
-    run; valid domain entries incorporated above).
+- Retargeted and rebased PRs #23, #28 from stale `master` to active `trunk/stabilization`.
+- Closed superseded PRs: #30 (replay harness, Jules), #24 (telemetry), #20 (stale docs), #16 (upstream sync w/ template.py regressions).
+
+## [Unreleased] - 2026-02-17
+
+### Added
+- **Deterministic replay harness scaffold**:
+  - Added `alas_wrapped/dev_tools/record_scenario.py` for fixture capture (screenshots + action manifest).
+  - Added `agent_orchestrator/replay/mock_device.py` with manifest-driven replay + deviation assertions.
+  - Added `agent_orchestrator/replay/time_control.py` for simulated clock patching (`time.time`, `time.sleep`, and ALAS timer aliases).
+  - Added `agent_orchestrator/test_login_replay.py` covering fast-forward replay and deviation detection.
+
+- **Local VLM Setup Plan**: Added `docs/plans/local_vlm_setup.md` - comprehensive primer for serving a vision-language model locally on GeForce 5090:
+  - Model selection (Qwen3-VL-8B, MiniCPM-V 4.5, Qwen3-VL-32B)
+  - llama.cpp vs Ollama comparison with setup instructions
+  - Benchmarking plan against bot screenshot rate
+  - Integration plan with MCP vision router
+  - Four-phase rollout (L1-L4)
+- **Interactive State Machine Visualization Plan**: Added `docs/plans/interactive_state_viz_plan.md` - plan for web-based graph explorer:
+  - Cytoscape.js as rendering engine
+  - Data extraction script from page.py
+  - Three-phase rollout (V1 static → V2 live state → V3 debugging tools)
+- **State Machine Visualization**: Added `docs/state_machine/STATE_MACHINE_VISUALIZATION.md` - complete documentation of ALAS's 43-page state machine:
+  - Comprehensive Mermaid diagrams showing all 98 state transitions
+  - Detailed transition tables for every page
+  - Hub-and-spoke architecture visualization
+  - Navigation algorithm explanation
+  - Failure mode analysis with recovery opportunities
+  - Foundation for vision-based recovery and interactive debugging
+- **Durable Agent Architecture Design**: Added `docs/plans/durable_agent_architecture_design.md` - comprehensive design for autonomous failure handling and recovery (Phase II):
+  - LangGraph durable execution with checkpointing
+  - Supervisor/follower pattern for tool orchestration
+  - Retry policies with exponential backoff
+  - Circuit breaker pattern for cascading failure prevention
+  - Vision-based recovery agent for unexpected states
+  - Structured observability with metrics and tracing
+  - 10-week implementation roadmap
+- **Recovery Agent Architecture**: Added `docs/plans/recovery_agent_architecture.md` - comprehensive recovery agent design with layered recovery strategy, health monitoring, and error classification.
+- **Recovery Agent Implementation Plan**: Added `docs/plans/recovery_agent_implementation_plan.md` - actionable phased implementation plan for the recovery agent system.
+
+### Added
+- **Scheduler sidecar telemetry**: Added `alas_wrapped/log/schedule_status.jsonl` emission from scheduler loop with `current_task`, `next_task`, and queue snapshots for machine-parsable monitoring.
+- **Login sidecar telemetry**: Added `alas_wrapped/log/login_trace.jsonl` login phase events with timeout guard traces for post-mortem analysis.
+
+### Fixed
+- **Transport recovery hardening**: Added one-shot ADB reconnect probe before restart escalation for transient transport failures.
+- **Device init retry bug**: `Device.__init__` no longer reads `self.config` before `super().__init__()` initializes it; retry policy now derives from constructor config input.
+- **Sidecar log growth guard**: Added automatic size-based rotation for `schedule_status.jsonl` and `login_trace.jsonl` when files reach 20 MB.
+- **Telemetry writer consistency**: Unified JSONL append/rotation logic behind a shared helper used by both scheduler and login sidecar traces.
+- **Emulator start retry visibility**: Added warning when emulator start fails and the pre-retry stop also fails, so retry loops are no longer silent in that path.
+- **Tool import resilience**: `alas_wrapped/tools` now uses package-relative imports with fallback, preventing brittle import behavior across runner contexts.
+
+### Changed
+- **NORTH_STAR.md**: Expanded vision to cover three-stage CV migration (wrap → annotate → replace), orchestrator as tool/state provider, vision for building deterministic pipelines (not just recovery), and local VLM deployment option (GeForce 5090 via llama.cpp/Ollama).
+- **ARCHITECTURE.md**: Added Local VLM (cloud + local) to system diagram, new Dashboard/State Tools subdomain, new CV Migration subdomain with three stages, updated Vision Integration to cover both Gemini Flash and local VLM options.
+- **ROADMAP.md**: Complete rewrite with expanded phase plan — added Phase L (Local VLM), Phase V (Interactive Viz), CV Migration Stages (A/B/C), 2026 milestone timeline.
+
+### Fixed
+- **Restart task resilience**: Changed `device.sleep(60)` to `time.sleep(60)` in auto-recovery fallback when Restart task fails — defensive improvement when ADB may be in unknown state.
+
+### Changed
+- **Documentation Governance**: Switched canonical instruction source to `AGENTS.md`; `CLAUDE.md`/`GEMINI.md` are now derived.
+- **MCP Configuration**: Removed deprecated `"type": "stdio"` from project `.mcp.json` for the `alas` server entry.
 
 ### Fixed
 - **PR #26 review feedback**: Addressed Copilot PR review comments:

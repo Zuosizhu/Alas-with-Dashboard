@@ -13,21 +13,40 @@ A JSON-RPC server that exposes ALAS capabilities as MCP tools:
 **ADB Tools** (low-level device interaction):
 | Tool | Description |
 |------|-------------|
-| `adb.screenshot` | Capture screen, returns base64 PNG |
-| `adb.tap` | Tap coordinate (x, y) |
-| `adb.swipe` | Swipe between coordinates |
+| `adb_screenshot` | Capture screen, returns base64 PNG |
+| `adb_tap` | Tap coordinate (x, y) |
+| `adb_swipe` | Swipe between coordinates |
 
 **State Tools** (ALAS state machine integration):
 | Tool | Description |
 |------|-------------|
-| `alas.get_current_state` | Return current UI page name |
-| `alas.goto` | Navigate to target page (e.g., `page_main`) |
+| `alas_get_current_state` | Return current UI page name |
+| `alas_goto` | Navigate to target page (e.g., `page_main`) |
 
 **Tool Tools** (dynamic tool discovery):
 | Tool | Description |
 |------|-------------|
-| `alas.list_tools` | List all registered deterministic tools |
-| `alas.call_tool` | Invoke a tool by name with arguments |
+| `alas_list_tools` | List all registered deterministic tools |
+| `alas_call_tool` | Invoke a tool by name with arguments |
+
+## Repo Tooling Hooks
+
+This repository also enforces tooling checks via repo-tracked git hooks in `.githooks/`:
+
+- `pre-commit`: stages `alas_wrapped/config/PatrickCustom.json` through `agent_orchestrator/sync_patrick_custom.py`.
+- `pre-push`: validates PatrickCustom cleanliness, verifies `AGENTS.md` -> `CLAUDE.md`/`GEMINI.md` sync, and conditionally runs `npm run typecheck` for `alas_wrapped/webapp/**` changes.
+
+Manual install path:
+
+```bash
+scripts/install_hooks.sh
+```
+
+Bypass flag for exceptional pushes with webapp changes:
+
+```bash
+SKIP_WEBAPP_TYPECHECK=1 git push
+```
 
 ### Architecture
 
@@ -69,10 +88,22 @@ All new tools should return this envelope:
 
 The supervisor relies on `expected_state` / `observed_state` to decide whether to continue, retry, or escalate.
 
+For composite deterministic workflows, dry-run validation should verify: state exists, graph path exists, and the selected tool is available on the target state.
+
+Use `alas_wrapped/tools/state_graph_audit.py` to perform this check against semantic page edges + tool specs without launching a full run.
+
+### What is testable right now
+
+- **Static harness consistency**: `tools/state_graph_audit.py` (states/tools/semantic edges).
+- **State-machine logic behavior**: `module/test_state_machine_workflows.py` (unit-level).
+- **Live gameplay correctness**: requires emulator/device integration runs (outside pure semantic audits).
+
+
 ## Next Steps
 
 - [ ] Extract more ALAS task handlers as individual tools
-- [ ] Start with login as the first complete workflow tool (`alas.login.ensure_main`)
+- [x] Start with login as the first complete workflow tool (`alas_login_ensure_main`)
+- [x] Add a composite deterministic workflow tool: `workflow.daily_base_sweep`
 - [ ] Add tool metadata (expected states, produced states)
 - [ ] Keep MCP transport stable; expand the tool surface area first
 - [ ] Add tool result validation

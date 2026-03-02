@@ -52,15 +52,17 @@ YAML front matter is reserved for tools that require it (for example GitHub Copi
 
 ## Canonical Instruction Model
 
-- `CLAUDE.md` is canonical for agent behavior and required workflow.
-- `AGENTS.md`, `GEMINI.md`, and `.github/copilot-instructions.md` are entrypoint shims and must duplicate critical non-negotiables.
-- If a shim conflicts with `CLAUDE.md`, `CLAUDE.md` wins.
+- `AGENTS.md` is canonical for agent behavior and required workflow.
+- `CLAUDE.md` and `GEMINI.md` are derived entrypoint files generated from `AGENTS.md`.
+- `.github/copilot-instructions.md` may summarize or mirror `AGENTS.md` as needed for Copilot discovery.
+- If any derived entrypoint file conflicts with `AGENTS.md`, `AGENTS.md` wins.
 
 ## Update Responsibilities (When Things Change)
 
 Update docs in the same change when behavior changes:
 
-- `CLAUDE.md`: policy, workflow, non-negotiables, required reads.
+- `AGENTS.md`: canonical policy, workflow, non-negotiables, required reads.
+- `CLAUDE.md` / `GEMINI.md`: regenerate from `AGENTS.md` when canonical policy changes.
 - `docs/ARCHITECTURE.md`: system structure, subdomain status.
 - `docs/ROADMAP.md`: phase status and priorities.
 - `docs/agent_tooling/README.md`: tool surface and contracts.
@@ -74,5 +76,5 @@ Update docs in the same change when behavior changes:
 - Is the filename unique enough in a tab list?
 - Does the doc correctly declare `Status` and whether it is spec vs implemented?
 - Are commands stable and paths correct for this repo layout?
-- Are normative rules in `CLAUDE.md` (not only in deep docs)?
+- Are normative rules in `AGENTS.md` (not only in deep docs)?
 - Are cross-links updated when files move/rename?

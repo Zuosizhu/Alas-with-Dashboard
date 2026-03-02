@@ -29,6 +29,31 @@ When LLM recovery is triggered:
 - Whether recovery succeeded or failed
 - If logged for human review, what was logged
 
+## In-Flight Enhancements
+
+### 1) Scheduler JSONL Status Stream (Planned)
+
+Reference: `docs/plans/scheduler_status_jsonl_plan.md`
+
+- Append one JSON object per scheduler cycle to `alas_wrapped/log/schedule_status.jsonl`.
+- Keep standard human-readable logs unchanged.
+- Use JSONL for machine-parsable queue state, task sequencing, and forensics.
+
+### 2) 3-Character Task Tag in Standard Logs (Planned)
+
+Reference: `docs/plans/task_tag_logging_plan.md`
+
+- Prefix standard log messages with `[TAG]`, where `TAG` is a deterministic 3-character task identifier.
+- Example:
+  - `2026-02-21 11:45:37.198 | ERROR | [OSD] GameStuckError: Wait too long`
+- Default tag when no active task: `[---]`.
+- Keep parser compatibility by preserving `timestamp | level | message` format (no extra pipe-delimited field).
+
+## Operator Usage
+
+- Use standard logs with `[TAG]` for live human triage.
+- Use JSONL scheduler stream for machine ingestion, dashboards, and timeline analysis.
+
 ## Implementation
 
 *Detailed logging infrastructure docs will be added as logging is implemented.*

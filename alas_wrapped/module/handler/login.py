@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -8,16 +11,54 @@ from uiautomator2.xpath import XPath, XPathSelector
 
 import module.config.server as server
 from module.base.timer import Timer
+from module.base.jsonl import append_jsonl
 from module.base.utils import color_similarity_2d, crop, random_rectangle_point
 from module.handler.assets import *
 from module.logger import logger
 from module.map.assets import *
+from module.exception import GameStuckError
 from module.ui.assets import *
 from module.ui.page import page_campaign_menu
 from module.ui.ui import UI
 
 
 class LoginHandler(UI):
+    LOGIN_MAX_TOTAL_SECONDS = 300
+    LOGIN_MAX_NO_PROGRESS_SECONDS = 180
+    LOGIN_TRACE_ROTATE_BYTES = 20 * 1024 * 1024
+    _RUNTIME_ROOT = Path(__file__).resolve().parents[2]
+    _trace_write_warned = False
+    # Side-channel trace file: append-only JSONL so external parsers can
+    # reconstruct login decisions without touching the normal logger stream.
+    LOGIN_TRACE_FILE = str(_RUNTIME_ROOT / 'log' / 'login_trace.jsonl')
+
+    def _trace_login_event(self, phase, detected=None, action=None, result=None, error=None, elapsed_ms=None):
+        # Keep trace writes isolated from bot control flow; telemetry must
+        # never alter runtime behavior.
+        payload = {
+            'ts': datetime.utcnow().isoformat(timespec='milliseconds') + 'Z',
+            'config': getattr(self.config, 'config_name', 'unknown'),
+            'phase': phase,
+            'detected': detected,
+            'action': action,
+            'result': result,
+            'error': error,
+            'elapsed_ms': elapsed_ms,
+        }
+
+        def _on_trace_error(e):
+            # Trace logging must never break login flow.
+            if not self._trace_write_warned:
+                logger.warning(f'login_trace telemetry disabled: {type(e).__name__}: {e}')
+                self._trace_write_warned = True
+
+        append_jsonl(
+            self.LOGIN_TRACE_FILE,
+            payload,
+            rotate_bytes=self.LOGIN_TRACE_ROTATE_BYTES,
+            error_callback=_on_trace_error,
+        )
+
     def _handle_app_login(self):
         """
         Pages:
@@ -34,10 +75,55 @@ class LoginHandler(UI):
         confirm_timer = Timer(1.5, count=4).start()
         orientation_timer = Timer(5)
         login_success = False
+        started_at = time.monotonic()
+        last_progress_at = started_at
         self.device.stuck_record_clear()
         self.device.click_record_clear()
+        self._trace_login_event(phase='start', result='begin', elapsed_ms=0)
+
+        def elapsed_ms():
+            return int((time.monotonic() - started_at) * 1000)
+
+        def mark_progress(detected, action, result='progress'):
+            nonlocal last_progress_at
+            last_progress_at = time.monotonic()
+            self._trace_login_event(
+                phase='progress',
+                detected=detected,
+                action=action,
+                result=result,
+                elapsed_ms=elapsed_ms(),
+            )
 
         while 1:
+            now = time.monotonic()
+            total_elapsed = now - started_at
+            idle_elapsed = now - last_progress_at
+            if total_elapsed > self.LOGIN_MAX_TOTAL_SECONDS:
+                # Bound total login wall-clock runtime to avoid long blind loops.
+                self._trace_login_event(
+                    phase='guard',
+                    action='abort',
+                    result='timeout_total',
+                    error=f'elapsed={total_elapsed:.1f}s',
+                    elapsed_ms=elapsed_ms(),
+                )
+                raise GameStuckError(
+                    f'Login timeout after {total_elapsed:.1f}s'
+                )
+            if idle_elapsed > self.LOGIN_MAX_NO_PROGRESS_SECONDS:
+                # Bound no-progress window so we fail fast when UI is not changing.
+                self._trace_login_event(
+                    phase='guard',
+                    action='abort',
+                    result='timeout_no_progress',
+                    error=f'idle={idle_elapsed:.1f}s',
+                    elapsed_ms=elapsed_ms(),
+                )
+                raise GameStuckError(
+                    f'Login no progress for {idle_elapsed:.1f}s'
+                )
+
             # Watch device rotation
             if not login_success and orientation_timer.reached():
                 # Screen may rotate after starting an app
@@ -50,6 +136,14 @@ class LoginHandler(UI):
             if self.is_in_main():
                 if confirm_timer.reached():
                     logger.info('Login to main confirm')
+                    mark_progress(detected='page_main', action='confirm', result='success')
+                    self._trace_login_event(
+                        phase='end',
+                        detected='page_main',
+                        action='return',
+                        result='success',
+                        elapsed_ms=elapsed_ms(),
+                    )
                     break
             else:
                 confirm_timer.reset()
@@ -57,45 +151,75 @@ class LoginHandler(UI):
             # Login
             if self.match_template_color(LOGIN_CHECK, offset=(30, 30), interval=5):
                 self.device.click(LOGIN_CHECK)
+                mark_progress(detected='LOGIN_CHECK', action='click')
                 if not login_success:
                     logger.info('Login success')
+                    self._trace_login_event(
+                        phase='login',
+                        detected='LOGIN_CHECK',
+                        action='login_success',
+                        result='success',
+                        elapsed_ms=elapsed_ms(),
+                    )
                     login_success = True
             if self.appear(ANDROID_NO_RESPOND, offset=(30, 30), interval=5):
                 logger.warning('Emulator no respond')
                 self.device.click_record_add(ANDROID_NO_RESPOND)
                 self.device.click_record_check()
                 self.device.click(ANDROID_NO_RESPOND, control_check=False)
+                mark_progress(detected='ANDROID_NO_RESPOND', action='click')
                 continue
             if self.appear_then_click(LOGIN_ANNOUNCE, offset=(30, 30), interval=5):
+                mark_progress(detected='LOGIN_ANNOUNCE', action='click')
                 continue
             if self.appear_then_click(LOGIN_ANNOUNCE_2, offset=(30, 30), interval=5):
+                mark_progress(detected='LOGIN_ANNOUNCE_2', action='click')
                 continue
             if self.appear(EVENT_LIST_CHECK, offset=(30, 30), interval=5):
                 self.device.click(BACK_ARROW)
+                mark_progress(detected='EVENT_LIST_CHECK', action='click_back')
                 continue
             # Updates and maintenance
             if self.appear_then_click(MAINTENANCE_ANNOUNCE, offset=(30, 30), interval=5):
+                mark_progress(detected='MAINTENANCE_ANNOUNCE', action='click')
                 continue
             if self.appear_then_click(LOGIN_GAME_UPDATE, offset=(30, 30), interval=5):
+                mark_progress(detected='LOGIN_GAME_UPDATE', action='click')
                 continue
             if server.server == 'cn' and not login_success:
                 if self.handle_cn_user_agreement():
+                    mark_progress(detected='CN_USER_AGREEMENT', action='handle')
                     continue
             # Player return
             if self.appear_then_click(LOGIN_RETURN_SIGN, offset=(30, 30), interval=5):
+                mark_progress(detected='LOGIN_RETURN_SIGN', action='click')
                 continue
             if self.appear_then_click(LOGIN_RETURN_INFO, offset=(30, 30), interval=5):
+                mark_progress(detected='LOGIN_RETURN_INFO', action='click')
                 continue
             # Popups
             if self.handle_popup_confirm('LOGIN'):
+                mark_progress(detected='POPUP_CONFIRM', action='handle')
                 continue
             if self.handle_urgent_commission():
+                mark_progress(detected='URGENT_COMMISSION', action='handle')
                 continue
-            # Popups appear at page_main
+            # Popups appear at page_main.
+            # If popup handling succeeds, treat it as successful convergence for
+            # login and exit immediately.
             if self.ui_page_main_popups(get_ship=login_success):
+                mark_progress(detected='MAIN_POPUPS', action='handle', result='success')
+                self._trace_login_event(
+                    phase='end',
+                    detected='MAIN_POPUPS',
+                    action='return',
+                    result='success',
+                    elapsed_ms=elapsed_ms(),
+                )
                 return True
             # Always goto page_main
             if self.appear_then_click(GOTO_MAIN, offset=(30, 30), interval=5):
+                mark_progress(detected='GOTO_MAIN', action='click')
                 continue
 
         return True
@@ -142,7 +266,17 @@ class LoginHandler(UI):
         logger.info('handle_app_login')
         self.device.screenshot_interval_set(1.0)
         try:
-            self._handle_app_login()
+            return self._handle_app_login()
+        except Exception as e:
+            # Preserve all existing logger behavior; we only add a side-channel
+            # event so callers keep current failure semantics.
+            self._trace_login_event(
+                phase='error',
+                action='raise',
+                result='failed',
+                error=type(e).__name__,
+            )
+            raise
         finally:
             self.device.screenshot_interval_set()
 
@@ -153,6 +287,7 @@ class LoginHandler(UI):
     def app_start(self):
         logger.hr('App start')
         self.device.app_start()
+        # Raises on failure; return value is informational for callers that need it.
         self.handle_app_login()
         # self.ensure_no_unfinished_campaign()
 
@@ -160,6 +295,7 @@ class LoginHandler(UI):
         logger.hr('App restart')
         self.device.app_stop()
         self.device.app_start()
+        # Raises on failure; return value is informational for callers that need it.
         self.handle_app_login()
         # self.ensure_no_unfinished_campaign()
         self.config.task_delay(server_update=True)

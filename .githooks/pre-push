@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+resolve_python() {
+  if command -v python3 >/dev/null 2>&1; then
+    echo "python3"
+    return
+  fi
+  if command -v python >/dev/null 2>&1; then
+    echo "python"
+    return
+  fi
+  if command -v py >/dev/null 2>&1; then
+    echo "py -3"
+    return
+  fi
+  echo "No python interpreter found for git hooks." >&2
+  exit 1
+}
+
+PYTHON_BIN="$(resolve_python)"
+PATRICK_CUSTOM_SYNC_MODE=check $PYTHON_BIN agent_orchestrator/sync_patrick_custom.py
+$PYTHON_BIN agent_orchestrator/sync_entrypoint_docs.py --check
+
+tmp_changed="$(mktemp)"
+trap 'rm -f "$tmp_changed"' EXIT
+zero_sha="0000000000000000000000000000000000000000"
+
+collect_commit_files() {
+  local commit_sha="$1"
+  git diff-tree --no-commit-id --name-only -r "$commit_sha" >> "$tmp_changed"
+}
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ -z "${local_ref:-}" ]] && continue
+  [[ "${local_sha:-}" == "$zero_sha" ]] && continue
+  local_ref_sha="$local_sha"
+  [[ "$local_ref_sha" == "$zero_sha" ]] && continue
+
+  if [[ "$remote_sha" == "$zero_sha" ]]; then
+    # New remote ref.
+    while read -r commit_sha; do
+      [[ -n "$commit_sha" ]] && collect_commit_files "$commit_sha"
+    done < <(git rev-list "$local_ref_sha" --not --remotes)
+    if [[ ! -s "$tmp_changed" ]]; then
+      collect_commit_files "$local_ref_sha"
+    fi
+  else
+    while read -r commit_sha; do
+      [[ -n "$commit_sha" ]] && collect_commit_files "$commit_sha"
+    done < <(git rev-list "${remote_sha}..${local_ref_sha}")
+  fi
+done
+
+sort -u "$tmp_changed" -o "$tmp_changed"
+
+if [[ "${SKIP_WEBAPP_TYPECHECK:-0}" == "1" ]]; then
+  echo "SKIP_WEBAPP_TYPECHECK=1 set; skipping webapp typecheck."
+  exit 0
+fi
+
+is_webapp_change=""
+if command -v rg >/dev/null 2>&1; then
+  if rg -q "^alas_wrapped/webapp/" "$tmp_changed"; then
+    is_webapp_change="1"
+  fi
+else
+  if grep -q "^alas_wrapped/webapp/" "$tmp_changed"; then
+    is_webapp_change="1"
+  fi
+fi
+
+if [[ -n "$is_webapp_change" ]]; then
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "npm not found; cannot run webapp typecheck for push. Install npm or set SKIP_WEBAPP_TYPECHECK=1."
+    exit 1
+  fi
+  echo "Detected changes under alas_wrapped/webapp; running npm typecheck..."
+  (
+    cd alas_wrapped/webapp
+    npm run typecheck
+  )
+else
+  echo "No changes under alas_wrapped/webapp; skipping npm typecheck."
+fi
