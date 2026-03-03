@@ -297,8 +297,17 @@ agent_orchestrator/heartbeat_screenshots/
 manual_screencap.png
 test_screen.png
 
+# Heartbeat runtime artifacts
+agent_orchestrator/heartbeat.jsonl
+agent_orchestrator/heartbeat_screenshots/
+
 # Claude Code local settings
 .claude/settings.local.json
 
 # Agent memory (local-only working notes)
 memories/
+
+# Codex/agent temp directories (pytest caches, review artifacts)
+.review_pr34*/
+.tmp_pytest*/
+.tmp_testbase*/

@@ -7,7 +7,6 @@ import logging
 import os
 import sys
 import inspect
-import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -205,41 +204,45 @@ ctx: Optional[ALASContext] = None
 
 @mcp.tool()
 async def adb_screenshot() -> Dict[str, Any]:
-    """Take a screenshot from the emulator using ADB CLI.
+    """Take a screenshot from the emulator via uiautomator2 ATX agent.
 
-    Uses 'adb shell screencap -p <device_path>' then 'adb pull' so that binary
-    PNG data travels over ADB's own binary-safe file-transfer protocol — this
-    avoids the Windows text-mode pipe corruption that truncates exec-out output.
-    No ALAS runtime state is read or written, so this never returns a stale
-    or black frame due to cached uiautomator2 state.
+    MEmu uses VirtualBox GPU passthrough — 'adb shell screencap' reads the Linux
+    framebuffer which VirtualBox never populates, returning a blank 3 KB PNG.
+    The only working method is uiautomator2's ATX agent HTTP path, which the
+    ALAS context already has initialized.
 
-    Timeout: 20 seconds total. Returns a base64-encoded PNG image.
+    The call runs in a thread-pool executor so the MCP event loop stays free;
+    asyncio.wait_for enforces a hard 25-second ceiling so VS Code never cancels
+    waiting for a response.
     """
+    if ctx is None:
+        raise RuntimeError("ALAS context not initialized")
     t0 = time.monotonic()
-    device_path = "/sdcard/mcp_snap.png"
-    tmp = Path(tempfile.mktemp(suffix=".png", dir=str(Path(__file__).parent)))
-    err = ""
-    data = ""
-    png_bytes = b""
-    try:
-        await _adb_run("shell", "screencap", "-p", device_path, timeout=10.0)
-        await _adb_run("pull", device_path, str(tmp), timeout=10.0)
-        png_bytes = tmp.read_bytes()
-        data = base64.b64encode(png_bytes).decode("ascii")
-    except Exception as e:
-        err = str(e)
-    finally:
-        tmp.unlink(missing_ok=True)
+
+    def _take_screenshot() -> str:
+        # Reset ALAS's cached black-screen flag so it never serves a stale frame
         try:
-            await _adb_run("shell", "rm", "-f", device_path, timeout=3.0)
-        except Exception:
+            ctx.script.device._screen_black_checked = False
+        except AttributeError:
             pass
+        return ctx.encode_screenshot_png_base64()
+
+    try:
+        loop = asyncio.get_event_loop()
+        data = await asyncio.wait_for(
+            loop.run_in_executor(None, _take_screenshot),
+            timeout=25.0,
+        )
+    except asyncio.TimeoutError:
+        _action_log("adb_screenshot", {"serial": ADB_SERIAL}, "TIMEOUT",
+                    "screencap timed out after 25s", 25000)
+        raise RuntimeError("adb_screenshot timed out after 25s")
+
     ms = int((time.monotonic() - t0) * 1000)
-    saved = _save_screenshot_png(data, _action_seq + 1) if data else ""
+    png_bytes = base64.b64decode(data)
+    saved = _save_screenshot_png(data, _action_seq + 1)
     _action_log("adb_screenshot", {"serial": ADB_SERIAL},
-                f"png_bytes={len(png_bytes)} saved={saved}", err, ms)
-    if err:
-        raise RuntimeError(err)
+                f"png_bytes={len(png_bytes)} saved={saved}", "", ms)
     return {
         "content": [
             {"type": "image", "mimeType": "image/png", "data": data}

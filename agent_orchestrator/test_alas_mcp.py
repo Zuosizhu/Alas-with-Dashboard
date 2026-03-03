@@ -40,38 +40,31 @@ def _make_dummy_png() -> bytes:
 
 
 # ---------------------------------------------------------------------------
-# adb_screenshot — async, uses _adb_run CLI; no ctx needed
+# adb_screenshot — async, uses run_in_executor + ALAS ctx (MEmu VirtualBox GPU
+# cannot be captured via 'adb shell screencap'; only uiautomator2 ATX agent works)
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
-async def test_adb_screenshot():
-    """Screenshot tool pulls PNG via ADB CLI and returns base64-encoded image."""
+async def test_adb_screenshot(mock_ctx):
+    """Screenshot tool uses ALAS ctx.encode_screenshot_png_base64 via run_in_executor."""
     dummy_png = _make_dummy_png()
+    b64 = base64.b64encode(dummy_png).decode("ascii")
+    mock_ctx.encode_screenshot_png_base64.return_value = b64
 
-    async def fake_adb_run(*args, timeout):
-        if args[0] == "pull":
-            # args = ("pull", "/sdcard/mcp_snap.png", "<tmpfile>")
-            from pathlib import Path
-            Path(args[2]).write_bytes(dummy_png)
-        return b""
-
-    with mock.patch.object(alas_mcp_server, "_adb_run", side_effect=fake_adb_run):
-        result = await alas_mcp_server.adb_screenshot()
+    result = await alas_mcp_server.adb_screenshot()
 
     assert result["content"][0]["type"] == "image"
     assert result["content"][0]["mimeType"] == "image/png"
     assert base64.b64decode(result["content"][0]["data"]) == dummy_png
+    mock_ctx.encode_screenshot_png_base64.assert_called_once()
 
 
 @pytest.mark.asyncio
-async def test_adb_screenshot_failure():
-    """Screenshot tool raises RuntimeError when ADB command fails."""
-    async def failing_adb_run(*args, timeout):
-        raise RuntimeError("screencap failed: device offline")
-
-    with mock.patch.object(alas_mcp_server, "_adb_run", side_effect=failing_adb_run):
-        with pytest.raises(RuntimeError, match="screencap failed"):
-            await alas_mcp_server.adb_screenshot()
+async def test_adb_screenshot_no_ctx():
+    """Screenshot tool raises RuntimeError when ctx is not initialized."""
+    alas_mcp_server.ctx = None
+    with pytest.raises(RuntimeError, match="ALAS context not initialized"):
+        await alas_mcp_server.adb_screenshot()
 
 
 # ---------------------------------------------------------------------------
