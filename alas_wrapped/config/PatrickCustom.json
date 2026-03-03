@@ -1,78 +1,10 @@
 {
-  "Dashboard": {
-    "Oil": {
-      "Value": 15792,
-      "Limit": 17650,
-      "Color": "^000000",
-      "Record": "2026-02-04 21:16:13"
-    },
-    "Coin": {
-      "Value": 0,
-      "Limit": 0,
-      "Color": "^FFAA33",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "Gem": {
-      "Value": 0,
-      "Color": "^FF3333",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "Pt": {
-      "Value": 3365,
-      "Color": "^00BFFF",
-      "Record": "2026-02-01 21:58:44"
-    },
-    "Cube": {
-      "Value": 0,
-      "Color": "^33FFFF",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "ActionPoint": {
-      "Value": 43,
-      "Total": 1223,
-      "Color": "^0000FF",
-      "Record": "2026-02-04 22:26:41"
-    },
-    "YellowCoin": {
-      "Value": 0,
-      "Color": "^FF8800",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "PurpleCoin": {
-      "Value": 0,
-      "Color": "^7700BB",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "Core": {
-      "Value": 0,
-      "Color": "^AAAAAA",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "Medal": {
-      "Value": 0,
-      "Color": "^FFDD00",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "Merit": {
-      "Value": 0,
-      "Color": "^FFFF00",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "GuildCoin": {
-      "Value": 0,
-      "Color": "^AAAAAA",
-      "Record": "2020-01-01 00:00:00"
-    },
-    "Storage": {
-      "Storage": {}
-    }
-  },
   "Alas": {
     "Emulator": {
       "Serial": "127.0.0.1:21513",
       "PackageName": "com.YoStarEN.AzurLane",
       "ServerName": "disabled",
-      "ScreenshotMethod": "DroidCast",
+      "ScreenshotMethod": "uiautomator2",
       "ControlMethod": "MaaTouch",
       "ScreenshotDedithering": false,
       "AdbRestart": true
@@ -86,8 +18,7 @@
       "HandleError": true,
       "SaveError": true,
       "OnePushConfig": "provider: null",
-      "ScreenshotLength": 6,
-      "RestartOnUnknownPage": true
+      "ScreenshotLength": 6
     },
     "Optimization": {
       "ScreenshotInterval": 0.3,
@@ -136,7 +67,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-03-02 22:54:54",
+      "NextRun": "2026-03-04 01:00:00",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -441,7 +372,7 @@
     },
     "Campaign": {
       "Name": "D3",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -515,7 +446,7 @@
     },
     "Campaign": {
       "Name": "D3",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -593,7 +524,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "raid_20250116",
+      "Event": "raid_20260212",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -816,7 +747,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -894,7 +825,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -972,7 +903,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -1050,7 +981,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -1124,7 +1055,7 @@
     },
     "Campaign": {
       "Name": "sp",
-      "Event": "event_20231221_cn",
+      "Event": "event_20260226_cn",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
@@ -1201,7 +1132,7 @@
     },
     "Campaign": {
       "Name": "dynamic",
-      "Event": "raid_20250116",
+      "Event": "raid_20260212",
       "Mode": "normal",
       "UseClearMode": true,
       "UseFleetLock": true,
