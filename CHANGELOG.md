@@ -2,7 +2,30 @@
 
 All notable changes to the ALAS AI Agent project.
 
-## [Unreleased] - 2026-02-23
+## [Unreleased] - 2026-03-03
+
+### Added
+- **`adb_launch_game` MCP tool**: sends `am start` intent for Azur Lane EN — starts the game without needing the emulator launcher or uiautomator2.
+- **`adb_get_focus` MCP tool**: queries `adb shell dumpsys window windows` and returns structured `{package, activity, raw}` — agents can now programmatically check whether the game is foregrounded.
+- **`state_heartbeat.py`** (`agent_orchestrator/`): standalone passive-monitoring script that samples the device every N seconds (default 10 s), saves a screenshot to `heartbeat_screenshots/`, queries foreground focus, and appends a JSONL record to `heartbeat.jsonl`. Run with `uv run python state_heartbeat.py [--interval N] [--once] [--serial ...]`.
+- **ADB executable auto-discovery** (`_find_adb()`): MCP server now resolves the `adb` binary via `shutil.which` with fallback to known MEmu install paths — fixes `[WinError 2]` when VS Code launches the server without the emulator's bin dir on `PATH`.
+
+### Changed
+- `_adb_run()` now uses `ADB_EXECUTABLE` (resolved at import) instead of the bare string `"adb"` — eliminates file-not-found errors in restricted-PATH environments.
+- `heartbeat.jsonl` and `heartbeat_screenshots/` added to `.gitignore`.
+
+### Tests
+- Added `test_adb_launch_game`, `test_adb_get_focus_game_running`, `test_adb_get_focus_launcher` — **14/14 unit tests passing**.
+
+### Added
+- **MEmu emulator documentation**:
+  - Added comprehensive MEmu emulator control documentation to `AGENTS.md` and `CLAUDE.md`.
+  - Documents the `memuc.exe` CLI interface for starting/stopping/cloning MEmu instances.
+  - Clarifies that MEmu Multiple Instance Manager (`MEmuConsole.exe`) runs with admin permissions and is the control plane.
+  - Provides Python integration examples using `subprocess` and `pymemuc` library.
+  - Documents the ADB connection flow: MEmu instances expose ADB on `127.0.0.1:21503` once started.
+
+
 
 ### Added
 - **Workflow validation framework** (PR #23):

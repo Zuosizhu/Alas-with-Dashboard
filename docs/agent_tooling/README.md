@@ -16,6 +16,8 @@ A JSON-RPC server that exposes ALAS capabilities as MCP tools:
 | `adb_screenshot` | Capture screen, returns base64 PNG |
 | `adb_tap` | Tap coordinate (x, y) |
 | `adb_swipe` | Swipe between coordinates |
+| `adb_launch_game` | Launch Azur Lane EN via `am start` intent |
+| `adb_get_focus` | Return foreground `{package, activity, raw}` |
 
 **State Tools** (ALAS state machine integration):
 | Tool | Description |

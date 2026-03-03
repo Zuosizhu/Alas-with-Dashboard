@@ -95,6 +95,53 @@ Known local environment:
 - `Alas.Emulator.Serial`: `127.0.0.1:21503`
 - `Alas.EmulatorInfo.Emulator`: `MEmuPlayer`
 
+## Emulator Environment (MEmu)
+
+**Prerequisite:** The MEmu Multiple Instance Manager (`MEmuConsole.exe`) is always running with admin permissions. This is the control plane for all emulator instances.
+
+### Key Commands (memuc.exe)
+
+The `memuc` CLI at `C:\Program Files\Microvirt\MEmu\memuc.exe` controls emulator instances:
+
+```bash
+# Start/stop VMs
+memuc start -n MEmu              # Start by name
+memuc start -i 0                 # Start by index
+memuc stop -n MEmu               # Stop by name
+memuc stopall                    # Stop all VMs
+
+# Check status
+memuc listvms                    # List all VMs with index, status, PID
+memuc listvms --running          # List only running VMs
+memuc isvmrunning -n MEmu        # Check specific VM
+
+# VM lifecycle
+memuc reboot -i 0                # Reboot VM
+memuc clone -i 0                 # Clone a VM
+```
+
+### Common Workflow
+
+1. **MEmuConsole.exe is already running** (admin) - the user ensures this
+2. Use `memuc` commands to start/stop emulator instances as needed
+3. Once started, ADB connects via `127.0.0.1:21503`
+4. MCP server ADB tools (`adb_screenshot`, `adb_tap`, etc.) can then interact with the emulator
+
+### Python Integration
+
+Direct subprocess calls are sufficient - no special libraries required:
+
+```python
+import subprocess
+
+# Start emulator
+subprocess.run(["memuc", "start", "-n", "MEmu"], check=True)
+
+# Check status
+result = subprocess.run(["memuc", "isvmrunning", "-n", "MEmu"],
+                       capture_output=True, text=True)
+```
+
 Launch wrapped bot:
 ```bash
 cd alas_wrapped
