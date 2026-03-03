@@ -146,9 +146,7 @@ class Setting:
             if clicks:
                 if retry.reached():
                     for button in clicks:
-                        # Setting toggles can legitimately require repeated taps;
-                        # rely on timeout here instead of global click-loop detector.
-                        self.main.device.click(button, control_check=False)
+                        self.main.device.click(button)
                     retry.reset()
             else:
                 return True

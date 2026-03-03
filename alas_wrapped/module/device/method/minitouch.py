@@ -8,11 +8,7 @@ from typing import List
 
 import websockets
 from adbutils.errors import AdbError
-try:
-    from uiautomator2 import _Service
-except ImportError:
-    class _Service:
-        pass
+from uiautomator2 import _Service
 
 from module.base.decorator import Config, cached_property, del_cached_property, has_cached_property
 from module.base.timer import Timer

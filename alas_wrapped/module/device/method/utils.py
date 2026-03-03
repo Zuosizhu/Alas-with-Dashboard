@@ -54,8 +54,7 @@ RETRY_TRIES = 5
 RETRY_DELAY = 3
 
 # Patch uiautomator2 appdir
-if hasattr(u2, 'init'):
-    u2.init.appdir = os.path.dirname(uiautomator2cache.__file__)
+u2.init.appdir = os.path.dirname(uiautomator2cache.__file__)
 
 # Patch uiautomator2 logger
 u2_logger = u2.logger
@@ -71,40 +70,39 @@ def setup_logger(*args, **kwargs):
 
 
 u2.setup_logger = setup_logger
-if hasattr(u2, 'init'):
-    u2.init.setup_logger = setup_logger
+u2.init.setup_logger = setup_logger
 
 
-    # Patch Initer
-    class PatchedIniter(u2.init.Initer):
-        @property
-        def atx_agent_url(self):
-            files = {
-                'armeabi-v7a': 'atx-agent_{v}_linux_armv7.tar.gz',
-                # 'arm64-v8a': 'atx-agent_{v}_linux_armv7.tar.gz',
-                'arm64-v8a': 'atx-agent_{v}_linux_arm64.tar.gz',
-                'armeabi': 'atx-agent_{v}_linux_armv6.tar.gz',
-                'x86': 'atx-agent_{v}_linux_386.tar.gz',
-                'x86_64': 'atx-agent_{v}_linux_386.tar.gz',
-            }
-            name = None
-            for abi in self.abis:
-                name = files.get(abi)
-                if name:
-                    break
-            if not name:
-                raise Exception(
-                    "arch(%s) need to be supported yet, please report an issue in github"
-                    % self.abis)
-            return u2.init.GITHUB_BASEURL + '/atx-agent/releases/download/%s/%s' % (
-                u2.version.__atx_agent_version__, name.format(v=u2.version.__atx_agent_version__))
+# Patch Initer
+class PatchedIniter(u2.init.Initer):
+    @property
+    def atx_agent_url(self):
+        files = {
+            'armeabi-v7a': 'atx-agent_{v}_linux_armv7.tar.gz',
+            # 'arm64-v8a': 'atx-agent_{v}_linux_armv7.tar.gz',
+            'arm64-v8a': 'atx-agent_{v}_linux_arm64.tar.gz',
+            'armeabi': 'atx-agent_{v}_linux_armv6.tar.gz',
+            'x86': 'atx-agent_{v}_linux_386.tar.gz',
+            'x86_64': 'atx-agent_{v}_linux_386.tar.gz',
+        }
+        name = None
+        for abi in self.abis:
+            name = files.get(abi)
+            if name:
+                break
+        if not name:
+            raise Exception(
+                "arch(%s) need to be supported yet, please report an issue in github"
+                % self.abis)
+        return u2.init.GITHUB_BASEURL + '/atx-agent/releases/download/%s/%s' % (
+            u2.version.__atx_agent_version__, name.format(v=u2.version.__atx_agent_version__))
 
-        @property
-        def minicap_urls(self):
-            return []
+    @property
+    def minicap_urls(self):
+        return []
 
 
-    u2.init.Initer = PatchedIniter
+u2.init.Initer = PatchedIniter
 
 
 def is_port_using(port_num):
@@ -281,19 +279,19 @@ def get_serial_pair(serial):
         serial (str):
 
     Returns:
-        str, str: `127.0.0.1:5555+{X}` and `emulator-5554+{X}`, 0 <= X <= 32
+        tuple[Optional[str], Optional[str]]: `127.0.0.1:5555+{X}` and `emulator-5554+{X}`, 0 <= X <= 32
     """
     if serial.startswith('127.0.0.1:'):
         try:
             port = int(serial[10:])
-            if 5555 <= port <= 5555 + 32:
+            if 5555 <= port <= 5555 + 64:
                 return f'127.0.0.1:{port}', f'emulator-{port - 1}'
         except (ValueError, IndexError):
             pass
     if serial.startswith('emulator-'):
         try:
             port = int(serial[9:])
-            if 5554 <= port <= 5554 + 32:
+            if 5554 <= port <= 5554 + 64:
                 return f'127.0.0.1:{port + 1}', f'emulator-{port}'
         except (ValueError, IndexError):
             pass
@@ -397,19 +395,16 @@ def remove_shell_warning(s):
     return s
 
 
-if hasattr(u2, 'init'):
-    class IniterNoMinicap(u2.init.Initer):
-        @property
-        def minicap_urls(self):
-            """
-            Don't install minicap on emulators, return empty urls.
+class IniterNoMinicap(u2.init.Initer):
+    @property
+    def minicap_urls(self):
+        """
+        Don't install minicap on emulators, return empty urls.
 
-            binary from https://github.com/openatx/stf-binaries
-            only got abi: armeabi-v7a and arm64-v8a
-            """
-            return []
-else:
-    IniterNoMinicap = None
+        binary from https://github.com/openatx/stf-binaries
+        only got abi: armeabi-v7a and arm64-v8a
+        """
+        return []
 
 
 class Device(u2.Device):
@@ -421,8 +416,7 @@ class Device(u2.Device):
 
 
 # Monkey patch
-if hasattr(u2, 'init'):
-    u2.init.Initer = IniterNoMinicap
+u2.init.Initer = IniterNoMinicap
 u2.Device = Device
 
 

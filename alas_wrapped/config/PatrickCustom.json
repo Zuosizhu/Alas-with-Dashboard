@@ -72,7 +72,7 @@
       "Serial": "127.0.0.1:21513",
       "PackageName": "com.YoStarEN.AzurLane",
       "ServerName": "disabled",
-      "ScreenshotMethod": "uiautomator2",
+      "ScreenshotMethod": "DroidCast",
       "ControlMethod": "MaaTouch",
       "ScreenshotDedithering": false,
       "AdbRestart": true
@@ -136,7 +136,7 @@
   "Restart": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-22 01:00:00",
+      "NextRun": "2026-03-02 22:54:54",
       "Command": "Restart",
       "SuccessInterval": 0,
       "FailureInterval": 0,
@@ -1399,8 +1399,8 @@
   },
   "Guild": {
     "Scheduler": {
-      "Enable": false,
-      "NextRun": "2026-02-08 19:00:00",
+      "Enable": true,
+      "NextRun": "2026-03-03 00:00:00",
       "Command": "Guild",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1530,8 +1530,8 @@
   },
   "ShopFrequent": {
     "Scheduler": {
-      "Enable": false,
-      "NextRun": "2020-01-01 00:00:00",
+      "Enable": true,
+      "NextRun": "2026-03-03 00:00:00",
       "Command": "ShopFrequent",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1550,8 +1550,8 @@
   },
   "ShopOnce": {
     "Scheduler": {
-      "Enable": false,
-      "NextRun": "2020-01-01 00:00:00",
+      "Enable": true,
+      "NextRun": "2026-03-03 00:00:00",
       "Command": "ShopOnce",
       "SuccessInterval": 30,
       "FailureInterval": 30,
@@ -1595,8 +1595,8 @@
   },
   "Shipyard": {
     "Scheduler": {
-      "Enable": false,
-      "NextRun": "2020-01-01 00:00:00",
+      "Enable": true,
+      "NextRun": "2026-03-03 00:00:00",
       "Command": "Shipyard",
       "SuccessInterval": 30,
       "FailureInterval": 30,

@@ -77,6 +77,7 @@ def read_file(file):
     Returns:
         dict, list:
     """
+    print(f'read: {file}')
     if file.endswith('.json'):
         content = atomic_read_bytes(file)
         if not content:
@@ -91,6 +92,7 @@ def read_file(file):
             data = {}
         return data
     else:
+        print(f'Unsupported config file extension: {file}')
         return {}
 
 
@@ -102,6 +104,7 @@ def write_file(file, data):
         file (str):
         data (dict, list):
     """
+    print(f'write: {file}')
     if file.endswith('.json'):
         content = json.dumps(data, indent=2, ensure_ascii=False, sort_keys=False, default=str)
         atomic_write(file, content)
@@ -114,7 +117,7 @@ def write_file(file, data):
                 data, default_flow_style=False, encoding='utf-8', allow_unicode=True, sort_keys=False)
         atomic_write(file, content)
     else:
-        pass
+        print(f'Unsupported config file extension: {file}')
 
 
 def iter_folder(folder, is_dir=False, ext=None):
@@ -537,48 +540,6 @@ def type_to_str(typ):
     if not isinstance(typ, type):
         typ = type(typ).__name__
     return str(typ)
-
-
-def time_delta(_timedelta):
-    """
-    Output the delta between two times
-
-    Args:
-        _timedelta : datetime.timedelta
-
-    Returns:
-        dict :  {
-                 'Y' : int,
-                 'M' : int,
-                 'D' : int,
-                 'h' : int,
-                 'm' : int,
-                 's' : int
-        }
-    """
-    _time_delta = abs(_timedelta.total_seconds())
-    d_base = datetime(2010, 1, 1, 0, 0, 0)
-    d = datetime(2010, 1, 1, 0, 0, 0)-_timedelta
-    _time_dict = {
-        'Y': d.year - d_base.year,
-        'M': d.month - d_base.month,
-        'D': d.day - d_base.day,
-        'h': d.hour - d_base.hour,
-        'm': d.minute - d_base.minute,
-        's': d.second - d_base.second
-    }
-    # _sec ={
-    #     'Y': 365*24*60*60,
-    #     'M': 30*24*60*60,
-    #     'D': 24*60*60,
-    #     'h': 60*60,
-    #     'm': 60,
-    #     's': 1
-    # }
-    # for _key in _time_dict:
-    #     _time_dict[_key] = int(_time_delta//_sec[_key])
-    #     _time_delta = _time_delta%_sec[_key]
-    return _time_dict
 
 
 if __name__ == '__main__':

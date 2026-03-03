@@ -119,10 +119,14 @@ class ShellBackgroundResponse:
 class Uiautomator2(Connection):
     @retry
     def screenshot_uiautomator2(self):
-        # uiautomator2 >= 3.x dropped format='raw'; use 'opencv' to get BGR ndarray directly
-        image = self.u2.screenshot(format='opencv')
+        image = self.u2.screenshot(format='raw')
+        image = np.frombuffer(image, np.uint8)
         if image is None:
-            raise ImageTruncated('Empty image after screenshot')
+            raise ImageTruncated('Empty image after reading from buffer')
+
+        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+        if image is None:
+            raise ImageTruncated('Empty image after cv2.imdecode')
 
         cv2.cvtColor(image, cv2.COLOR_BGR2RGB, dst=image)
         if image is None:

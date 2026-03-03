@@ -41,10 +41,6 @@ class GameBugError(Exception):
     pass
 
 
-class GameTransportError(Exception):
-    """Reserved for transport-layer failures (currently not raised directly)."""
-
-
 class GameTooManyClickError(Exception):
     pass
 

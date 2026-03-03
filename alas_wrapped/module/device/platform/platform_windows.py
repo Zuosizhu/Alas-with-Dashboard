@@ -310,9 +310,8 @@ class PlatformWindows(PlatformBase, EmulatorManager):
         logger.hr('Emulator start', level=1)
         for _ in range(3):
             # Stop
-            stopped = self._emulator_function_wrapper(self._emulator_stop)
-            if not stopped:
-                logger.warning('Emulator stop failed, try start anyway')
+            if not self._emulator_function_wrapper(self._emulator_stop):
+                return False
             # Start
             if self._emulator_function_wrapper(self._emulator_start):
                 # Success
@@ -320,12 +319,10 @@ class PlatformWindows(PlatformBase, EmulatorManager):
                 return True
             else:
                 # Failed to start, stop and start again
-                if stopped and self._emulator_function_wrapper(self._emulator_stop):
+                if self._emulator_function_wrapper(self._emulator_stop):
                     continue
-                logger.warning(
-                    'Emulator start failed; stop before retry also failed, '
-                    'continuing without clean state'
-                )
+                else:
+                    return False
 
         logger.error('Failed to start emulator 3 times, stopped')
         return False

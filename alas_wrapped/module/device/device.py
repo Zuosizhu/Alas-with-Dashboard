@@ -70,31 +70,23 @@ class Device(Screenshot, Control, AppControl):
     stuck_long_wait_list = ['BATTLE_STATUS_S', 'PAUSE', 'LOGIN_CHECK']
 
     def __init__(self, *args, **kwargs):
-        # ConnectionAttr.__init__ (inside super()) initializes self.config.
-        # Read retry policy from constructor kwargs first to avoid pre-init access.
-        cfg = kwargs.get('config')
-        handle_error = bool(getattr(cfg, 'Error_HandleError', False))
-        max_retry = 30 if handle_error else 4
-        for trial in range(1, max_retry + 1):
+        for trial in range(4):
             try:
                 super().__init__(*args, **kwargs)
                 break
             except EmulatorNotRunningError:
-                if getattr(self, 'emulator_instance', None) is None:
+                if trial >= 3:
+                    logger.critical('Failed to start emulator after 3 trial')
+                    raise RequestHumanTakeover
+                # Try to start emulator
+                if self.emulator_instance is not None:
+                    self.emulator_start()
+                else:
                     logger.critical(
-                        f'No emulator with serial "{getattr(cfg, "Emulator_Serial", "unknown")}" found, '
+                        f'No emulator with serial "{self.config.Emulator_Serial}" found, '
                         f'please set a correct serial'
                     )
                     raise RequestHumanTakeover
-                if trial >= max_retry:
-                    logger.critical(f'Failed to start emulator after {trial} trial')
-                    raise RequestHumanTakeover
-                if handle_error and trial >= 4:
-                    logger.warning(f'Failed to start emulator after {trial} trial, keep retrying')
-                # Try to start emulator
-                self.emulator_start()
-                if handle_error:
-                    self.sleep(5)
 
         # Auto-fill emulator info
         if IS_WINDOWS and self.config.EmulatorInfo_Emulator == 'auto':

@@ -133,7 +133,7 @@ WEB_THEME = Theme({
 
 
 # Logger init
-logger_debug = True
+logger_debug = False
 logger = logging.getLogger('alas')
 logger.setLevel(logging.DEBUG if logger_debug else logging.INFO)
 file_formatter = logging.Formatter(

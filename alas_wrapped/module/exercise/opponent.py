@@ -8,18 +8,6 @@ from module.ocr.ocr import Digit
 from module.ui.assets import BACK_ARROW
 from module.ui.ui import UI
 
-"""
-Exercise Opponent Selection
-
-In Azur Lane's Exercise/PvP mode:
-- Opponents are ALWAYS displayed sorted by rank (left = highest, right = lowest)
-- Opponent 0 (leftmost): Highest ranked player, yields maximum merit points
-- Opponent 3 (rightmost): Lowest ranked player, yields minimum merit points
-- Defeating higher-ranked opponents gives better rewards and more rank points
-
-Grid layout: [Opponent 0] [Opponent 1] [Opponent 2] [Opponent 3]
-             (Best)       (Good)       (Medium)     (Weakest)
-"""
 OPPONENT = ButtonGrid(origin=(104, 77), delta=(244, 0), button_shape=(212, 304), grid_shape=(4, 1))
 
 # Mode 'easiest' constants
@@ -86,12 +74,6 @@ class Opponent:
 
     def get_priority(self, method="max_exp"):
         """
-        Calculate opponent priority for selection strategy.
-
-        Note: This is only used for 'max_exp' and 'easiest' modes.
-        For 'leftmost' mode, opponents are fought in order [0,1,2,3] without priority calculation,
-        which is optimal since the game always sorts opponents by rank (leftmost = highest rank).
-
         Args:
             method: EXERCISE_CHOOSE_MODE
 
@@ -105,7 +87,6 @@ class Opponent:
             avg_team_pwr = np.sum(self.power) / team_pwr_div
             priority = level - avg_team_pwr
         else:
-            # max_exp mode: prioritize by total level (approximates difficulty/rewards)
             priority = np.sum(self.level) / 6
         return priority
 
