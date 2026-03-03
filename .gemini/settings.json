@@ -1,2 +1,15 @@
 {
+  "mcpServers": {
+    "adb-vision": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "adb_vision",
+        "server.py",
+        "--serial",
+        "127.0.0.1:21513"
+      ]
+    }
+  }
 }

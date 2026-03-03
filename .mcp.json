@@ -5,10 +5,10 @@
       "args": [
         "run",
         "--directory",
-        "agent_orchestrator",
-        "alas_mcp_server.py",
-        "--config",
-        "alas"
+        "adb_vision",
+        "server.py",
+        "--serial",
+        "127.0.0.1:21513"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8"

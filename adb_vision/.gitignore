@@ -1,0 +1,7 @@
+# Runtime artifacts
+mcp_actions.jsonl
+mcp_screenshots/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
