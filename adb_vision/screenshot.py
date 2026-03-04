@@ -7,11 +7,25 @@ The ``take_screenshot`` dispatcher tries backends in order until one succeeds.
 """
 from __future__ import annotations
 
+import asyncio
 import base64
 import logging
+import os
+import shutil
+import tempfile
+import urllib.error
+import urllib.request
 from typing import Callable, Awaitable
 
 log = logging.getLogger(__name__)
+
+# DroidCast APK HTTP server — port-forwarded from the device via setup_droidcast.py
+_DROIDCAST_PORT = 53516
+_DROIDCAST_URL = f"http://127.0.0.1:{_DROIDCAST_PORT}/preview"
+
+# uiautomator2 ATX agent — port-forwarded on demand
+_U2_ATX_PORT = 7912
+_U2_URL = f"http://127.0.0.1:{_U2_ATX_PORT}/screenshot"
 
 # Type alias for the _adb_run helper passed from the server
 AdbRunFn = Callable[..., Awaitable[bytes]]
@@ -89,32 +103,106 @@ async def _capture_screencap(*, adb_run: AdbRunFn, serial: str, adb_exe: str) ->
 
 # ---------------------------------------------------------------------------
 # Backend: DroidCast (APK HTTP stream)
-# Stub — implementation will be filled by a Jules issue.
+# Requires: setup_droidcast.py has been run to push APK and forward port 53516.
 # ---------------------------------------------------------------------------
 async def _capture_droidcast(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    raise NotImplementedError(
-        "DroidCast backend not yet implemented. "
-        "See GitHub issue for Jules: 'Screenshot via DroidCast APK HTTP stream'"
-    )
+    """Capture via DroidCast APK HTTP server on port 53516.
+
+    DroidCast uses Android's MediaProjection API so it bypasses the VirtualBox
+    GPU framebuffer limitation that makes ``screencap`` return a blank image on MEmu.
+
+    Prerequisites: run ``setup_droidcast.py`` once to push the APK and start the
+    server, then ``adb forward tcp:53516 tcp:53516``.
+    """
+    def _fetch() -> bytes:
+        try:
+            with urllib.request.urlopen(_DROIDCAST_URL, timeout=3) as resp:
+                return resp.read()
+        except urllib.error.URLError as exc:
+            raise RuntimeError(
+                f"DroidCast not reachable at {_DROIDCAST_URL} — "
+                "run setup_droidcast.py first (pushes APK and forwards port 53516)"
+            ) from exc
+
+    png_data = await asyncio.to_thread(_fetch)
+    if png_data[:4] != b"\x89PNG":
+        raise RuntimeError(
+            f"DroidCast /preview did not return PNG data (header: {png_data[:4]!r})"
+        )
+    return base64.b64encode(png_data).decode("ascii")
 
 
 # ---------------------------------------------------------------------------
-# Backend: scrcpy (virtual display capture)
-# Stub — implementation will be filled by a Jules issue.
+# Backend: scrcpy screenshot subcommand (scrcpy v2.7+)
 # ---------------------------------------------------------------------------
 async def _capture_scrcpy(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    raise NotImplementedError(
-        "scrcpy backend not yet implemented. "
-        "See GitHub issue for Jules: 'Screenshot via scrcpy virtual display capture'"
-    )
+    """Capture via ``scrcpy screenshot`` (requires scrcpy v2.7+ in PATH).
+
+    Runs a single-frame capture without opening a mirror window.
+    """
+    scrcpy_exe = shutil.which("scrcpy")
+    if not scrcpy_exe:
+        raise RuntimeError("scrcpy not found in PATH; install scrcpy v2.7+")
+
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        tmp_path = tmp.name
+
+    png_data = b""
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            scrcpy_exe,
+            "--serial", serial,
+            "screenshot",
+            tmp_path,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            _, stderr = await asyncio.wait_for(proc.communicate(), timeout=15.0)
+        except asyncio.TimeoutError:
+            proc.kill()
+            raise RuntimeError("scrcpy screenshot timed out after 15 seconds")
+
+        if proc.returncode != 0:
+            raise RuntimeError(
+                f"scrcpy exited with code {proc.returncode}: {stderr.decode()[:300]}"
+            )
+
+        with open(tmp_path, "rb") as f:
+            png_data = f.read()
+    finally:
+        try:
+            os.unlink(tmp_path)
+        except FileNotFoundError:
+            pass
+
+    if not png_data:
+        raise RuntimeError("scrcpy screenshot produced empty output")
+    return base64.b64encode(png_data).decode("ascii")
 
 
 # ---------------------------------------------------------------------------
 # Backend: uiautomator2 ATX agent HTTP
-# Stub — implementation will be filled by a Jules issue.
+# Requires: uiautomator2 installed on device (u2.init() or ``python -m uiautomator2 init``).
 # ---------------------------------------------------------------------------
 async def _capture_u2(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    raise NotImplementedError(
-        "u2 backend not yet implemented. "
-        "See GitHub issue for Jules: 'Screenshot via direct uiautomator2 ATX HTTP'"
-    )
+    """Capture via the uiautomator2 ATX HTTP agent on port 7912.
+
+    Forwards port 7912 on the fly, then GETs /screenshot from the ATX agent.
+    The ATX agent must already be running on the device (installed via
+    ``python -m uiautomator2 init`` or ``u2.connect().reset_uiautomator()``).
+    """
+    # Forward the ATX agent port (idempotent — safe to call repeatedly)
+    await adb_run("forward", f"tcp:{_U2_ATX_PORT}", f"tcp:{_U2_ATX_PORT}", timeout=5.0)
+
+    def _fetch() -> bytes:
+        try:
+            with urllib.request.urlopen(_U2_URL, timeout=5) as resp:
+                return resp.read()
+        except urllib.error.URLError as exc:
+            raise RuntimeError(
+                f"uiautomator2 ATX agent not reachable at {_U2_URL} — "
+                "run: python -m uiautomator2 init"
+            ) from exc
+
+    return base64.b64encode(await asyncio.to_thread(_fetch)).decode("ascii")

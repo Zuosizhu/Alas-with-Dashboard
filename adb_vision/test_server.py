@@ -101,6 +101,148 @@ async def test_take_screenshot_unknown_method():
 
 
 # ---------------------------------------------------------------------------
+# Tests — DroidCast backend
+# ---------------------------------------------------------------------------
+
+def _make_urlopen_mock(data: bytes, status: int = 200):
+    """Return a context-manager mock for urllib.request.urlopen."""
+    cm = mock.MagicMock()
+    cm.__enter__ = mock.Mock(return_value=cm)
+    cm.__exit__ = mock.Mock(return_value=False)
+    cm.read = mock.Mock(return_value=data)
+    return cm
+
+
+@pytest.mark.asyncio
+async def test_droidcast_backend_success():
+    """DroidCast backend returns base64 PNG when the HTTP server responds."""
+    import screenshot as sc
+
+    cm = _make_urlopen_mock(FAKE_PNG_BYTES)
+    with mock.patch("screenshot.urllib.request.urlopen", return_value=cm):
+        result = await sc._capture_droidcast(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
+
+    raw = base64.b64decode(result)
+    assert raw[:4] == b"\x89PNG"
+    assert len(raw) > 5000
+
+
+@pytest.mark.asyncio
+async def test_droidcast_backend_not_running():
+    """DroidCast backend raises RuntimeError when the HTTP server is not running."""
+    import urllib.error
+    import screenshot as sc
+
+    with mock.patch(
+        "screenshot.urllib.request.urlopen",
+        side_effect=urllib.error.URLError("Connection refused"),
+    ):
+        with pytest.raises(RuntimeError, match="DroidCast not reachable"):
+            await sc._capture_droidcast(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
+
+
+@pytest.mark.asyncio
+async def test_droidcast_backend_bad_header():
+    """DroidCast backend raises RuntimeError when response is not PNG."""
+    import screenshot as sc
+
+    cm = _make_urlopen_mock(b"JFIF" + b"\x00" * 10000)
+    with mock.patch("screenshot.urllib.request.urlopen", return_value=cm):
+        with pytest.raises(RuntimeError, match="did not return PNG data"):
+            await sc._capture_droidcast(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
+
+
+# ---------------------------------------------------------------------------
+# Tests — u2 backend
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_u2_backend_success():
+    """u2 backend returns base64 PNG when the ATX agent responds."""
+    import screenshot as sc
+
+    forward_calls = []
+
+    async def mock_adb_run(*args, timeout=10.0):
+        forward_calls.append(args)
+        return b""
+
+    cm = _make_urlopen_mock(FAKE_PNG_BYTES)
+    with mock.patch("screenshot.urllib.request.urlopen", return_value=cm):
+        result = await sc._capture_u2(adb_run=mock_adb_run, serial="test", adb_exe="adb")
+
+    raw = base64.b64decode(result)
+    assert len(raw) > 5000
+    # Verify port forward was requested
+    assert any("forward" in str(a) for a in forward_calls[0])
+
+
+@pytest.mark.asyncio
+async def test_u2_backend_not_running():
+    """u2 backend raises RuntimeError when the ATX agent is not reachable."""
+    import urllib.error
+    import screenshot as sc
+
+    with mock.patch(
+        "screenshot.urllib.request.urlopen",
+        side_effect=urllib.error.URLError("Connection refused"),
+    ):
+        with pytest.raises(RuntimeError, match="ATX agent not reachable"):
+            await sc._capture_u2(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
+
+
+# ---------------------------------------------------------------------------
+# Tests — scrcpy backend
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_scrcpy_backend_not_in_path():
+    """scrcpy backend raises RuntimeError when scrcpy is not in PATH."""
+    import screenshot as sc
+
+    with mock.patch("screenshot.shutil.which", return_value=None):
+        with pytest.raises(RuntimeError, match="scrcpy not found in PATH"):
+            await sc._capture_scrcpy(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
+
+
+@pytest.mark.asyncio
+async def test_scrcpy_backend_success():
+    """scrcpy backend returns base64 PNG when scrcpy succeeds."""
+    import screenshot as sc
+
+    with mock.patch("screenshot.shutil.which", return_value="/usr/bin/scrcpy"):
+        with mock.patch("screenshot.tempfile.NamedTemporaryFile") as mock_tmp:
+            tmp_file = mock.MagicMock()
+            tmp_file.__enter__ = mock.Mock(return_value=tmp_file)
+            tmp_file.__exit__ = mock.Mock(return_value=False)
+            tmp_file.name = "/tmp/fake_screen.png"
+            mock_tmp.return_value = tmp_file
+
+            # Mock subprocess to exit 0 and write fake PNG to tmp file
+            mock_proc = mock.AsyncMock()
+            mock_proc.communicate = mock.AsyncMock(return_value=(b"", b""))
+            mock_proc.returncode = 0
+
+            def _write_png_and_return(*args, **kwargs):
+                # Write fake PNG to the temp path before the code reads it
+                with open("/tmp/fake_screen.png", "wb") as f:
+                    f.write(FAKE_PNG_BYTES)
+                return mock_proc
+
+            with mock.patch(
+                "screenshot.asyncio.create_subprocess_exec",
+                side_effect=_write_png_and_return,
+            ):
+                with mock.patch("screenshot.os.unlink"):
+                    result = await sc._capture_scrcpy(
+                        adb_run=_mock_adb_run, serial="test", adb_exe="adb"
+                    )
+
+    raw = base64.b64decode(result)
+    assert len(raw) > 5000
+
+
+# ---------------------------------------------------------------------------
 # Tests — MCP tools (tap, swipe, keyevent, launch, focus)
 # ---------------------------------------------------------------------------
 
