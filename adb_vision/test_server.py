@@ -201,6 +201,7 @@ def _make_urlopen_mock(data: bytes, status: int = 200):
     cm.__enter__ = mock.Mock(return_value=cm)
     cm.__exit__ = mock.Mock(return_value=False)
     cm.read = mock.Mock(return_value=data)
+    cm.status = status
     return cm
 
 

@@ -38,3 +38,13 @@
 - [ ] **Dock Inventory Scanner** — Deterministic scripted scan of entire dock to build structured ship girl inventory (+ stretch: item inventory)
 - [ ] **Equipment Outfitter** — Manage limited best-in-slot gear across exercises, fleets, etc. by sharing equipment between ship girls
 - [ ] **Safety: Anti-Scrap/Retire Guard** — State-machine-aware safeguards to prevent accidental ship retirement, scrapping, or deletion
+
+## Execution Loop (2026-03-04)
+
+- [x] Write and use a consolidated master plan before execution
+- [x] Keep one active implementation branch (`feature/adb-vision-clean`)
+- [x] Prune extra local implementation branches
+- [x] Implement and rebase backend changes onto active PR branch
+- [x] Run unit tests with dependency/bootstrap retries
+- [x] Add permanent-loop visualization artifact
+- [ ] Run live emulator tests with MEmu online
