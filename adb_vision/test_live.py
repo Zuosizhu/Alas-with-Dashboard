@@ -154,6 +154,9 @@ class TestScreenshot:
             print(f"  DroidCast: {len(raw)} bytes")
             assert len(raw) > 5000, f"DroidCast image too small ({len(raw)} bytes)"
             assert raw[:4] == b"\x89PNG"
+        except RuntimeError as exc:
+            # Service may not be set up in local environments.
+            pytest.skip(f"DroidCast backend currently unavailable: {exc}")
         except NotImplementedError:
             pytest.skip("DroidCast backend not yet implemented")
 
