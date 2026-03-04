@@ -1216,7 +1216,7 @@
   "Commission": {
     "Scheduler": {
       "Enable": true,
-      "NextRun": "2026-02-21 21:08:17",
+      "NextRun": "2026-03-03 14:02:30",
       "Command": "Commission",
       "SuccessInterval": "30-60",
       "FailureInterval": "30-60",
@@ -1233,7 +1233,7 @@
   },
   "Tactical": {
     "Scheduler": {
-      "Enable": true,
+      "Enable": false,
       "NextRun": "2026-02-21 20:37:37",
       "Command": "Tactical",
       "SuccessInterval": "30-60",
@@ -1895,8 +1895,8 @@
   },
   "OpsiCrossMonth": {
     "Scheduler": {
-      "Enable": true,
-      "NextRun": "2026-03-01 00:50:00",
+      "Enable": false,
+      "NextRun": "2026-04-01 00:50:00",
       "Command": "OpsiCrossMonth",
       "SuccessInterval": 0,
       "FailureInterval": 120,
