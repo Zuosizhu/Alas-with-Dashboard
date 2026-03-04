@@ -59,18 +59,109 @@ async def test_take_screenshot_screencap_backend():
 
 @pytest.mark.asyncio
 async def test_take_screenshot_auto_falls_through():
-    """auto mode tries backends in order; stubs raise NotImplementedError,
-    screencap should eventually be reached."""
+    """auto mode follows explicit order: droidcast -> scrcpy -> u2 -> screencap."""
     from screenshot import take_screenshot
 
-    async def mock_run(*args, timeout=10.0):
-        return _fake_png()
+    calls = []
 
-    result = await take_screenshot(
-        adb_run=mock_run, serial="test", adb_exe="adb", method="auto"
-    )
+    async def _fail(*args, **kwargs):
+        return b""
+
+    async def fake_droidcast(*, adb_run, serial, adb_exe):
+        calls.append("droidcast")
+        raise RuntimeError("droidcast unavailable")
+
+    async def fake_u2(*, adb_run, serial, adb_exe):
+        calls.append("u2")
+        return FAKE_PNG_B64
+
+    async def fake_scrcpy(*, adb_run, serial, adb_exe):
+        calls.append("scrcpy")
+        raise RuntimeError("scrcpy unavailable")
+
+    async def fake_screencap(*, adb_run, serial, adb_exe):
+        calls.append("screencap")
+        return FAKE_PNG_B64
+
+    with mock.patch("screenshot._capture_droidcast", side_effect=fake_droidcast), mock.patch(
+        "screenshot._capture_scrcpy", side_effect=fake_scrcpy
+    ), mock.patch(
+        "screenshot._capture_u2", side_effect=fake_u2
+    ), mock.patch("screenshot._capture_screencap", side_effect=fake_screencap):
+        result = await take_screenshot(
+            adb_run=_fail, serial="test", adb_exe="adb", method="auto"
+        )
     decoded = base64.b64decode(result)
     assert len(decoded) > 5000
+    assert calls == ["droidcast", "scrcpy", "u2"]
+
+
+@pytest.mark.asyncio
+async def test_take_screenshot_scrcpy_selector():
+    """scrcpy selector calls the scrcpy backend directly."""
+    from screenshot import take_screenshot
+
+    calls = []
+
+    async def _fail(*args, **kwargs):
+        return b""
+
+    async def fake_scrcpy(*, adb_run, serial, adb_exe):
+        calls.append("scrcpy")
+        return FAKE_PNG_B64
+
+    with mock.patch("screenshot._capture_scrcpy", side_effect=fake_scrcpy), mock.patch(
+        "screenshot._capture_u2"
+    ) as mock_u2, mock.patch(
+        "screenshot._capture_screencap"
+    ) as mock_sc:
+        result = await take_screenshot(
+            adb_run=_fail, serial="test", adb_exe="adb", method="scrcpy"
+        )
+        mock_u2.assert_not_called()
+        mock_sc.assert_not_called()
+    decoded = base64.b64decode(result)
+    assert len(decoded) > 5000
+    assert calls == ["scrcpy"]
+
+
+@pytest.mark.asyncio
+async def test_take_screenshot_scrcpy_fallback_chain():
+    """With auto, scrcpy failure falls through to u2 then screencap."""
+    from screenshot import take_screenshot
+
+    calls = []
+
+    async def _fail(*args, **kwargs):
+        return b""
+
+    async def fake_droidcast(*, adb_run, serial, adb_exe):
+        calls.append("droidcast")
+        raise RuntimeError("droidcast unavailable")
+
+    async def fake_scrcpy(*, adb_run, serial, adb_exe):
+        calls.append("scrcpy")
+        raise RuntimeError("scrcpy unavailable")
+
+    async def fake_u2(*, adb_run, serial, adb_exe):
+        calls.append("u2")
+        raise RuntimeError("u2 unavailable")
+
+    async def fake_screencap(*, adb_run, serial, adb_exe):
+        calls.append("screencap")
+        return FAKE_PNG_B64
+
+    with mock.patch("screenshot._capture_droidcast", side_effect=fake_droidcast), mock.patch(
+        "screenshot._capture_scrcpy", side_effect=fake_scrcpy
+    ), mock.patch("screenshot._capture_u2", side_effect=fake_u2), mock.patch(
+        "screenshot._capture_screencap", side_effect=fake_screencap
+    ):
+        result = await take_screenshot(
+            adb_run=_fail, serial="test", adb_exe="adb", method="auto"
+        )
+    decoded = base64.b64decode(result)
+    assert len(decoded) > 5000
+    assert calls == ["droidcast", "scrcpy", "u2", "screencap"]
 
 
 @pytest.mark.asyncio
@@ -137,7 +228,7 @@ async def test_droidcast_backend_not_running():
         "screenshot.urllib.request.urlopen",
         side_effect=urllib.error.URLError("Connection refused"),
     ):
-        with pytest.raises(RuntimeError, match="DroidCast not reachable"):
+        with pytest.raises(RuntimeError, match="Failed to capture via DroidCast"):
             await sc._capture_droidcast(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
 
 
@@ -148,7 +239,7 @@ async def test_droidcast_backend_bad_header():
 
     cm = _make_urlopen_mock(b"JFIF" + b"\x00" * 10000)
     with mock.patch("screenshot.urllib.request.urlopen", return_value=cm):
-        with pytest.raises(RuntimeError, match="did not return PNG data"):
+        with pytest.raises(RuntimeError, match="Failed to capture via DroidCast"):
             await sc._capture_droidcast(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
 
 
@@ -187,7 +278,7 @@ async def test_u2_backend_not_running():
         "screenshot.urllib.request.urlopen",
         side_effect=urllib.error.URLError("Connection refused"),
     ):
-        with pytest.raises(RuntimeError, match="ATX agent not reachable"):
+        with pytest.raises(RuntimeError, match="Failed to capture via uiautomator2"):
             await sc._capture_u2(adb_run=_mock_adb_run, serial="test", adb_exe="adb")
 
 
@@ -210,12 +301,12 @@ async def test_scrcpy_backend_success():
     """scrcpy backend returns base64 PNG when scrcpy succeeds."""
     import screenshot as sc
 
-    with mock.patch("screenshot.shutil.which", return_value="/usr/bin/scrcpy"):
+    with mock.patch("screenshot.shutil.which", return_value="C:/tools/scrcpy.exe"):
         with mock.patch("screenshot.tempfile.NamedTemporaryFile") as mock_tmp:
             tmp_file = mock.MagicMock()
             tmp_file.__enter__ = mock.Mock(return_value=tmp_file)
             tmp_file.__exit__ = mock.Mock(return_value=False)
-            tmp_file.name = "/tmp/fake_screen.png"
+            tmp_file.name = "C:/tmp/fake_screen.png"
             mock_tmp.return_value = tmp_file
 
             # Mock subprocess to exit 0 and write fake PNG to tmp file
@@ -223,20 +314,15 @@ async def test_scrcpy_backend_success():
             mock_proc.communicate = mock.AsyncMock(return_value=(b"", b""))
             mock_proc.returncode = 0
 
-            def _write_png_and_return(*args, **kwargs):
-                # Write fake PNG to the temp path before the code reads it
-                with open("/tmp/fake_screen.png", "wb") as f:
-                    f.write(FAKE_PNG_BYTES)
-                return mock_proc
-
             with mock.patch(
                 "screenshot.asyncio.create_subprocess_exec",
-                side_effect=_write_png_and_return,
+                return_value=mock_proc,
             ):
-                with mock.patch("screenshot.os.unlink"):
-                    result = await sc._capture_scrcpy(
-                        adb_run=_mock_adb_run, serial="test", adb_exe="adb"
-                    )
+                with mock.patch("builtins.open", mock.mock_open(read_data=FAKE_PNG_BYTES)):
+                    with mock.patch("screenshot.os.unlink"):
+                        result = await sc._capture_scrcpy(
+                            adb_run=_mock_adb_run, serial="test", adb_exe="adb"
+                        )
 
     raw = base64.b64decode(result)
     assert len(raw) > 5000

@@ -1,10 +1,4 @@
-"""Pluggable screenshot backends for adb-vision.
-
-Each backend implements:
-    async def capture(adb_run, serial, adb_exe) -> str   # base64-encoded PNG
-
-The ``take_screenshot`` dispatcher tries backends in order until one succeeds.
-"""
+"""Pluggable screenshot backends for adb-vision."""
 from __future__ import annotations
 
 import asyncio
@@ -20,7 +14,6 @@ from typing import Awaitable, Callable
 
 log = logging.getLogger(__name__)
 
-# Type alias for the _adb_run helper passed from the server
 AdbRunFn = Callable[..., Awaitable[bytes]]
 
 _DROIDCAST_PORT = 53516
@@ -38,7 +31,6 @@ _HTTP_TIMEOUT = 2.5
 
 
 def _http_get_bytes(url: str, timeout: float = _HTTP_TIMEOUT) -> bytes:
-    """Download bytes from an HTTP URL synchronously."""
     request = urllib.request.Request(url)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as resp:
@@ -53,12 +45,10 @@ def _http_get_bytes(url: str, timeout: float = _HTTP_TIMEOUT) -> bytes:
 
 
 async def _http_bytes(url: str, timeout: float = _HTTP_TIMEOUT) -> bytes:
-    """Fetch URL in worker thread so the event loop stays async."""
     return await asyncio.to_thread(_http_get_bytes, url, timeout)
 
 
 def _to_png_bytes(raw: bytes) -> bytes:
-    """Return PNG bytes from a response payload."""
     if raw.startswith(b"\x89PNG"):
         return raw
     if not raw:
@@ -81,7 +71,6 @@ def _is_png(data: bytes) -> bool:
 
 
 async def _ensure_tcp_forward(adb_run: AdbRunFn, local_port: int, remote_port: int) -> None:
-    """Best-effort local TCP forward required by DroidCast and uiautomator2 backends."""
     local = f"tcp:{local_port}"
     remote = f"tcp:{remote_port}"
     try:
@@ -92,7 +81,6 @@ async def _ensure_tcp_forward(adb_run: AdbRunFn, local_port: int, remote_port: i
 
 
 async def _start_droidcast_server(adb_run: AdbRunFn, _serial: str, _adb_exe: str) -> None:
-    """Push/start DroidCast APK and leave server process running on the device."""
     try:
         await adb_run("shell", "pkill", "-f", "droidcast_raw", timeout=5.0)
     except Exception:
@@ -111,7 +99,6 @@ async def _start_droidcast_server(adb_run: AdbRunFn, _serial: str, _adb_exe: str
 
 
 async def _start_uiautomator_agent(adb_run: AdbRunFn, _serial: str, _adb_exe: str) -> None:
-    """Start uiautomator2/atx-agent if not already running."""
     commands = (
         [
             "shell",
@@ -134,7 +121,6 @@ async def _start_uiautomator_agent(adb_run: AdbRunFn, _serial: str, _adb_exe: st
             return
         except Exception as exc:
             log.debug("atx-agent start command failed: %s", exc)
-            continue
     raise RuntimeError("Failed to start atx-agent/uiautomator2 HTTP service")
 
 
@@ -145,28 +131,22 @@ async def take_screenshot(
     adb_exe: str,
     method: str = "auto",
 ) -> str:
-    """Capture a screenshot and return base64-encoded PNG."""
     backends = _resolve_backends(method)
     last_error: Exception | None = None
-
     for name, capture_fn in backends:
         try:
             log.debug("trying screenshot backend: %s", name)
             b64 = await capture_fn(adb_run=adb_run, serial=serial, adb_exe=adb_exe)
             if b64 and len(base64.b64decode(b64)) > 5000:
-                log.info("screenshot captured via %s", name)
                 return b64
-            log.warning("%s returned suspiciously small image (%d bytes)", name, len(base64.b64decode(b64)))
             last_error = RuntimeError(f"{name}: image too small, likely blank")
         except Exception as exc:
-            log.warning("screenshot backend %s failed: %s", name, exc)
             last_error = exc
-
+            log.warning("screenshot backend %s failed: %s", name, exc)
     raise RuntimeError(f"All screenshot backends failed. Last error: {last_error}")
 
 
 def _resolve_backends(method: str):
-    """Return list of (name, capture_fn) tuples to try."""
     all_backends = [
         ("droidcast", _capture_droidcast),
         ("scrcpy", _capture_scrcpy),
@@ -182,13 +162,11 @@ def _resolve_backends(method: str):
 
 
 async def _capture_screencap(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    """Capture via ``adb exec-out screencap -p``."""
     png_data = await adb_run("exec-out", "screencap", "-p", timeout=10.0)
     return base64.b64encode(png_data).decode("ascii")
 
 
 async def _capture_droidcast(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    """Capture via DroidCast APK HTTP server on port 53516."""
     await _ensure_tcp_forward(adb_run, _DROIDCAST_PORT, _DROIDCAST_PORT)
     last_error: Exception | None = None
     for attempt in range(3):
@@ -210,7 +188,6 @@ async def _capture_droidcast(*, adb_run: AdbRunFn, serial: str, adb_exe: str) ->
 
 
 async def _capture_scrcpy(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    """Capture via ``scrcpy screenshot`` (requires scrcpy v2.7+ in PATH)."""
     scrcpy_exe = shutil.which("scrcpy")
     if not scrcpy_exe:
         raise RuntimeError("scrcpy not found in PATH; install scrcpy v2.7+")
@@ -250,7 +227,6 @@ async def _capture_scrcpy(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> st
 
 
 async def _capture_u2(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
-    """Capture via the uiautomator2 ATX HTTP agent on port 7912."""
     await _ensure_tcp_forward(adb_run, _U2_PORT, _U2_PORT)
     await _start_uiautomator_agent(adb_run, serial, adb_exe)
 
@@ -266,6 +242,5 @@ async def _capture_u2(*, adb_run: AdbRunFn, serial: str, adb_exe: str) -> str:
         except Exception as exc:
             last_error = exc
             log.warning("u2 endpoint failed: %s", exc)
-            continue
     raise RuntimeError(f"Failed to capture via uiautomator2: {last_error}")
 
