@@ -239,20 +239,19 @@ use a screenshot method that does not depend on the framebuffer.
 
 ## 5. Every Known Fix for Black Screenshots on MEmu
 
-### Fix 1 (Recommended): Switch MEmu to Software Rendering
+### Fix 1 (Recommended): Switch MEmu to DirectX Rendering
 
-This permanently fixes `ADB`, `ADB_nc`, `uiautomator2`, and `aScreenCap` methods.
+This should permanently fix `ADB`, `ADB_nc`, `uiautomator2`, and `aScreenCap` methods.
 
 **Where the setting is:**
 
 1. Open MEmu Multiple Instance Manager (`MEmuConsole.exe`).
 2. For the target instance (e.g., `MEmu`), click the gear icon (Settings).
-3. Navigate to the **Performance** tab (sometimes labeled **Engine** or **Graphics**).
-4. Find the **Render Mode** setting. It will show one of:
-   - `OpenGL` (the default, causes black screenshots)
-   - `DirectX` (also hardware-accelerated, often works)
-   - `Software` (fully software-rendered, always works)
-5. Change the mode to **DirectX** first. If still black, change to **Software**.
+3. Navigate to the **Engine** or **Graphics** tab.
+4. Find the **Render Mode** setting. MEmu has exactly two options:
+   - `OpenGL` (the default — causes black screenshots on some setups)
+   - `DirectX` (hardware-accelerated via DirectX — expected to fix black screenshots)
+5. Change the mode to **DirectX**.
 6. Click OK and restart the MEmu instance.
 
 After changing the render mode, verify the fix:
@@ -261,9 +260,13 @@ adb -s 127.0.0.1:21513 shell screencap -p > /tmp/test.png
 ```
 The PNG file should contain the actual screen contents, not a black image.
 
-**Trade-off:** Software rendering is significantly slower for GPU-heavy games. DirectX
-rendering is the best balance: hardware-accelerated on the host GPU but writes to a
-surface that `screencap` can read.
+**Note:** There is no "Software" render mode in MEmu. Only OpenGL and DirectX exist.
+
+**Trade-off:** DirectX rendering is hardware-accelerated on the host GPU but writes to a
+surface that `screencap` can read. Game performance may differ between OpenGL and DirectX
+depending on your GPU — test both if needed.
+
+For full MEmu configuration details, see `docs/dev/memu_playbook.md`.
 
 ### Fix 2 (No Setting Change Required): Switch to DroidCast
 
@@ -494,9 +497,11 @@ The fastest path to a working setup without changing MEmu settings:
 The permanent fix that allows any screenshot method:
 
 1. Open MEmu Settings for the target instance.
-2. Change Render Mode from `OpenGL` to `DirectX` or `Software`.
+2. Change Render Mode from `OpenGL` to `DirectX`.
 3. Restart the instance.
 4. Restore `ScreenshotMethod` to `uiautomator2` or `ADB` if desired.
+
+For full MEmu emulator documentation, see `docs/dev/memu_playbook.md`.
 
 Do not use: `nemu_ipc`, `ldopengl`. These will raise `RequestHumanTakeover` on MEmu.
 

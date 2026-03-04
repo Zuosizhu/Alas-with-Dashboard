@@ -13,6 +13,7 @@ If any instruction file conflicts with this one, this file wins.
 
 - Never modify `upstream_alas/` directly.
 - Never create additional git repos or submodules inside this repo.
+- Never run `git init` or `git clone` inside this repository's subdirectories. The only submodule is `upstream_alas/`.
 - Treat `alas_wrapped/` as the runnable source of truth for customized ALAS behavior.
 - Use deterministic tools first; use LLM/vision only for recovery.
 - Do not commit runtime artifacts or secrets (for example: `alas_wrapped/alas_admin_token`, screenshots, ad-hoc runtime logs).

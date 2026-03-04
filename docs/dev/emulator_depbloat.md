@@ -530,3 +530,5 @@ MEmu Android 9; Android 12 builds have the boot freeze issue documented in
 - List all installed packages: `adb shell pm list packages -f` (includes APK paths)
 - MEmu ADB port: MEmu Settings → Connection
 - LDPlayer ADB port: Settings → Other → ADB Debugging
+- [MEMUC Command Reference Manual](https://www.memuplay.com/blog/memucommand-reference-manual.html) — official CLI docs
+- MEmu render modes, `memuc` CLI, and performance settings: `docs/dev/memu_playbook.md`

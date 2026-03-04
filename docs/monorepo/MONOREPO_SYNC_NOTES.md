@@ -59,3 +59,25 @@ Changes flow **downstream only**: `upstream → wrapped`
 - **Rationale**: Pull upstream changes regularly for game updates.
 - **Rule**: Never modify this folder directly.
 
+---
+
+## Guardrails
+
+### Pre-push hook: nested `.git` check
+
+`.githooks/pre-push` scans for any `.git` directory inside the repo (up to 4 levels deep) that is neither `./.git` (the repo root) nor `./upstream_alas/.git` (the submodule). If any are found the push is blocked with a clear error listing the offending paths.
+
+To fix: remove the nested `.git` directory (`rm -rf <path>/.git`) and push again.
+
+### Why nested `.git` directories are dangerous
+
+1. **VS Code confusion**: VS Code's git extension picks up any `.git` it finds. A nested `.git` causes it to treat that subdirectory as a separate repository, showing phantom untracked/modified files from the wrong worktree.
+2. **Commits to the wrong repo**: `git` commands run inside the subdirectory resolve against the nested `.git`, so commits, pushes, and branch operations silently target the wrong remote.
+3. **Merge noise**: `git status` in the parent repo sees the entire subdirectory as a single untracked path, hiding real changes underneath it.
+
+### Incident record
+
+**Date**: 2026-03-03
+
+`alas_wrapped/.git` was found to be a rogue `.git` directory left over from the initial upstream copy. It pointed at `LmeSzinc/AzurLaneAutoScript` (the original upstream remote), not this repository. This caused VS Code to report 203 phantom untracked changes inside `alas_wrapped/` and would have silently routed any `git` command run from that directory to the wrong remote. The directory was deleted manually and the pre-push guard was added to prevent recurrence.
+

@@ -22,6 +22,23 @@ resolve_python() {
 }
 
 PYTHON_BIN="$(resolve_python)"
+
+# --- Nested .git directory guard ---
+# The only allowed .git locations are the repo root and the upstream_alas submodule.
+# Any other nested .git directory means git init or git clone was run inside the repo,
+# which causes VS Code to misattribute files, creates phantom untracked changes, and
+# risks commits going to the wrong repository entirely.
+nested_git="$(find . -maxdepth 4 -name ".git" -not -path "./.git" -not -path "./upstream_alas/.git" 2>/dev/null | head -5)"
+if [[ -n "$nested_git" ]]; then
+  echo "ERROR: Nested .git directory detected. Push blocked." >&2
+  echo "Only '.git' (repo root) and 'upstream_alas/.git' (submodule) are allowed." >&2
+  echo "Found:" >&2
+  echo "$nested_git" | sed 's/^/  /' >&2
+  echo "Remove the nested .git directory and try again." >&2
+  exit 1
+fi
+# --- End nested .git guard ---
+
 PATRICK_CUSTOM_SYNC_MODE=check $PYTHON_BIN agent_orchestrator/sync_patrick_custom.py
 $PYTHON_BIN agent_orchestrator/sync_entrypoint_docs.py --check
 

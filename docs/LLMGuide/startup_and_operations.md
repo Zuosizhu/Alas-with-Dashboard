@@ -45,7 +45,11 @@ px = img.getpixel((640, 360))
 print(px)  # Should NOT be (0,0,0,0)
 ```
 
-**If all black:** See `device_setup.md`. The fix is changing MEmu render mode to **DirectX or Software** — NOT OpenGL. OpenGL is the GPU-accelerated mode that causes black frames. Until that's changed, ALAS will crash every 5-10 minutes with `GameStuckError`.
+**If all black:** See `device_setup.md`. The fix is either:
+1. Change MEmu render mode to **DirectX** (MEmu only has OpenGL and DirectX — there is no "Software" mode)
+2. Switch ALAS screenshot method to **DroidCast** (bypasses the framebuffer entirely)
+Until one of these is applied, ALAS will crash every 5-10 minutes with `GameStuckError`.
+See `docs/dev/memu_playbook.md` for full MEmu configuration details.
 
 **If intermittent black (some real frames, some black):** ALAS can still run — it retries on black frames. Expect crashes every 5-10 min but the bot makes progress between crashes.
 
@@ -197,14 +201,15 @@ The ConfigWatcher picks up changes live (no restart needed):
 ## The Screenshot Method Decision Tree
 
 ```
-Is MEmu render mode set to DirectX or Software?
+Is MEmu render mode set to DirectX?
 ├── YES → uiautomator2 works fine. Use it. Done.
-└── NO (currently OpenGL/OpenGL+ — the GPU mode causing black frames)
-    ├── Do you have DroidCast APK set up?
-    │   ├── YES → Use DroidCast. Set ScreenshotMethod: "DroidCast"
-    │   └── NO → Use uiautomator2 anyway. Expect intermittent black frames.
-    │           ALAS will sometimes recover, sometimes crash.
-    └── The real fix: change MEmu render mode in MEmu settings → Display → Render mode → DirectX or Software
+└── NO (currently OpenGL — the default mode that causes black frames)
+    ├── Option A: Change render mode to DirectX in MEmu settings
+    │   MEmu has exactly two modes: OpenGL and DirectX (no "Software" option)
+    │   See docs/dev/memu_playbook.md for instructions
+    └── Option B: Use DroidCast (works with any render mode)
+        ├── APK already in repo at alas_wrapped/bin/DroidCast/DroidCast_raw-release-1.0.apk
+        └── Set ScreenshotMethod: "DroidCast" in PatrickCustom.json
 ```
 
 **Current config:** `ScreenshotMethod: "uiautomator2"` — works intermittently.
